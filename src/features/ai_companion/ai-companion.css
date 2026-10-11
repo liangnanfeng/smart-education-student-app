@@ -1,3 +1,68 @@
+/* 所有页面共用的伙伴外观与安全展示框 */
+.partner-appearance {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  aspect-ratio: 1;
+  isolation: isolate;
+}
+
+.partner-appearance--login { width: clamp(150px, 42vw, 220px); }
+.partner-appearance--preview { width: clamp(112px, 30vw, 168px); }
+.partner-appearance--floating { width: 70px; }
+
+.partner-appearance__safe-frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.partner-appearance__sprite {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 800% auto;
+}
+
+.partner-appearance__layer {
+  position: absolute;
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.partner-appearance__decoration {
+  z-index: 1;
+  left: -15%;
+  bottom: -6%;
+  width: 72%;
+  height: 72%;
+}
+
+.partner-appearance__outfit {
+  z-index: 3;
+  right: -3%;
+  bottom: 2%;
+  width: 48%;
+  height: 48%;
+}
+
+.partner-appearance--interactive .partner-appearance__safe-frame {
+  animation: partner-friendly-hop .48s cubic-bezier(.2, .8, .2, 1);
+}
+
+@keyframes partner-friendly-hop {
+  0%, 100% { transform: translateY(0) scale(1); }
+  42% { transform: translateY(-7%) scale(1.035); }
+}
+
 /* 悬浮 AI 按钮 */
 .ai-companion-control {
   position: fixed;
