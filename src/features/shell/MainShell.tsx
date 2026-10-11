@@ -80,7 +80,12 @@ export function MainShell() {
   }
 
   if (view.kind === 'settings') {
-    return <SettingsPage onBack={pop} />
+    return (
+      <main className="main-shell">
+        <SettingsPage onBack={pop} />
+        <AiCompanion />
+      </main>
+    )
   }
 
   if (view.kind === 'notifications') {
@@ -264,6 +269,7 @@ export function MainShell() {
           chapterNum={view.chapterNum}
           onBack={pop}
         />
+        <AiCompanion />
         <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
       </main>
     )

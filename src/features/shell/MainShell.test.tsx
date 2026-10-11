@@ -25,4 +25,14 @@ describe('main shell navigation', () => {
     expect(screen.getByRole('region', { name: '闯关地图' })).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: '主要导航' })).toBeInTheDocument()
   })
+
+  it('keeps the AI companion available on nested app screens', async () => {
+    const user = userEvent.setup()
+    render(<AppStateProvider><MainShell /></AppStateProvider>)
+
+    await user.click(screen.getByRole('button', { name: '我的' }))
+    await user.click(screen.getByRole('button', { name: '进入设置' }))
+
+    expect(screen.getByRole('button', { name: 'AI伙伴' })).toBeInTheDocument()
+  })
 })

@@ -70,38 +70,93 @@
   top: var(--ai-y);
   z-index: 55;
   display: grid;
-  width: 58px;
-  height: 58px;
+  width: 78px;
+  height: 78px;
   place-items: center;
+  padding: 0;
   transform: translate(-50%, -50%);
   touch-action: none;
-  border: 3px solid var(--surface);
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--primary-deep), var(--accent-deep));
-  color: #fff;
-  box-shadow: 0 12px 28px color-mix(in srgb, var(--primary) 35%, transparent);
+  border: 0;
+  border-radius: 28px;
+  background: transparent;
+  color: inherit;
   cursor: grab;
+  transition: opacity .12s ease, filter .2s ease;
 }
 
 .ai-companion-control:active {
   cursor: grabbing;
 }
 
-.ai-companion-control span {
-  position: absolute;
-  top: -7px;
-  right: -6px;
+.ai-companion-control:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 46%, transparent);
+  outline-offset: 1px;
+}
+
+.ai-companion-control > .partner-appearance {
+  width: 74px;
+  filter: drop-shadow(0 10px 11px color-mix(in srgb, var(--primary) 28%, transparent));
+}
+
+.ai-companion-control:hover > .partner-appearance {
+  filter: drop-shadow(0 13px 13px color-mix(in srgb, var(--primary) 34%, transparent));
+}
+
+.ai-companion-control.is-handoff-target {
+  opacity: 0;
+}
+
+.companion-handoff {
+  position: fixed;
+  z-index: 1800;
   display: grid;
-  min-width: 25px;
-  height: 20px;
   place-items: center;
-  padding: 0 5px;
-  border: 2px solid var(--surface);
-  border-radius: 999px;
-  background: var(--warm-accent);
-  color: #fff;
-  font-size: .58rem;
-  font-weight: 900;
+  pointer-events: none;
+  transform-origin: top left;
+  animation: companion-login-handoff .78s cubic-bezier(.22, .76, .25, 1) both;
+  will-change: transform, opacity;
+}
+
+.companion-handoff > .partner-appearance {
+  width: 100%;
+  max-width: none;
+  filter: drop-shadow(0 16px 18px color-mix(in srgb, var(--primary) 22%, transparent));
+}
+
+.companion-handoff[data-handoff-status='complete'] {
+  visibility: hidden;
+  opacity: 0;
+}
+
+@keyframes companion-login-handoff {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 1;
+  }
+
+  48% {
+    transform: translate3d(var(--handoff-mid-x), var(--handoff-mid-y), 0) scale(var(--handoff-mid-scale));
+    opacity: 1;
+  }
+
+  88% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate3d(var(--handoff-x), var(--handoff-y), 0) scale(var(--handoff-scale));
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .companion-handoff {
+    display: none;
+  }
+
+  .partner-appearance--interactive .partner-appearance__safe-frame {
+    animation: none;
+  }
 }
 
 /* 全屏 AI 面板 */
