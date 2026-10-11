@@ -1,25 +1,13 @@
 import { ArrowLeft, Bell, Camera, CheckCircle2, Database, Eye, EyeOff, FileText, HelpCircle, Headphones, LayoutDashboard, LogOut, Mic, MessageSquare, RotateCcw, ShieldCheck, ShieldOff, Smartphone, Sparkles, Trash2, UserRound, Volume2 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useAppState } from '../../app/AppState'
-import type { AiPersonality, ContentLevel, FontScale, Grade, GuardianInfo, LearningStage, PermissionStatus, SafeMode, VoiceMode } from '../../app/model'
+import { ELEMENTARY_GRADE_IDS, GRADE_LABELS, SECONDARY_GRADE_IDS, type AiPersonality, type ContentLevel, type FontScale, type Grade, type GuardianInfo, type LearningStage, type PermissionStatus, type SafeMode, type VoiceMode } from '../../app/model'
 import { settingGroups } from './settingsData'
 
-const ELEMENTARY_GRADES: Array<[Grade['elementary'], string]> = [
-  ['grade1', '一年级'],
-  ['grade2', '二年级'],
-  ['grade3', '三年级'],
-  ['grade4', '四年级'],
-  ['grade5', '五年级'],
-  ['grade6', '六年级'],
-]
-const SECONDARY_GRADES: Array<[Grade['secondary'], string]> = [
-  ['grade7', '初一'],
-  ['grade8', '初二'],
-  ['grade9', '初三'],
-  ['grade10', '高一'],
-  ['grade11', '高二'],
-  ['grade12', '高三'],
-]
+const ELEMENTARY_GRADES: Array<[Grade['elementary'], string]> =
+  ELEMENTARY_GRADE_IDS.map((id) => [id, GRADE_LABELS[id]])
+const SECONDARY_GRADES: Array<[Grade['secondary'], string]> =
+  SECONDARY_GRADE_IDS.map((id) => [id, GRADE_LABELS[id]])
 
 const RELATIONSHIP_LABEL: Record<GuardianInfo['relationship'], string> = {
   father: '父亲',

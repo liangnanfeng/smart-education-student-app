@@ -14,16 +14,14 @@ describe('main shell navigation', () => {
     }
   })
 
-  it('opens the interactive knowledge plan and challenge map from the bottom navigation', async () => {
+  it('opens the available knowledge course and test map', async () => {
     const user = userEvent.setup()
     render(<AppStateProvider><MainShell /></AppStateProvider>)
 
     await user.click(screen.getByRole('button', { name: '知识' }))
-    expect(screen.getByRole('heading', { name: '学习计划' })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: '体验周' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('heading', { name: 'AI 创想大陆' })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: '测试' }))
-    expect(screen.getByRole('heading', { name: 'AI 小博士养成记' })).toBeInTheDocument()
     expect(screen.getByRole('region', { name: '闯关地图' })).toBeInTheDocument()
     expect(screen.getByRole('navigation', { name: '主要导航' })).toBeInTheDocument()
   })

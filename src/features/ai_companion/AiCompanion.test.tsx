@@ -16,16 +16,16 @@ describe('temporary AI companion', () => {
     expect(classifyDemoCommand('打开我的作品')).toBe('safe')
   })
 
-  it('opens the full AI learning assistant on tap', async () => {
+  it('opens the AI learning assistant on tap', async () => {
     const user = userEvent.setup()
     render(<AppStateProvider><AiCompanion /></AppStateProvider>)
 
     await user.click(screen.getByRole('button', { name: 'AI伙伴' }))
     expect(screen.getByRole('dialog', { name: 'AI 学习伙伴' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: /你的智能学习助教/ })).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('发消息...')).toBeInTheDocument()
   })
 
-  it('opens the chat panel after a deliberate long press', () => {
+  it('opens the AI learning assistant after a deliberate long press', () => {
     vi.useFakeTimers()
     render(<AppStateProvider><AiCompanion /></AppStateProvider>)
     const control = screen.getByRole('button', { name: 'AI伙伴' })

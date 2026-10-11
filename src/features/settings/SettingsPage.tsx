@@ -1,14 +1,10 @@
 import { ArrowLeft, ChevronRight, LogOut, ShieldCheck } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useAppState } from '../../app/AppState'
+import { GRADE_LABELS } from '../../app/model'
 import { SettingDetailPage } from './SettingDetailPage'
 import { settingGroups } from './settingsData'
 import './settings.css'
-
-const GRADE_LABEL: Record<string, string> = {
-  grade1: '一年级', grade2: '二年级', grade3: '三年级', grade4: '四年级', grade5: '五年级', grade6: '六年级',
-  grade7: '初一', grade8: '初二', grade9: '初三', grade10: '高一', grade11: '高二', grade12: '高三',
-}
 
 export function SettingsPage({ onBack }: { onBack: () => void }) {
   const { state, logout } = useAppState()
@@ -38,7 +34,7 @@ export function SettingsPage({ onBack }: { onBack: () => void }) {
   if (detail) return <SettingDetailPage itemId={detail} onBack={backToList} />
 
   const stageLabel = state.stage === 'elementary' ? '小学端' : '中学端'
-  const gradeLabel = GRADE_LABEL[state.grade] ?? ''
+  const gradeLabel = GRADE_LABELS[state.grade] ?? ''
 
   function getStatusText(id: string): string {
     switch (id) {

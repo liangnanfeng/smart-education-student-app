@@ -1640,6 +1640,29 @@
   box-shadow: 0 8px 18px color-mix(in srgb, var(--primary) 25%, transparent);
 }
 
+.profile-grade-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.profile-grade-grid button {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: calc(0.76rem * var(--font-scale));
+  font-weight: 700;
+}
+
+.profile-grade-grid button.active {
+  background: linear-gradient(135deg, var(--primary-deep), var(--accent-deep));
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 6px 14px color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
 .profile-edit-readonly {
   min-height: 42px;
   display: grid;

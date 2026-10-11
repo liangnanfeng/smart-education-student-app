@@ -1,5 +1,8 @@
-import { BookOpen, Flame, Gem, Lock, Power } from 'lucide-react'
+import { useState } from 'react'
+import { Flame, Gem, Power } from 'lucide-react'
 import { useAppState } from '../../app/AppState'
+import { getQuiz } from './quizData'
+import { QuizModal } from './QuizModal'
 import './test.css'
 
 /* ===== AI 学习关卡数据 ===== */
@@ -11,28 +14,47 @@ type Level = {
   title: string
   x: number // 0..100, 相对宽度百分比
   y: number // 0..100, 相对高度百分比（从下往上！底部是0，顶部是100）
+  quizIndex?: number // 对应 quizData 章节序号（1-based）；宝箱/奖杯无
 }
 
-const levelsElementary: Level[] = [
-  { id: 'l1', status: 'completed', title: '认识AI朋友', x: 50, y: 5 },
-  { id: 'l2', status: 'completed', title: 'AI的眼睛', x: 28, y: 18 },
-  { id: 'l3', status: 'current', title: 'AI会聊天吗', x: 72, y: 32 },
-  { id: 'l4', status: 'locked', title: 'AI的大脑', x: 22, y: 48 },
-  { id: 'l5', status: 'locked', title: 'AI小画家', x: 78, y: 62 },
-  { id: 'c1', status: 'chest', title: '宝箱', x: 50, y: 75 },
-  { id: 'l6', status: 'locked', title: 'AI的耳朵', x: 28, y: 86 },
-  { id: 't1', status: 'trophy', title: '小AI学家徽章', x: 50, y: 97 },
+// 1~3 年级：启明星大冒险 · 8 座岛（对应 8 集连环画）
+const levelsQmx: Level[] = [
+  { id: 'l1', status: 'completed', title: '启明星岛', x: 50, y: 3, quizIndex: 1 },
+  { id: 'l2', status: 'completed', title: '家居岛', x: 28, y: 13, quizIndex: 2 },
+  { id: 'l3', status: 'current', title: '眼睛岛', x: 72, y: 23, quizIndex: 3 },
+  { id: 'l4', status: 'locked', title: '耳朵岛', x: 22, y: 34, quizIndex: 4 },
+  { id: 'c1', status: 'chest', title: '宝石宝箱', x: 50, y: 44 },
+  { id: 'l5', status: 'locked', title: '智慧岛', x: 78, y: 54, quizIndex: 5 },
+  { id: 'l6', status: 'locked', title: '时光岛', x: 22, y: 64, quizIndex: 6 },
+  { id: 'l7', status: 'locked', title: '迷雾岛', x: 72, y: 74, quizIndex: 7 },
+  { id: 'l8', status: 'locked', title: '城堡岛', x: 28, y: 84, quizIndex: 8 },
+  { id: 't1', status: 'trophy', title: '启明星徽章', x: 50, y: 95 },
 ]
 
-const levelsSecondary: Level[] = [
-  { id: 'l1', status: 'completed', title: '什么是AI', x: 50, y: 5 },
-  { id: 'l2', status: 'completed', title: '机器学习入门', x: 28, y: 18 },
-  { id: 'l3', status: 'current', title: '神经网络探秘', x: 72, y: 32 },
-  { id: 'l4', status: 'locked', title: '计算机视觉', x: 22, y: 48 },
-  { id: 'l5', status: 'locked', title: '自然语言处理', x: 78, y: 62 },
-  { id: 'c1', status: 'chest', title: '宝箱', x: 50, y: 75 },
-  { id: 'l6', status: 'locked', title: '生成式AI', x: 28, y: 86 },
-  { id: 't1', status: 'trophy', title: 'AI探索者徽章', x: 50, y: 97 },
+// 4~6 年级：AI 创想大陆 · 6 章读本
+const levelsCxd: Level[] = [
+  { id: 'l1', status: 'completed', title: 'AI超能力图鉴', x: 50, y: 5, quizIndex: 1 },
+  { id: 'l2', status: 'completed', title: '把话说清楚', x: 28, y: 18, quizIndex: 2 },
+  { id: 'l3', status: 'current', title: '创意放大器', x: 72, y: 32, quizIndex: 3 },
+  { id: 'l4', status: 'locked', title: '真相侦探社', x: 22, y: 48, quizIndex: 4 },
+  { id: 'l5', status: 'locked', title: '教AI认世界', x: 78, y: 62, quizIndex: 5 },
+  { id: 'c1', status: 'chest', title: '创想宝箱', x: 50, y: 75 },
+  { id: 'l6', status: 'locked', title: '负责任的创想家', x: 28, y: 86, quizIndex: 6 },
+  { id: 't1', status: 'trophy', title: '创想家徽章', x: 50, y: 97 },
+]
+
+// 7~9 年级：AI 原理实验室 · 8 章（第 9 章项目=奖杯）
+const levelsLab: Level[] = [
+  { id: 'l1', status: 'completed', title: 'AI系统解剖室', x: 50, y: 3, quizIndex: 1 },
+  { id: 'l2', status: 'completed', title: '数据侦探营', x: 28, y: 13, quizIndex: 2 },
+  { id: 'l3', status: 'current', title: '算法的工具箱', x: 72, y: 23, quizIndex: 3 },
+  { id: 'l4', status: 'locked', title: '第一次AI实验', x: 22, y: 34, quizIndex: 4 },
+  { id: 'l5', status: 'locked', title: '给AI打分', x: 78, y: 44, quizIndex: 5 },
+  { id: 'c1', status: 'chest', title: '实验宝箱', x: 50, y: 54 },
+  { id: 'l6', status: 'locked', title: '生成式AI的真相', x: 22, y: 64, quizIndex: 6 },
+  { id: 'l7', status: 'locked', title: '从模型到产品', x: 72, y: 74, quizIndex: 7 },
+  { id: 'l8', status: 'locked', title: '与AI共处', x: 28, y: 84, quizIndex: 8 },
+  { id: 't1', status: 'trophy', title: '我的AI项目', x: 50, y: 95 },
 ]
 
 /* 资源数据 */
@@ -42,7 +64,7 @@ const resources = [
   { icon: 'bolt' as const, value: 25, label: '能量' },
 ]
 
-/* ===== 云朵小羊吉祥物 SVG · 重绘版 =====
+/* ===== 云朵小羊吉祥物 SVG =====
    遮挡顺序（从后到前）：
    腿 → 身体主块 → 头顶云朵凸起 → 头部脸盘 → 小角 → 眼睛 → 腮红 → 鼻子/嘴 → 胳膊（最前）
 */
@@ -74,20 +96,15 @@ function CloudLambMascot({
 
         {/* ================ 第 1 层：腿（最后面） ================ */}
         <g className="legs-group">
-          {/* 左腿 */}
           <rect x="58" y="150" width="16" height="30" rx="8" fill={leg} className="leg leg-l" />
-          {/* 右腿 */}
           <rect x="106" y="150" width="16" height="30" rx="8" fill={leg} className="leg leg-r" />
-          {/* 脚掌 */}
           <ellipse cx="66" cy="182" rx="12" ry="5" fill={leg} />
           <ellipse cx="114" cy="182" rx="12" ry="5" fill={leg} />
         </g>
 
-        {/* ================ 第 2 层：身体主云朵（在腿前方、头后方） ================ */}
+        {/* ================ 第 2 层：身体主云朵 ================ */}
         <g className="body-group">
-          {/* 身体主体 — 圆润椭圆形 */}
           <ellipse cx="90" cy="130" rx="56" ry="44" fill={bodyMid} />
-          {/* 云朵凸起（周围蓬松感） */}
           <circle cx="40" cy="118" r="22" fill={bodyMain} />
           <circle cx="52" cy="92" r="24" fill={bodyMain} />
           <circle cx="90" cy="78" r="26" fill={bodyMain} />
@@ -95,19 +112,16 @@ function CloudLambMascot({
           <circle cx="140" cy="118" r="22" fill={bodyMain} />
           <circle cx="144" cy="140" r="20" fill={bodyMid} />
           <circle cx="36" cy="140" r="20" fill={bodyMid} />
-          {/* 底部阴影 — 立体感 */}
           <ellipse cx="90" cy="158" rx="48" ry="16" fill={bodyBottom} opacity="0.9" />
         </g>
 
         {/* ================ 第 3 层：头顶呆毛 / 云朵漩涡 ================ */}
         {isElem ? (
-          // 小学端：向上的小呆毛
           <g className="tuft">
             <path d="M90 78 Q 94 50 86 28 Q 82 52 82 78 Z" fill={tuft} />
             <ellipse cx="86" cy="24" rx="10" ry="12" fill={tuft} />
           </g>
         ) : (
-          // 中学端：云朵漩涡
           <g className="tuft">
             <circle cx="90" cy="52" r="18" fill={tuft} />
             <circle cx="76" cy="46" r="14" fill={tuft} />
@@ -120,16 +134,13 @@ function CloudLambMascot({
         <ellipse cx="68" cy="78" rx="6" ry="14" fill={horn} transform="rotate(-18 68 78)" />
         <ellipse cx="112" cy="78" rx="6" ry="14" fill={horn} transform="rotate(18 112 78)" />
 
-        {/* ================ 第 5 层：大眼睛（最醒目！） ================ */}
+        {/* ================ 第 5 层：大眼睛 ================ */}
         <g className="eyes-group">
-          {/* 左眼 */}
           <g className="eye eye-l">
             <ellipse cx="72" cy="108" rx="14" ry="17" fill="#2D2438" />
-            {/* 高光 */}
             <ellipse cx="76" cy="102" rx="5" ry="6" fill="#FFFFFF" />
             <circle cx="71" cy="113" r="3" fill="#FFFFFF" />
           </g>
-          {/* 右眼 */}
           <g className="eye eye-r">
             <ellipse cx="108" cy="108" rx="14" ry="17" fill="#2D2438" />
             <ellipse cx="112" cy="102" rx="5" ry="6" fill="#FFFFFF" />
@@ -137,7 +148,7 @@ function CloudLambMascot({
           </g>
         </g>
 
-        {/* ================ 第 6 层：腮红（眼睛下方两侧） ================ */}
+        {/* ================ 第 6 层：腮红 ================ */}
         <circle cx="56" cy="128" r="11" fill={cheek} opacity="0.7" />
         <circle cx="124" cy="128" r="11" fill={cheek} opacity="0.7" />
 
@@ -145,10 +156,9 @@ function CloudLambMascot({
         <ellipse cx="90" cy="128" rx="6" ry="4" fill={nose} />
         <path d="M 82 134 Q 90 142 98 134" stroke={nose} strokeWidth="2.5" fill="none" strokeLinecap="round" />
 
-        {/* ================ 第 8 层：胳膊（最前方，会遮挡身体侧面） ================ */}
+        {/* ================ 第 8 层：胳膊（最前方） ================ */}
         <g className="arm arm-l">
           <ellipse cx="26" cy="128" rx="10" ry="18" fill={bodyMid} transform="rotate(30 26 128)" />
-          {/* 爪子 */}
           <circle cx="20" cy="140" r="8" fill={bodyMain} />
         </g>
         <g className="arm arm-r">
@@ -160,13 +170,16 @@ function CloudLambMascot({
   )
 }
 
-/* ===== 真正的卡通 3D 圆柱币（薄版！） ===== */
-function Coin3D({ status, title }: { status: 'completed' | 'current' | 'locked'; title?: string }) {
+/* ===== 卡通 3D 圆柱币（薄版 SVG） =====
+   结构（从下到上）：
+   地面投影 → 底面椭圆 → 侧面厚度带 → 顶面椭圆 → 高光 → 图标
+*/
+function Coin3D({ status, title, onClick }: { status: 'completed' | 'current' | 'locked'; title?: string; onClick?: () => void }) {
   const isCurrent = status === 'current'
   const label = `${title ?? ''} · ${status === 'current' ? '当前关卡' : status === 'completed' ? '已完成' : '未解锁'}`
 
   return (
-    <button type="button" className={`level-coin level-coin-svg level-${status}`} aria-label={label}>
+    <button type="button" className={`level-coin level-coin-svg level-${status}`} aria-label={label} onClick={onClick}>
       <svg viewBox="0 0 100 56" className="coin-svg" role="img" aria-hidden="true">
         {/* 1. 地面投影 */}
         <ellipse className="c-ground" cx="50" cy="52" rx="38" ry="4" />
@@ -214,9 +227,10 @@ function Coin3D({ status, title }: { status: 'completed' | 'current' | 'locked';
 }
 
 /* ===== 关卡节点渲染 ===== */
-function LevelNode({ level, index }: { level: Level; index: number }) {
+function LevelNode({ level, index, onQuiz }: { level: Level; index: number; onQuiz?: (lv: Level) => void }) {
   // 计算路径方向（左右交错）
   const offsetSide = index % 2 === 0 ? 'left' : 'right'
+  const canQuiz = (level.status === 'completed' || level.status === 'current') && level.quizIndex !== undefined
 
   if (level.status === 'chest') {
     return (
@@ -227,13 +241,10 @@ function LevelNode({ level, index }: { level: Level; index: number }) {
         <div className="level-shadow-chest" />
         <div className="level-chest" aria-label={`${level.title} 节点`}>
           <svg viewBox="0 0 64 64" width="56" height="56">
-            {/* 宝箱主体 */}
             <rect x="8" y="26" width="48" height="30" rx="4" className="chest-body" />
             <rect x="8" y="14" width="48" height="20" rx="10" className="chest-lid" />
-            {/* 锁 */}
             <rect x="28" y="26" width="8" height="14" rx="2" className="chest-lock" />
             <circle cx="32" cy="32" r="2" className="chest-lock-hole" />
-            {/* 金色装饰条 */}
             <rect x="8" y="24" width="48" height="4" rx="2" className="chest-band" />
           </svg>
         </div>
@@ -250,15 +261,11 @@ function LevelNode({ level, index }: { level: Level; index: number }) {
         <div className="level-shadow-trophy" />
         <div className="level-trophy" aria-label={`${level.title} 节点`}>
           <svg viewBox="0 0 64 64" width="58" height="62">
-            {/* 奖杯主体 */}
             <path d="M 14 14 Q 14 36 32 40 Q 50 36 50 14 Z" className="trophy-cup" />
-            {/* 把手 */}
             <path d="M 14 20 Q 4 22 6 32 Q 8 38 18 36" className="trophy-handle" />
             <path d="M 50 20 Q 60 22 58 32 Q 56 38 46 36" className="trophy-handle" />
-            {/* 底座 */}
             <rect x="20" y="42" width="24" height="6" rx="2" className="trophy-base" />
             <rect x="16" y="48" width="32" height="6" rx="2" className="trophy-foot" />
-            {/* 高光 */}
             <ellipse cx="24" cy="22" rx="4" ry="10" className="trophy-shine" />
           </svg>
         </div>
@@ -272,11 +279,12 @@ function LevelNode({ level, index }: { level: Level; index: number }) {
       className={`level-node circle-node ${offsetSide} level-${level.status}`}
       style={{ left: `${level.x}%`, bottom: `${level.y}%` }}
     >
-      {/* 地面投影 */}
       <div className="level-shadow-circle" />
-      {/* 3D 圆柱币 */}
-      <Coin3D status={level.status} title={level.title} />
-      {/* 关卡名称 */}
+      <Coin3D
+        status={level.status}
+        title={level.title}
+        onClick={canQuiz ? () => onQuiz?.(level) : undefined}
+      />
       <span className="level-label">{level.title}</span>
     </div>
   )
@@ -285,7 +293,40 @@ function LevelNode({ level, index }: { level: Level; index: number }) {
 /* ===== 主组件 ===== */
 export function TestPage() {
   const { state } = useAppState()
-  const levels = state.stage === 'elementary' ? levelsElementary : levelsSecondary
+
+  // 根据学段+年级选择关卡：1-3年级(qmx) / 4-6年级(cxd) / 中学(lab)
+  const baseLevels: Level[] =
+    state.stage === 'secondary'
+      ? levelsLab
+      : ['grade1', 'grade2', 'grade3'].includes(state.grade)
+        ? levelsQmx
+        : levelsCxd
+
+  // 课程 ID（取练习题用）
+  const courseId = state.stage === 'secondary'
+    ? 'lab'
+    : ['grade1', 'grade2', 'grade3'].includes(state.grade) ? 'qmx' : 'cxd'
+  const quiz = getQuiz(courseId)
+
+  // 已通关的关卡 id（本地状态：默认完成/当前关卡；通关 quiz 后加入）
+  const [completed, setCompleted] = useState<Set<string>>(
+    () => new Set(baseLevels.filter((l) => l.status === 'completed').map((l) => l.id))
+  )
+  // 当前打开的答题关卡
+  const [activeQuiz, setActiveQuiz] = useState<Level | null>(null)
+
+  // 实时状态：基础 status + 通关进度
+  const liveStatus = (lv: Level): LevelStatus => {
+    if (lv.status === 'chest' || lv.status === 'trophy') return lv.status
+    if (completed.has(lv.id)) return 'completed'
+    // 前一关已完成则解锁为 current，否则保持 locked
+    const idx = baseLevels.findIndex((l) => l.id === lv.id)
+    const prev = baseLevels[idx - 1]
+    if (prev && (completed.has(prev.id) || prev.status === 'chest')) return 'current'
+    return lv.status === 'current' ? 'current' : 'locked'
+  }
+
+  const levels: Level[] = baseLevels.map((lv) => ({ ...lv, status: liveStatus(lv) }))
 
   // 构造 SVG 曲线路径：按索引顺序连接所有关卡中心
   const pathD = levels.map((lv, i) => {
@@ -295,20 +336,45 @@ export function TestPage() {
     const prev = levels[i - 1]
     const px = prev.x
     const py = 100 - prev.y
-    // 用平滑曲线：控制点在两点之间的 y 方向偏移
     const cmy = (cy + py) / 2
     return ` Q ${px} ${cmy}, ${cx} ${cy}`
   }).join(' ')
+
+  // 点击关卡 → 开启答题
+  const handleQuiz = (lv: Level) => {
+    if (lv.quizIndex === undefined) return
+    setActiveQuiz(lv)
+  }
+
+  // 答题完成：通关则解锁下一关
+  const handleComplete = (score: number, total: number) => {
+    if (!activeQuiz || activeQuiz.quizIndex === undefined) return
+    const passed = total > 0 && score / total >= 0.6
+    if (passed) {
+      setCompleted((prev) => {
+        const next = new Set(prev)
+        next.add(activeQuiz.id)
+        return next
+      })
+    }
+  }
+
+  const unitTitle =
+    courseId === 'qmx' ? '启明星大冒险'
+      : courseId === 'cxd' ? 'AI 创想大陆'
+        : 'AI 原理实验室'
+  const unitNum =
+    courseId === 'qmx' ? '闯关 · 8 颗宝石'
+      : courseId === 'cxd' ? '闯关 · 6 枚徽章'
+        : '闯关 · 8 章实验'
 
   return (
     <div className="test-page">
       {/* 顶部区：章节标题 + 资源 */}
       <header className="test-header">
         <div className="test-unit">
-          <span className="unit-num">
-            {state.stage === 'elementary' ? '第 3 章' : 'Unit 3'}
-          </span>
-          <h2>{state.stage === 'elementary' ? 'AI 小博士养成记' : 'AI Literacy Journey'}</h2>
+          <span className="unit-num">{unitNum}</span>
+          <h2>{unitTitle}</h2>
         </div>
         <div className="resource-row">
           {resources.map((r) => (
@@ -356,7 +422,7 @@ export function TestPage() {
 
         {/* 关卡节点 */}
         {levels.map((lv, i) => (
-          <LevelNode key={lv.id} level={lv} index={i} />
+          <LevelNode key={lv.id} level={lv} index={i} onQuiz={handleQuiz} />
         ))}
 
         {/* 云朵小羊吉祥物 × 2 —— 对角放置，不同动作，远离所有关卡 */}
@@ -367,8 +433,16 @@ export function TestPage() {
           <CloudLambMascot variant={state.stage} action="cheer" />
         </div>
       </section>
+
+      {/* 答题弹层 */}
+      {activeQuiz && activeQuiz.quizIndex !== undefined && (
+        <QuizModal
+          levelTitle={activeQuiz.title}
+          chapter={quiz[activeQuiz.quizIndex - 1]}
+          onClose={() => setActiveQuiz(null)}
+          onComplete={handleComplete}
+        />
+      )}
     </div>
   )
 }
-
-

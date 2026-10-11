@@ -11,6 +11,16 @@ export type Grade = {
   secondary: 'grade7' | 'grade8' | 'grade9' | 'grade10' | 'grade11' | 'grade12'
 }
 
+export const ELEMENTARY_GRADE_IDS = ['grade1', 'grade2', 'grade3', 'grade4', 'grade5', 'grade6'] as const
+export const SECONDARY_GRADE_IDS = ['grade7', 'grade8', 'grade9', 'grade10', 'grade11', 'grade12'] as const
+
+export const GRADE_LABELS: Record<Grade[LearningStage], string> = {
+  grade1: '一年级', grade2: '二年级', grade3: '三年级',
+  grade4: '四年级', grade5: '五年级', grade6: '六年级',
+  grade7: '初一', grade8: '初二', grade9: '初三',
+  grade10: '高一', grade11: '高二', grade12: '高三',
+}
+
 export type GuardianInfo = {
   name: string
   relationship: 'father' | 'mother' | 'grandparent' | 'other'

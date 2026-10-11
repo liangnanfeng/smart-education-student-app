@@ -7,11 +7,7 @@ import { ProfilePage } from './ProfilePage'
 describe('profile dashboard', () => {
   it('contains every approved profile module in the agreed order', async () => {
     const user = userEvent.setup()
-    render(
-      <AppStateProvider>
-        <ProfilePage onOpenSettings={vi.fn()} onOpenProfileDetail={vi.fn()} />
-      </AppStateProvider>,
-    )
+    render(<AppStateProvider><ProfilePage onOpenSettings={vi.fn()} onOpenProfileDetail={vi.fn()} /></AppStateProvider>)
 
     expect(screen.getByRole('heading', { name: '晨曦同学' })).toBeInTheDocument()
     expect(screen.getByText('本周学习')).toBeInTheDocument()
@@ -40,11 +36,7 @@ describe('profile dashboard', () => {
 
   it('previews an AI schedule suggestion before applying it', async () => {
     const user = userEvent.setup()
-    render(
-      <AppStateProvider>
-        <ProfilePage onOpenSettings={vi.fn()} onOpenProfileDetail={vi.fn()} />
-      </AppStateProvider>,
-    )
+    render(<AppStateProvider><ProfilePage onOpenSettings={vi.fn()} onOpenProfileDetail={vi.fn()} /></AppStateProvider>)
 
     await user.click(screen.getByRole('button', { name: '看看 AI 建议' }))
     expect(screen.getByRole('dialog', { name: '安排建议预览' })).toBeInTheDocument()

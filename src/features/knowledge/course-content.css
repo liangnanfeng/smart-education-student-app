@@ -1,0 +1,420 @@
+.course-content-page {
+  padding: 0 0 40px;
+  min-height: 100vh;
+  background: var(--surface);
+}
+
+/* ===== 顶部标题栏 ===== */
+.content-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--line);
+}
+
+.content-back {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+.content-course-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 1px;
+}
+
+.content-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+}
+
+/* ===== 1-3年级 故事内容 ===== */
+.story-content {
+  padding: 16px;
+}
+
+.story-goal {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: var(--primary-wash);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 13.5px;
+  color: var(--primary-deep);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.story-goal svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.story-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.story-panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.panel-scene {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--accent-deep);
+  background: var(--accent-wash);
+  border-radius: 6px;
+  padding: 2px 8px;
+  display: inline-block;
+  margin-bottom: 8px;
+}
+
+/* 绘本图片 */
+.panel-image {
+  width: 100%;
+  border-radius: 12px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.lesson-image {
+  width: 100%;
+  border-radius: 14px 14px 0 0;
+  margin-bottom: 14px;
+  display: block;
+}
+
+.panel-narration {
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  margin: 0 0 8px;
+  font-style: italic;
+}
+
+.panel-dialog {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+  margin: 3px 0;
+}
+
+.dialog-speaker {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--primary-deep);
+  flex-shrink: 0;
+}
+
+.dialog-speaker::after {
+  content: '：';
+}
+
+.dialog-line {
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+/* ===== 博士星小课堂 ===== */
+.mini-lesson {
+  background: linear-gradient(135deg, var(--accent-wash), var(--primary-wash));
+  border-radius: 16px;
+  padding: 16px 18px 18px;
+  margin-top: 16px;
+  overflow: hidden;
+}
+
+.lesson-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.lesson-head span {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--accent-deep);
+}
+
+.lesson-text {
+  font-size: 15px;
+  color: var(--ink);
+  line-height: 1.7;
+  margin: 0;
+  font-weight: 500;
+}
+
+/* ===== 闯关小挑战 ===== */
+.story-challenge {
+  background: #FFF8E6;
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-top: 12px;
+  border: 1px solid #FFE89C;
+}
+
+.challenge-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.challenge-head span {
+  font-size: 16px;
+  font-weight: 800;
+  color: #C88500;
+}
+
+.challenge-question {
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.6;
+  margin: 0 0 10px;
+}
+
+.challenge-answer {
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.answer-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #C88500;
+  display: block;
+  margin-bottom: 3px;
+}
+
+.challenge-answer p {
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ===== 4-6年级 Markdown 渲染 ===== */
+.markdown-body {
+  padding: 16px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.md-h1 {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--accent);
+}
+
+.md-h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 18px 0 8px;
+}
+
+.md-h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  margin: 14px 0 6px;
+}
+
+.md-p {
+  font-size: 14.5px;
+  color: var(--ink-soft);
+  line-height: 1.75;
+  margin: 0 0 10px;
+}
+
+.md-p strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.md-quote {
+  margin: 10px 0;
+  padding: 10px 14px;
+  background: var(--surface-strong);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+}
+
+.md-quote p {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 2px 0;
+  line-height: 1.6;
+}
+
+.md-list {
+  margin: 6px 0 12px;
+  padding-left: 4px;
+  list-style: none;
+}
+
+.md-list li {
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.7;
+  padding: 3px 0 3px 18px;
+  position: relative;
+}
+
+.md-list li::before {
+  content: '·';
+  position: absolute;
+  left: 6px;
+  color: var(--accent-deep);
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1;
+}
+
+.md-list li strong {
+  color: var(--ink);
+}
+
+.md-hr {
+  border: none;
+  border-top: 1px solid var(--line);
+  margin: 16px 0;
+}
+
+.markdown-body a {
+  color: var(--primary-deep);
+  text-decoration: underline;
+}
+
+/* ===== 7-9年级 HTML 内容 ===== */
+.html-body {
+  padding: 16px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--ink-soft);
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.html-body h2 {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 18px 0 10px;
+}
+
+.html-body h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 14px 0 6px;
+}
+
+.html-body h4 {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  margin: 12px 0 4px;
+}
+
+.html-body p {
+  margin: 0 0 10px;
+  line-height: 1.75;
+}
+
+.html-body strong {
+  color: var(--ink);
+}
+
+.html-body ul,
+.html-body ol {
+  padding-left: 20px;
+  margin: 6px 0 12px;
+}
+
+.html-body li {
+  margin: 3px 0;
+  line-height: 1.7;
+}
+
+.html-body blockquote {
+  margin: 10px 0;
+  padding: 10px 14px;
+  background: var(--surface-strong);
+  border-left: 3px solid var(--accent);
+  border-radius: 0 10px 10px 0;
+}
+
+.html-body table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+  font-size: 13px;
+}
+
+.html-body th,
+.html-body td {
+  border: 1px solid var(--line);
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.html-body th {
+  background: var(--surface-strong);
+  font-weight: 700;
+}
+
+.html-body code {
+  background: var(--surface-strong);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 13px;
+}
+
+.html-body pre {
+  background: var(--surface-strong);
+  border-radius: 10px;
+  padding: 12px;
+  overflow-x: auto;
+  margin: 10px 0;
+}
+
+.html-body img {
+  max-width: 100%;
+  border-radius: 10px;
+  margin: 10px 0;
+}
+
+.html-body a {
+  color: var(--primary-deep);
+}

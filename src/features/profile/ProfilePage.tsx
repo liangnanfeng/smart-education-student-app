@@ -1,5 +1,6 @@
 import { ChevronRight, Settings, UserRound } from 'lucide-react'
 import { useAppState } from '../../app/AppState'
+import { GRADE_LABELS } from '../../app/model'
 import { GrowthSection } from './GrowthSection'
 import { LearningOverview } from './LearningOverview'
 import { LearningTools } from './LearningTools'
@@ -52,7 +53,7 @@ export function ProfilePage({
     <div className="profile-page">
       <header className="identity-card" onClick={onOpenProfileDetail} style={{ cursor: 'pointer' }}>
         <div className={`avatar avatar-${state.avatar % 5}`}><UserRound aria-hidden="true" size={29} /></div>
-        <div className="identity-copy"><p>{state.stage === 'elementary' ? '小学端 · 五年级' : '中学端 · 初二'}</p><h1>{state.nickname}</h1><span>Lv. 7 · 灵感探索者</span></div>
+        <div className="identity-copy"><p>{state.stage === 'elementary' ? '小学端' : '中学端'} · {GRADE_LABELS[state.grade]}</p><h1>{state.nickname}</h1><span>Lv. 7 · 灵感探索者</span></div>
         <button type="button" aria-label="查看个人资料" onClick={(e) => { e.stopPropagation(); onOpenProfileDetail() }}><ChevronRight aria-hidden="true" /></button>
       </header>
       <LearningOverview />

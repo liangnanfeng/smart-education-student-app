@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { AiCompanion } from '../ai_companion/AiCompanion'
 import { HomePage } from '../home/HomePage'
 import { NotificationsPage } from '../home/NotificationsPage'
-import { KnowledgePage } from '../knowledge/KnowledgePage'
 import { AiCenterPage } from '../profile/AiCenterPage'
 import { CalendarPage } from '../profile/CalendarPage'
 import { ContinueCreatePage } from '../profile/ContinueCreatePage'
@@ -22,6 +21,8 @@ import { WorksManagePage } from '../profile/WorksManagePage'
 import { SettingsPage } from '../settings/SettingsPage'
 import { WorksGalleryPage } from '../works/WorksGalleryPage'
 import { WorkDetailPage } from '../works/WorkDetailPage'
+import { CourseContentPage } from '../knowledge/CourseContentPage'
+import { KnowledgePage } from '../knowledge/KnowledgePage'
 import { TestPage } from '../test/TestPage'
 import { BottomNavigation, type MainTab } from './BottomNavigation'
 import './shell.css'
@@ -48,9 +49,7 @@ type View =
   | { kind: 'ai-center'; id: number }
   | { kind: 'works-manage'; id: number; filter?: string }
   | { kind: 'continue-create'; id: number }
-
-type WithoutId<T> = T extends { id: number } ? Omit<T, 'id'> : never
-type ViewInput = WithoutId<View>
+  | { kind: 'course-content'; id: number; courseId: string; chapterNum: number }
 
 export function MainShell() {
   const [activeTab, setActiveTab] = useState<MainTab>('home')
@@ -65,7 +64,10 @@ export function MainShell() {
     window.scrollTo(0, scrollMemories.current.get(view.id) ?? 0)
   }, [view.id])
 
-  const push = (v: ViewInput) => {
+  // Omit 对联合类型不分发，会让 workId/courseId 等分支独有字段被丢弃，需要分布式 Omit
+  type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never
+
+  const push = (v: DistributiveOmit<View, 'id'>) => {
     scrollMemories.current.set(view.id, window.scrollY)
     setStack([...stack, { ...v, id: nextIdRef.current++ } as View])
   }
@@ -254,6 +256,19 @@ export function MainShell() {
     )
   }
 
+  if (view.kind === 'course-content') {
+    return (
+      <main className="main-shell">
+        <CourseContentPage
+          courseId={view.courseId}
+          chapterNum={view.chapterNum}
+          onBack={pop}
+        />
+        <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
+      </main>
+    )
+  }
+
   return (
     <main className="main-shell">
       <div className="tab-content">
@@ -265,7 +280,9 @@ export function MainShell() {
             onNavigateToKnowledge={() => selectTab('knowledge')}
           />
         )}
-        {activeTab === 'knowledge' && <KnowledgePage />}
+        {activeTab === 'knowledge' && (
+          <KnowledgePage onOpenContent={(courseId, chapterNum) => push({ kind: 'course-content', courseId, chapterNum })} />
+        )}
         {activeTab === 'test' && <TestPage />}
         {activeTab === 'profile' && (
           <ProfilePage

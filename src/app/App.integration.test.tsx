@@ -14,9 +14,9 @@ describe('student app integration', () => {
     expect(screen.getByRole('heading', { name: '精选 AI 创意游戏' })).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: '知识' }))
-    expect(screen.getByRole('heading', { name: '学习计划' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'AI 创想大陆' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '测试' }))
-    expect(screen.getByRole('heading', { name: 'AI 小博士养成记' })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: '闯关地图' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '我的' }))
     expect(screen.getByRole('heading', { name: '晨曦同学' })).toBeInTheDocument()
 
