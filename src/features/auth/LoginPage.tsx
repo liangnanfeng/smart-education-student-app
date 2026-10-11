@@ -1,6 +1,7 @@
-import { useState, type FormEvent } from 'react'
+import { useCallback, useRef, useState, type FormEvent } from 'react'
 import { ArrowRight, KeyRound, UserRound } from 'lucide-react'
 import { useAppState } from '../../app/AppState'
+import { LOGIN_COMPANION_HANDOFF_KEY, LoginCompanion } from '../ai_companion/LoginCompanion'
 import { AuthLayout } from './AuthLayout'
 
 type LoginPageProps = {
@@ -12,6 +13,36 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
   const [account, setAccount] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const companionBoundsRef = useRef<DOMRect | null>(null)
+
+  const updateCompanionBounds = useCallback((rect: DOMRect) => {
+    companionBoundsRef.current = rect
+  }, [])
+
+  const captureCompanionHandoff = () => {
+    const rect = companionBoundsRef.current
+    const loadout = state.companions[state.stage]
+    if (!rect || rect.width <= 0 || rect.height <= 0) {
+      sessionStorage.removeItem(LOGIN_COMPANION_HANDOFF_KEY)
+      return
+    }
+
+    sessionStorage.setItem(LOGIN_COMPANION_HANDOFF_KEY, JSON.stringify({
+      version: 1,
+      stage: state.stage,
+      appearanceId: loadout.equipped.appearance,
+      outfitId: loadout.equipped.outfit,
+      decorationId: loadout.equipped.decoration,
+      rect: {
+        left: rect.left,
+        top: rect.top,
+        right: rect.right,
+        bottom: rect.bottom,
+        width: rect.width,
+        height: rect.height,
+      },
+    }))
+  }
 
   function submit(event: FormEvent) {
     event.preventDefault()
@@ -20,6 +51,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
       return
     }
     setError('')
+    captureCompanionHandoff()
     login()
   }
 
@@ -28,6 +60,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
       title="欢迎来到数智学习世界"
       subtitle={state.stage === 'elementary' ? '带上好奇心，一起发现 AI 的奇妙吧' : '从问题出发，探索 AI 背后的科学与创造'}
       showStageSelector
+      companion={<LoginCompanion onBoundsChange={updateCompanionBounds} />}
     >
       <form className="auth-card" onSubmit={submit}>
         <div className="field-wrap">

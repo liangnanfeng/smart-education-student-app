@@ -8,15 +8,16 @@ type AuthLayoutProps = PropsWithChildren<{
   subtitle: string
   backAction?: ReactNode
   showStageSelector?: boolean
+  companion?: ReactNode
 }>
 
-export function AuthLayout({ title, subtitle, backAction, showStageSelector = false, children }: AuthLayoutProps) {
+export function AuthLayout({ title, subtitle, backAction, showStageSelector = false, companion, children }: AuthLayoutProps) {
   const { state, setStage } = useAppState()
   return (
     <main className="auth-page">
       <div className="auth-ambient auth-ambient-one" />
       <div className="auth-ambient auth-ambient-two" />
-      <section className="auth-shell">
+      <section className={`auth-shell ${companion ? 'auth-shell--with-companion' : ''}`}>
         {showStageSelector && (
           <div className="stage-switch" aria-label="选择学习端">
             <button type="button" aria-pressed={state.stage === 'elementary'} onClick={() => setStage('elementary')}>
@@ -28,6 +29,7 @@ export function AuthLayout({ title, subtitle, backAction, showStageSelector = fa
           </div>
         )}
         {backAction}
+        {companion}
         <header className="auth-heading">
           <p className="brand-kicker">智趣数智学堂</p>
           <h1>{title}</h1>

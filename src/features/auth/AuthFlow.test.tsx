@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AppStateProvider } from '../../app/AppState'
 import { LoginPage } from './LoginPage'
 import { isGuardianConsentRequired } from './age'
@@ -16,6 +16,11 @@ function renderLogin() {
 }
 
 describe('authentication flow', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    sessionStorage.clear()
+  })
+
   it('switches the learning stage before login', async () => {
     const user = userEvent.setup()
     renderLogin()
@@ -41,6 +46,33 @@ describe('authentication flow', () => {
     await user.click(screen.getByRole('button', { name: '进入学习世界' }))
 
     expect(localStorage.getItem('student-app-state')).not.toContain('secret-pass')
+  })
+
+  it('captures the equipped companion bounds immediately before a successful login', async () => {
+    const boundsSpy = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      x: 40,
+      y: 72,
+      left: 40,
+      top: 72,
+      right: 220,
+      bottom: 252,
+      width: 180,
+      height: 180,
+      toJSON: () => ({}),
+    } as DOMRect)
+    const user = userEvent.setup()
+    renderLogin()
+
+    await user.type(screen.getByLabelText('学习账号／学习码'), 'demo-2026')
+    await user.type(screen.getByLabelText('密码'), 'secret-pass')
+    await user.click(screen.getByRole('button', { name: '进入学习世界' }))
+
+    expect(JSON.parse(sessionStorage.getItem('student-app-login-companion-bounds') ?? '{}')).toMatchObject({
+      stage: 'elementary',
+      appearanceId: 'momo',
+      rect: { left: 40, top: 72, width: 180, height: 180 },
+    })
+    boundsSpy.mockRestore()
   })
 
   it('routes learners younger than fourteen to guardian consent', () => {
