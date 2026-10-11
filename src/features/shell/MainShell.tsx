@@ -82,7 +82,7 @@ export function MainShell() {
   if (view.kind === 'settings') {
     return (
       <main className="main-shell">
-        <SettingsPage onBack={pop} />
+        <SettingsPage onBack={pop} onOpenMall={() => push({ kind: 'mall' })} />
         <AiCompanion />
       </main>
     )

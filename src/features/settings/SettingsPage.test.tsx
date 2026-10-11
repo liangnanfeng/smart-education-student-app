@@ -30,4 +30,17 @@ describe('settings page', () => {
     await user.click(screen.getByRole('button', { name: '确认退出' }))
     expect(localStorage.getItem('student-app-state')).toContain('"isLoggedIn":false')
   })
+
+  it('shows the equipped companion and sends appearance changes to the points mall', async () => {
+    const user = userEvent.setup()
+    const onOpenMall = vi.fn()
+    render(<AppStateProvider><SettingsPage onBack={vi.fn()} onOpenMall={onOpenMall} /></AppStateProvider>)
+
+    await user.click(screen.getByRole('button', { name: /伙伴与互动/ }))
+
+    expect(screen.getByRole('img', { name: '绒桃 Momo AI 伙伴形象' })).toBeInTheDocument()
+    expect(screen.queryByText('🤖')).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '前往积分商城调整伙伴' }))
+    expect(onOpenMall).toHaveBeenCalledTimes(1)
+  })
 })

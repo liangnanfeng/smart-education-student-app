@@ -636,36 +636,62 @@
     border-color: var(--primary-deep);
 }
 
-/* AI 预览 */
-.ai-preview {
-    display: flex;
+/* AI 伙伴概览 */
+.companion-settings-summary {
+    display: grid;
+    grid-template-columns: minmax(112px, 38%) 1fr;
+    gap: 16px;
     align-items: center;
-    gap: 14px;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 14% 18%, color-mix(in srgb, var(--primary) 18%, transparent), transparent 48%),
+        var(--surface);
 }
 
-.ai-preview>div strong,
-.ai-preview>div small {
+.companion-settings-summary>.partner-appearance {
+    width: min(100%, 152px);
+    justify-self: center;
+    filter: drop-shadow(0 12px 16px color-mix(in srgb, var(--primary-deep) 18%, transparent));
+}
+
+.companion-settings-copy {
+    min-width: 0;
+}
+
+.companion-settings-copy>div strong,
+.companion-settings-copy>div small {
     display: block;
 }
 
-.ai-preview>div strong {
-    font-size: calc(.9rem * var(--font-scale));
+.companion-settings-copy>div strong {
+    font-size: calc(.95rem * var(--font-scale));
 }
 
-.ai-preview>div small {
+.companion-settings-copy>div small {
+    margin-top: 3px;
+    color: var(--primary-deep);
+    font-size: calc(.64rem * var(--font-scale));
+    font-weight: 750;
+}
+
+.companion-settings-copy>p {
+    margin-top: 9px;
+}
+
+.companion-settings-eyebrow {
+    display: inline-block;
+    margin-bottom: 5px;
     color: var(--muted);
-    font-size: calc(.65rem * var(--font-scale));
-    margin-top: 2px;
+    font-size: calc(.6rem * var(--font-scale));
+    font-weight: 800;
+    letter-spacing: .08em;
 }
 
-.ai-avatar-lg {
-    display: grid;
-    place-items: center;
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: var(--surface-soft);
-    font-size: 30px;
+.companion-mall-link {
+    margin-top: 12px;
+    border-color: color-mix(in srgb, var(--primary-deep) 35%, var(--line));
+    background: color-mix(in srgb, var(--primary) 9%, var(--surface));
+    color: var(--primary-deep);
 }
 
 /* 性格选择 */
@@ -700,36 +726,6 @@
 .personality-card.active {
     border-color: var(--primary-deep);
     background: color-mix(in srgb, var(--primary) 8%, var(--surface));
-}
-
-/* AI 形象选择 */
-.skin-grid {
-    display: grid;
-    grid-template-columns: repeat(6, 1fr);
-    gap: 8px;
-    margin-top: 12px;
-}
-
-.skin-btn {
-    display: grid;
-    place-items: center;
-    width: 100%;
-    aspect-ratio: 1;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-md);
-    background: var(--page);
-    font-size: 26px;
-    cursor: pointer;
-    transition: transform .1s ease, border-color .15s ease;
-}
-
-.skin-btn:hover {
-    transform: scale(1.08);
-}
-
-.skin-btn.active {
-    border-color: var(--primary-deep);
-    background: color-mix(in srgb, var(--primary) 10%, var(--surface));
 }
 
 /* 危险按钮 */

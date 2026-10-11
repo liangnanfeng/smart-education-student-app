@@ -2,6 +2,8 @@ import { ArrowLeft, Bell, Camera, CheckCircle2, Database, Eye, EyeOff, FileText,
 import { useState, type FormEvent } from 'react'
 import { useAppState } from '../../app/AppState'
 import { ELEMENTARY_GRADE_IDS, GRADE_LABELS, SECONDARY_GRADE_IDS, type AiPersonality, type ContentLevel, type FontScale, type Grade, type GuardianInfo, type LearningStage, type PermissionStatus, type SafeMode, type VoiceMode } from '../../app/model'
+import { getCompanionItem } from '../ai_companion/companionCatalog'
+import { PartnerAppearance } from '../ai_companion/PartnerAppearance'
 import { settingGroups } from './settingsData'
 
 const ELEMENTARY_GRADES: Array<[Grade['elementary'], string]> =
@@ -16,9 +18,9 @@ const RELATIONSHIP_LABEL: Record<GuardianInfo['relationship'], string> = {
   other: '其他',
 }
 
-export function SettingDetailPage({ itemId, onBack }: { itemId: string; onBack: () => void }) {
+export function SettingDetailPage({ itemId, onBack, onOpenMall }: { itemId: string; onBack: () => void; onOpenMall: () => void }) {
   const app = useAppState()
-  const { state, setFontScale, setStage, setGrade, setNotifications, setTwoFactor, updatePassword, setGuardian, setFamilyName, removeDevice, resetAiPosition, setAiName, setAiPersonality, setAiSkin, setVoiceEnabled, setAutoListen, setVoiceMode, setSaveHistory, setAiMemory, clearHistory, setConfirmDangerous, setGuardianApprove, setSafeMode, setSoundEnabled, setSoundVolume, setHapticEnabled, setShowStats, setFriendFind, setDataCollection, setCameraPermission, setMicPermission, setAlbumPermission, setContentLevel, setPersonalizedRec, setAutoClean, clearCache } = app
+  const { state, setFontScale, setStage, setGrade, setNotifications, setTwoFactor, updatePassword, setGuardian, setFamilyName, removeDevice, resetAiPosition, setAiName, setAiPersonality, setVoiceEnabled, setAutoListen, setVoiceMode, setSaveHistory, setAiMemory, clearHistory, setConfirmDangerous, setGuardianApprove, setSafeMode, setSoundEnabled, setSoundVolume, setHapticEnabled, setShowStats, setFriendFind, setDataCollection, setCameraPermission, setMicPermission, setAlbumPermission, setContentLevel, setPersonalizedRec, setAutoClean, clearCache } = app
   const [notice, setNotice] = useState('')
   const item = settingGroups.flatMap((group) => group.items).find((entry) => entry.id === itemId)
   if (!item) return null
@@ -30,7 +32,7 @@ export function SettingDetailPage({ itemId, onBack }: { itemId: string; onBack: 
       {itemId === 'security' && <SecuritySection state={state} setTwoFactor={setTwoFactor} updatePassword={updatePassword} setNotice={setNotice} />}
       {itemId === 'guardian' && <GuardianSection state={state} setGuardian={setGuardian} setFamilyName={setFamilyName} setNotice={setNotice} />}
       {itemId === 'stage' && <StageSection state={state} setStage={setStage} setGrade={setGrade} setNotice={setNotice} />}
-      {itemId === 'companion' && <CompanionSection state={state} setAiName={setAiName} setAiPersonality={setAiPersonality} setAiSkin={setAiSkin} resetAiPosition={resetAiPosition} setNotice={setNotice} />}
+      {itemId === 'companion' && <CompanionSection state={state} setAiName={setAiName} setAiPersonality={setAiPersonality} resetAiPosition={resetAiPosition} setNotice={setNotice} onOpenMall={onOpenMall} />}
       {itemId === 'voice' && <VoiceSection state={state} setVoiceEnabled={setVoiceEnabled} setAutoListen={setAutoListen} setVoiceMode={setVoiceMode} setNotice={setNotice} />}
       {itemId === 'memory' && <MemorySection state={state} setSaveHistory={setSaveHistory} setAiMemory={setAiMemory} clearHistory={clearHistory} setNotice={setNotice} />}
       {itemId === 'operation' && <OperationSection state={state} setConfirmDangerous={setConfirmDangerous} setGuardianApprove={setGuardianApprove} setSafeMode={setSafeMode} setNotice={setNotice} />}
@@ -334,27 +336,30 @@ const PERSONALITY_OPTIONS: Array<[AiPersonality, string, string]> = [
   ['serious', '认真严谨', '专注知识，少开玩笑'],
   ['encouraging', '鼓励成长', '肯定进步，激发信心'],
 ]
-const SKIN_OPTIONS = ['🤖', '🐱', '🦊', '🐻', '🐼', '🦄']
-
-function CompanionSection({ state, setAiName, setAiPersonality, setAiSkin, resetAiPosition, setNotice }: {
+function CompanionSection({ state, setAiName, setAiPersonality, resetAiPosition, setNotice, onOpenMall }: {
   state: ReturnType<typeof useAppState>['state']
   setAiName: (v: string) => void
   setAiPersonality: (v: AiPersonality) => void
-  setAiSkin: (v: number) => void
   resetAiPosition: () => void
   setNotice: (s: string) => void
+  onOpenMall: () => void
 }) {
   const [nameInput, setNameInput] = useState(state.aiName)
+  const loadout = state.companions[state.stage]
+  const appearanceName = getCompanionItem(loadout.equipped.appearance)?.name ?? state.aiName
 
   return (
     <>
-      <section className="detail-card">
-        <div className="ai-preview">
-          <div className="ai-avatar-lg">{SKIN_OPTIONS[state.aiSkin]}</div>
+      <section className="detail-card companion-settings-summary">
+        <PartnerAppearance stage={state.stage} loadout={loadout} size="preview" />
+        <div className="companion-settings-copy">
+          <span className="companion-settings-eyebrow">当前伙伴</span>
           <div>
             <strong>{state.aiName}</strong>
             <small>{PERSONALITY_OPTIONS.find(([k]) => k === state.aiPersonality)?.[1] ?? '鼓励成长'}</small>
           </div>
+          <p>{appearanceName} · 当前服饰与装饰已同步到登录页和悬浮伙伴。</p>
+          <button className="wide-secondary companion-mall-link" type="button" onClick={onOpenMall}>前往积分商城调整伙伴</button>
         </div>
       </section>
 
@@ -375,16 +380,6 @@ function CompanionSection({ state, setAiName, setAiPersonality, setAiSkin, reset
               <strong>{label}</strong>
               <small>{desc}</small>
             </button>
-          ))}
-        </div>
-      </section>
-
-      <section className="choice-card">
-        <h2>AI 形象</h2>
-        <p>选择一个你喜欢的 AI 伙伴形象。</p>
-        <div className="skin-grid">
-          {SKIN_OPTIONS.map((emoji, i) => (
-            <button key={i} type="button" className={`skin-btn ${state.aiSkin === i ? 'active' : ''}`} aria-pressed={state.aiSkin === i} onClick={() => { setAiSkin(i); setNotice('AI 形象已更换') }}>{emoji}</button>
           ))}
         </div>
       </section>

@@ -6,7 +6,7 @@ import { SettingDetailPage } from './SettingDetailPage'
 import { settingGroups } from './settingsData'
 import './settings.css'
 
-export function SettingsPage({ onBack }: { onBack: () => void }) {
+export function SettingsPage({ onBack, onOpenMall = () => undefined }: { onBack: () => void; onOpenMall?: () => void }) {
   const { state, logout } = useAppState()
   const [detail, setDetail] = useState<string | null>(null)
   const [logoutOpen, setLogoutOpen] = useState(false)
@@ -31,7 +31,7 @@ export function SettingsPage({ onBack }: { onBack: () => void }) {
     setDetail(null)
   }
 
-  if (detail) return <SettingDetailPage itemId={detail} onBack={backToList} />
+  if (detail) return <SettingDetailPage itemId={detail} onBack={backToList} onOpenMall={onOpenMall} />
 
   const stageLabel = state.stage === 'elementary' ? '小学端' : '中学端'
   const gradeLabel = GRADE_LABELS[state.grade] ?? ''
