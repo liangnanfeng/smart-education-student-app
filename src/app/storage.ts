@@ -1,4 +1,4 @@
-import { defaultState, type AppState } from './model'
+import { defaultState, type AppState, type CompanionCategory, type CompanionLoadout, type LearningStage } from './model'
 
 const STORAGE_KEY = 'student-app-state'
 
@@ -6,10 +6,40 @@ export function loadState(): AppState {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (!stored) return defaultState
-    return { ...defaultState, ...JSON.parse(stored) } as AppState
+    const parsed = JSON.parse(stored) as Partial<AppState>
+    return {
+      ...defaultState,
+      ...parsed,
+      companions: {
+        elementary: normalizeLoadout(parsed.companions?.elementary, 'elementary'),
+        secondary: normalizeLoadout(parsed.companions?.secondary, 'secondary'),
+      },
+    } as AppState
   } catch {
     return defaultState
   }
+}
+
+const COMPANION_CATEGORIES: CompanionCategory[] = ['appearance', 'outfit', 'decoration']
+
+function normalizeLoadout(value: CompanionLoadout | undefined, stage: LearningStage): CompanionLoadout {
+  const fallback = defaultState.companions[stage]
+  if (!value || typeof value !== 'object') return fallback
+
+  const owned = Object.fromEntries(COMPANION_CATEGORIES.map((category) => [
+    category,
+    Array.isArray(value.owned?.[category])
+      ? value.owned[category].filter((id): id is string => typeof id === 'string')
+      : fallback.owned[category],
+  ])) as CompanionLoadout['owned']
+
+  const equipped = Object.fromEntries(COMPANION_CATEGORIES.map((category) => {
+    const id = value.equipped?.[category]
+    if (typeof id === 'string' && owned[category].includes(id)) return [category, id]
+    return [category, category === 'appearance' ? fallback.equipped.appearance : null]
+  })) as CompanionLoadout['equipped']
+
+  return { owned, equipped, version: 1 }
 }
 
 export function saveState(state: AppState) {
@@ -34,6 +64,7 @@ export function saveState(state: AppState) {
     aiName: state.aiName,
     aiPersonality: state.aiPersonality,
     aiSkin: state.aiSkin,
+    companions: state.companions,
     voiceEnabled: state.voiceEnabled,
     autoListenEnabled: state.autoListenEnabled,
     voiceMode: state.voiceMode,

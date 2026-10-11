@@ -1,5 +1,5 @@
 import { Bot } from 'lucide-react'
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
 import { useAppState } from '../../app/AppState'
 import { AiPanel } from './AiPanel'
 import './ai-companion.css'
@@ -53,13 +53,18 @@ export function AiCompanion() {
     setOpen(true)
   }
 
+  const positionStyle = {
+    '--ai-x': `${dragPosition.x * 100}%`,
+    '--ai-y': `${dragPosition.y * 100}%`,
+  } as CSSProperties
+
   return (
     <>
       <button
         className="ai-companion-control"
         type="button"
         aria-label="AI伙伴"
-        style={{ left: `${dragPosition.x * 100}%`, top: `${dragPosition.y * 100}%` }}
+        style={positionStyle}
         onPointerDown={pointerDown}
         onPointerMove={pointerMove}
         onPointerUp={pointerUp}

@@ -8,6 +8,15 @@ import { classifyDemoCommand } from './safety'
 afterEach(() => vi.useRealTimers())
 
 describe('temporary AI companion', () => {
+  it('starts in the lower-right safe zone above the bottom navigation', () => {
+    render(<AppStateProvider><AiCompanion /></AppStateProvider>)
+
+    expect(screen.getByRole('button', { name: 'AI伙伴' })).toHaveStyle({
+      '--ai-x': '88%',
+      '--ai-y': '84%',
+    })
+  })
+
   it('classifies unclear and risk-sensitive demo commands deterministically', () => {
     expect(classifyDemoCommand('那个帮我弄一下')).toBe('unclear')
     expect(classifyDemoCommand('把明天的学习安排改到晚上')).toBe('medium')

@@ -40,6 +40,14 @@ export type SafeMode = 'strict' | 'standard' | 'relaxed'
 export type ContentLevel = 'general' | 'teen' | 'child'
 export type PermissionStatus = 'granted' | 'denied' | 'prompt'
 
+export type CompanionCategory = 'appearance' | 'outfit' | 'decoration'
+
+export type CompanionLoadout = {
+  owned: Record<CompanionCategory, string[]>
+  equipped: Record<CompanionCategory, string | null>
+  version: number
+}
+
 export type AppState = {
   stage: LearningStage
   grade: Grade[LearningStage]
@@ -65,6 +73,7 @@ export type AppState = {
   aiName: string
   aiPersonality: AiPersonality
   aiSkin: number
+  companions: Record<LearningStage, CompanionLoadout>
   // AI 伙伴 - 语音与应用控制
   voiceEnabled: boolean
   autoListenEnabled: boolean
@@ -109,8 +118,8 @@ export const defaultState: AppState = {
   favorites: [],
   notifications: 'important',
   aiPositions: {
-    elementary: { x: 0.88, y: 0.78 },
-    secondary: { x: 0.88, y: 0.78 },
+    elementary: { x: 0.88, y: 0.84 },
+    secondary: { x: 0.88, y: 0.84 },
   },
   accountId: 'chenxi_2026',
   passwordHint: '上次修改：30 天前',
@@ -131,6 +140,18 @@ export const defaultState: AppState = {
   aiName: '小启',
   aiPersonality: 'encouraging',
   aiSkin: 0,
+  companions: {
+    elementary: {
+      owned: { appearance: ['momo'], outfit: [], decoration: [] },
+      equipped: { appearance: 'momo', outfit: null, decoration: null },
+      version: 1,
+    },
+    secondary: {
+      owned: { appearance: ['nimbo'], outfit: [], decoration: [] },
+      equipped: { appearance: 'nimbo', outfit: null, decoration: null },
+      version: 1,
+    },
+  },
   voiceEnabled: true,
   autoListenEnabled: false,
   voiceMode: 'warm',

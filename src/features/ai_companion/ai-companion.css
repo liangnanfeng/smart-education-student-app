@@ -1,6 +1,8 @@
 /* 悬浮 AI 按钮 */
 .ai-companion-control {
   position: fixed;
+  left: var(--ai-x);
+  top: var(--ai-y);
   z-index: 55;
   display: grid;
   width: 58px;

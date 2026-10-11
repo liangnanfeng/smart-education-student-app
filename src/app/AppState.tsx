@@ -6,7 +6,7 @@ import {
   useReducer,
   type PropsWithChildren,
 } from 'react'
-import { defaultState, type AiPersonality, type AiPosition, type AppState, type ContentLevel, type FontScale, type Grade, type GuardianInfo, type LearningStage, type PermissionStatus, type SafeMode, type VoiceMode } from './model'
+import { defaultState, type AiPersonality, type AiPosition, type AppState, type CompanionCategory, type ContentLevel, type FontScale, type Grade, type GuardianInfo, type LearningStage, type PermissionStatus, type SafeMode, type VoiceMode } from './model'
 import { loadState, saveState } from './storage'
 
 type Action =
@@ -30,6 +30,9 @@ type Action =
   | { type: 'set-ai-name'; name: string }
   | { type: 'set-ai-personality'; personality: AiPersonality }
   | { type: 'set-ai-skin'; skin: number }
+  | { type: 'purchase-companion-item'; stage: LearningStage; category: CompanionCategory; id: string }
+  | { type: 'equip-companion-item'; stage: LearningStage; category: CompanionCategory; id: string }
+  | { type: 'unequip-companion-item'; stage: LearningStage; category: Exclude<CompanionCategory, 'appearance'> }
   | { type: 'set-voice-enabled'; enabled: boolean }
   | { type: 'set-auto-listen'; enabled: boolean }
   | { type: 'set-voice-mode'; mode: VoiceMode }
@@ -95,6 +98,50 @@ function reducer(state: AppState, action: Action): AppState {
     case 'set-ai-name': return { ...state, aiName: action.name }
     case 'set-ai-personality': return { ...state, aiPersonality: action.personality }
     case 'set-ai-skin': return { ...state, aiSkin: action.skin }
+    case 'purchase-companion-item': {
+      const loadout = state.companions[action.stage]
+      if (loadout.owned[action.category].includes(action.id)) return state
+      return {
+        ...state,
+        companions: {
+          ...state.companions,
+          [action.stage]: {
+            ...loadout,
+            owned: {
+              ...loadout.owned,
+              [action.category]: [...loadout.owned[action.category], action.id],
+            },
+          },
+        },
+      }
+    }
+    case 'equip-companion-item': {
+      const loadout = state.companions[action.stage]
+      if (!loadout.owned[action.category].includes(action.id)) return state
+      return {
+        ...state,
+        companions: {
+          ...state.companions,
+          [action.stage]: {
+            ...loadout,
+            equipped: { ...loadout.equipped, [action.category]: action.id },
+          },
+        },
+      }
+    }
+    case 'unequip-companion-item': {
+      const loadout = state.companions[action.stage]
+      return {
+        ...state,
+        companions: {
+          ...state.companions,
+          [action.stage]: {
+            ...loadout,
+            equipped: { ...loadout.equipped, [action.category]: null },
+          },
+        },
+      }
+    }
     case 'set-voice-enabled': return { ...state, voiceEnabled: action.enabled }
     case 'set-auto-listen': return { ...state, autoListenEnabled: action.enabled }
     case 'set-voice-mode': return { ...state, voiceMode: action.mode }
@@ -142,6 +189,9 @@ type AppStateContextValue = {
   setAiName: (name: string) => void
   setAiPersonality: (personality: AiPersonality) => void
   setAiSkin: (skin: number) => void
+  purchaseCompanionItem: (category: CompanionCategory, id: string) => void
+  equipCompanionItem: (category: CompanionCategory, id: string) => void
+  unequipCompanionItem: (category: Exclude<CompanionCategory, 'appearance'>) => void
   setVoiceEnabled: (enabled: boolean) => void
   setAutoListen: (enabled: boolean) => void
   setVoiceMode: (mode: VoiceMode) => void
@@ -198,6 +248,9 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     setAiName: (name) => dispatch({ type: 'set-ai-name', name }),
     setAiPersonality: (personality) => dispatch({ type: 'set-ai-personality', personality }),
     setAiSkin: (skin) => dispatch({ type: 'set-ai-skin', skin }),
+    purchaseCompanionItem: (category, id) => dispatch({ type: 'purchase-companion-item', stage: state.stage, category, id }),
+    equipCompanionItem: (category, id) => dispatch({ type: 'equip-companion-item', stage: state.stage, category, id }),
+    unequipCompanionItem: (category) => dispatch({ type: 'unequip-companion-item', stage: state.stage, category }),
     setVoiceEnabled: (enabled) => dispatch({ type: 'set-voice-enabled', enabled }),
     setAutoListen: (enabled) => dispatch({ type: 'set-auto-listen', enabled }),
     setVoiceMode: (mode) => dispatch({ type: 'set-voice-mode', mode }),
