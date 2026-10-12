@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, Gem, Palette, ShoppingBag, Shirt, Sparkles, X } from 'lucide-react'
+import { ArrowLeft, Check, Gem, PackageCheck, Palette, ShoppingBag, Shirt, Sparkles, X } from 'lucide-react'
 import { useState } from 'react'
 import { useAppState } from '../../app/AppState'
 import type { CompanionCategory, CompanionLoadout } from '../../app/model'
@@ -11,6 +11,7 @@ const CATEGORIES = [
   { id: 'appearance', label: '形象' },
   { id: 'outfit', label: '服饰' },
   { id: 'decoration', label: '装饰' },
+  { id: 'my', label: '我的' },
 ] as const
 
 type MallCategory = typeof CATEGORIES[number]['id']
@@ -39,36 +40,46 @@ function PreviewArtwork({ item, loadout }: { item: CompanionCatalogItem; loadout
 }
 
 export function MallPage({ onBack }: { onBack: () => void }) {
-  const { state, purchaseCompanionItem, equipCompanionItem } = useAppState()
+  const { state, purchaseCompanionItem, equipCompanionItem, unequipCompanionItem } = useAppState()
   const [category, setCategory] = useState<MallCategory>('all')
   const [selectedItem, setSelectedItem] = useState<CompanionCatalogItem | null>(null)
   const [equipPromptItem, setEquipPromptItem] = useState<CompanionCatalogItem | null>(null)
   const [toast, setToast] = useState('')
-  const balance = 1280
+  const balance = state.pointsBalance
   const loadout = state.companions[state.stage]
   const currentAppearance = getCompanionItem(loadout.equipped.appearance)
 
   const stageItems = COMPANION_CATALOG.filter((item) => item.stage === state.stage)
+  const ownedItems = stageItems.filter((item) => loadout.owned[item.category].includes(item.id))
   const visibleItems = category === 'all'
     ? stageItems
-    : stageItems.filter((item) => item.category === category)
-  const showingComingSoon = category !== 'all' && visibleItems.length === 0
+    : category === 'my'
+      ? ownedItems
+      : stageItems.filter((item) => item.category === category)
+  const showingComingSoon = category !== 'all' && category !== 'my' && visibleItems.length === 0
 
   const showToast = (message: string) => {
     setToast(message)
     window.setTimeout(() => setToast(''), 2000)
   }
 
-  const buySelectedItem = () => {
-    if (!selectedItem) return
-    if (balance < selectedItem.price) {
+  const buyItem = (item: CompanionCatalogItem) => {
+    if (loadout.owned[item.category].includes(item.id)) {
+      showToast('这件商品已经在你的账号里啦！')
+      return
+    }
+    if (balance < item.price) {
       showToast('积分不够哦，继续学习攒积分吧！')
       return
     }
 
-    purchaseCompanionItem(selectedItem.category, selectedItem.id)
+    purchaseCompanionItem(item.category, item.id, item.price)
     setSelectedItem(null)
-    setEquipPromptItem(selectedItem)
+    setEquipPromptItem(item)
+  }
+
+  const buySelectedItem = () => {
+    if (selectedItem) buyItem(selectedItem)
   }
 
   const equipItem = (item: CompanionCatalogItem) => {
@@ -76,6 +87,63 @@ export function MallPage({ onBack }: { onBack: () => void }) {
     setSelectedItem(null)
     setEquipPromptItem(null)
     showToast(`已换上「${item.name}」`)
+  }
+
+  const unequipItem = (item: CompanionCatalogItem) => {
+    if (item.category === 'appearance') return
+    unequipCompanionItem(item.category)
+    setSelectedItem(null)
+    showToast(`已卸下「${item.name}」`)
+  }
+
+  const renderItemCard = (item: CompanionCatalogItem, wardrobe = false) => {
+    const isOwned = loadout.owned[item.category].includes(item.id)
+    const isEquipped = loadout.equipped[item.category] === item.id
+    const categoryLabel = CATEGORY_LABELS[item.category]
+
+    return (
+      <article key={item.id} className={`mall-item mall-item-${categoryLabel} ${isOwned ? 'owned' : ''} ${isEquipped ? 'equipped' : ''}`}>
+        <button
+          className="mall-item-view"
+          type="button"
+          aria-label={`查看 ${item.name}`}
+          onClick={() => setSelectedItem(item)}
+        >
+          <span className="mall-pet-frame" style={{ background: item.gradient }}>
+            {item.category === 'appearance' ? (
+              <span className="mall-pet-sprite" role="img" aria-label={`${item.name} AI 伙伴形象`} style={{ backgroundImage: `url(${item.asset})` }} />
+            ) : (
+              <img className="mall-product-art" src={item.asset} alt={`${item.name} 3D ${item.description}`} />
+            )}
+          </span>
+          <strong>{item.name}</strong>
+          <small>{item.description}</small>
+        </button>
+
+        {isEquipped ? (
+          wardrobe && item.category !== 'appearance' ? (
+            <button className="mall-unequip-button" type="button" aria-label={`卸下 ${item.name}`} onClick={() => unequipItem(item)}>
+              卸下
+            </button>
+          ) : (
+            <span className="mall-owned-tag mall-equipped-tag"><Check aria-hidden="true" size={12} />{item.category === 'appearance' && wardrobe ? '当前形象' : '已装备'}</span>
+          )
+        ) : isOwned ? (
+          <button className="mall-equip-button" type="button" aria-label={`装上 ${item.name}`} onClick={() => equipItem(item)}>
+            装上
+          </button>
+        ) : (
+          <button
+            className="mall-price mall-buy-button"
+            type="button"
+            aria-label={`购买 ${item.name}，${item.price} 积分`}
+            onClick={() => buyItem(item)}
+          >
+            <Sparkles aria-hidden="true" size={12} />购买 · {item.price}
+          </button>
+        )}
+      </article>
+    )
   }
 
   return (
@@ -89,7 +157,7 @@ export function MallPage({ onBack }: { onBack: () => void }) {
 
       <div className="mall-balance">
         <Sparkles aria-hidden="true" size={18} />
-        <span>当前积分 <strong>1,280</strong></span>
+        <span>当前积分 <strong>{balance.toLocaleString('zh-CN')}</strong></span>
         <ShoppingBag aria-hidden="true" size={18} />
       </div>
 
@@ -116,44 +184,30 @@ export function MallPage({ onBack }: { onBack: () => void }) {
         ))}
       </div>
 
-      {!showingComingSoon && <div className="mall-grid">
-        {visibleItems.map((item) => {
-          const isOwned = loadout.owned[item.category].includes(item.id)
-          const isEquipped = loadout.equipped[item.category] === item.id
-          const categoryLabel = CATEGORY_LABELS[item.category]
-
-          return (
-            <article key={item.id} className={`mall-item mall-item-${categoryLabel} ${isOwned ? 'owned' : ''} ${isEquipped ? 'equipped' : ''}`}>
-              <button
-                className="mall-item-view"
-                type="button"
-                aria-label={`查看 ${item.name}`}
-                onClick={() => setSelectedItem(item)}
-              >
-                <span className="mall-pet-frame" style={{ background: item.gradient }}>
-                  {item.category === 'appearance' ? (
-                    <span className="mall-pet-sprite" role="img" aria-label={`${item.name} AI 伙伴形象`} style={{ backgroundImage: `url(${item.asset})` }} />
-                  ) : (
-                    <img className="mall-product-art" src={item.asset} alt={`${item.name} 3D ${item.description}`} />
-                  )}
-                </span>
-                <strong>{item.name}</strong>
-                <small>{item.description}</small>
-              </button>
-
-              {isEquipped ? (
-                <span className="mall-owned-tag mall-equipped-tag"><Check aria-hidden="true" size={12} />已装备</span>
-              ) : isOwned ? (
-                <button className="mall-equip-button" type="button" onClick={() => equipItem(item)}>
-                  装备
-                </button>
-              ) : (
-                <span className="mall-price"><Sparkles aria-hidden="true" size={12} />{item.price}</span>
-              )}
-            </article>
-          )
-        })}
-      </div>}
+      {category === 'my' ? (
+        <section className="mall-wardrobe" aria-label="我的 AI 伙伴衣橱">
+          <header className="mall-wardrobe-header">
+            <span className="mall-wardrobe-icon"><PackageCheck aria-hidden="true" size={20} /></span>
+            <span><strong>我的搭配衣橱</strong><small>已购买的物品都在这里，随时装上或卸下</small></span>
+          </header>
+          {(Object.keys(CATEGORY_LABELS) as CompanionCategory[]).map((sectionCategory) => {
+            const sectionItems = ownedItems.filter((item) => item.category === sectionCategory)
+            return (
+              <section className="mall-wardrobe-section" key={sectionCategory} aria-label={`我的${CATEGORY_LABELS[sectionCategory]}`}>
+                <div className="mall-wardrobe-section-title">
+                  <strong>{CATEGORY_LABELS[sectionCategory]}</strong>
+                  <small>{sectionItems.length} 件</small>
+                </div>
+                {sectionItems.length > 0 ? (
+                  <div className="mall-grid mall-wardrobe-grid">{sectionItems.map((item) => renderItemCard(item, true))}</div>
+                ) : (
+                  <div className="mall-wardrobe-empty">还没有已购买的{CATEGORY_LABELS[sectionCategory]}</div>
+                )}
+              </section>
+            )
+          })}
+        </section>
+      ) : !showingComingSoon && <div className="mall-grid">{visibleItems.map((item) => renderItemCard(item))}</div>}
 
       {showingComingSoon && <section className="mall-coming-soon" aria-label={`${CATEGORIES.find((item) => item.id === category)?.label}即将开放`}>
         {category === 'outfit' ? <Shirt aria-hidden="true" size={28} /> : <Palette aria-hidden="true" size={28} />}
@@ -178,11 +232,15 @@ export function MallPage({ onBack }: { onBack: () => void }) {
             <small>{CATEGORY_LABELS[selectedItem.category]}</small>
             <h2>{selectedItem.name}</h2>
             <p>{selectedItem.description}，所有出现 AI 伙伴的位置都会同步这套搭配。</p>
-            {loadout.equipped[selectedItem.category] === selectedItem.id ? (
-              <span className="mall-dialog-equipped"><Check aria-hidden="true" size={15} />已装备</span>
+            {loadout.equipped[selectedItem.category] === selectedItem.id ? selectedItem.category === 'appearance' ? (
+              <span className="mall-dialog-equipped"><Check aria-hidden="true" size={15} />当前形象</span>
+            ) : (
+              <button className="mall-dialog-secondary" type="button" aria-label={`卸下 ${selectedItem.name}`} onClick={() => unequipItem(selectedItem)}>
+                卸下 {selectedItem.name}
+              </button>
             ) : loadout.owned[selectedItem.category].includes(selectedItem.id) ? (
               <button className="mall-dialog-primary" type="button" onClick={() => equipItem(selectedItem)}>
-                装备 {selectedItem.name}
+                装上 {selectedItem.name}
               </button>
             ) : (
               <button className="mall-dialog-primary" type="button" onClick={buySelectedItem} aria-label={`购买 ${selectedItem.name}`}>

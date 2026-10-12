@@ -1,9 +1,11 @@
 import { ArrowLeft, Medal, Sparkles, Trophy } from 'lucide-react'
+import { useAppState } from '../../app/AppState'
 import { medals } from './medalsData'
 import { MedalIcon } from './MedalIcon'
 import './profile.css'
 
 export function RewardsDetailPage({ onBack }: { onBack: () => void }) {
+  const { state } = useAppState()
   const earnedCount = medals.filter(m => m.earned).length
 
   return (
@@ -27,7 +29,7 @@ export function RewardsDetailPage({ onBack }: { onBack: () => void }) {
           <div className="rewards-stat">
             <Sparkles size={24} />
             <div>
-              <strong>1,280</strong>
+              <strong>{state.pointsBalance.toLocaleString('zh-CN')}</strong>
               <span>当前积分</span>
             </div>
           </div>

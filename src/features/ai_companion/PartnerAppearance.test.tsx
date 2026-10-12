@@ -37,4 +37,13 @@ describe('PartnerAppearance', () => {
 
     expect(screen.getByRole('img', { name: '云宝 Nimbo AI 伙伴形象' })).toBeInTheDocument()
   })
+
+  it('switches the 3D sprite sheet to its running motion without dropping equipped layers', () => {
+    render(<PartnerAppearance stage="elementary" loadout={layeredLoadout} size="floating" motion="run" />)
+
+    expect(screen.getByTestId('partner-appearance')).toHaveAttribute('data-motion', 'run')
+    expect(screen.getByRole('img', { name: '绒桃 Momo AI 伙伴形象' })).toHaveClass('partner-appearance__sprite--run')
+    expect(screen.getByTestId('companion-outfit')).toBeInTheDocument()
+    expect(screen.getByTestId('companion-decoration')).toBeInTheDocument()
+  })
 })

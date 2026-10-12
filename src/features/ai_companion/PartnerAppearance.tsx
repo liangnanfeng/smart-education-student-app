@@ -6,11 +6,12 @@ type PartnerAppearanceProps = {
   stage: LearningStage
   loadout: CompanionLoadout
   size: 'login' | 'preview' | 'floating'
+  motion?: 'idle' | 'run'
   interactive?: boolean
   className?: string
 }
 
-export function PartnerAppearance({ stage, loadout, size, interactive = false, className = '' }: PartnerAppearanceProps) {
+export function PartnerAppearance({ stage, loadout, size, motion = 'idle', interactive = false, className = '' }: PartnerAppearanceProps) {
   const selectedAppearance = getCompanionItem(loadout.equipped.appearance)
   const appearance = selectedAppearance?.stage === stage && selectedAppearance.category === 'appearance'
     ? selectedAppearance
@@ -28,11 +29,12 @@ export function PartnerAppearance({ stage, loadout, size, interactive = false, c
       data-companion-id={appearance.id}
       data-outfit-id={outfit?.id ?? ''}
       data-decoration-id={decoration?.id ?? ''}
+      data-motion={motion}
     >
       <span className="partner-appearance__safe-frame">
         {decoration && <img data-testid="companion-decoration" className="partner-appearance__layer partner-appearance__decoration" src={decoration.asset} alt="" />}
         <span
-          className="partner-appearance__sprite"
+          className={`partner-appearance__sprite partner-appearance__sprite--${motion}`}
           role="img"
           aria-label={`${appearance.name} AI 伙伴形象`}
           style={{ backgroundImage: `url(${appearance.asset})` }}

@@ -52,6 +52,7 @@ export function saveState(state: AppState) {
     avatar: state.avatar,
     likes: state.likes,
     favorites: state.favorites,
+    pointsBalance: state.pointsBalance,
     notifications: state.notifications,
     aiPositions: state.aiPositions,
     accountId: state.accountId,

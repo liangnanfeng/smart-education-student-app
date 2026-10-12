@@ -10,7 +10,7 @@ function CompanionStateHarness() {
     <div>
       <output aria-label="equipped appearance">{loadout.equipped.appearance}</output>
       <output aria-label="owned appearances">{loadout.owned.appearance.join(',')}</output>
-      <button type="button" onClick={() => context.purchaseCompanionItem('appearance', 'yunduo')}>购买云朵</button>
+      <button type="button" onClick={() => context.purchaseCompanionItem('appearance', 'yunduo', 360)}>购买云朵</button>
       <button type="button" onClick={() => context.equipCompanionItem('appearance', 'yunduo')}>装备云朵</button>
     </div>
   )

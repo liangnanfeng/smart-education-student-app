@@ -1,12 +1,27 @@
-import { useState } from 'react'
-import { Flame, Gem, Power } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import {
+  ArrowRight,
+  Check,
+  CheckCircle2,
+  FlaskConical,
+  Flame,
+  Gem,
+  Gift,
+  Lock,
+  Power,
+  Rocket,
+  Sparkles,
+  Trophy,
+} from 'lucide-react'
 import { useAppState } from '../../app/AppState'
+import { AiCompanion } from '../ai_companion/AiCompanion'
 import { getQuiz } from './quizData'
 import { QuizModal } from './QuizModal'
 import './test.css'
 
 /* ===== AI 学习关卡数据 ===== */
 type LevelStatus = 'completed' | 'current' | 'locked' | 'chest' | 'trophy'
+type IslandTheme = 'star' | 'home' | 'vision' | 'sound' | 'wisdom' | 'time' | 'mist' | 'castle' | 'idea' | 'detective' | 'learning' | 'ethics'
 
 type Level = {
   id: string
@@ -15,31 +30,32 @@ type Level = {
   x: number // 0..100, 相对宽度百分比
   y: number // 0..100, 相对高度百分比（从下往上！底部是0，顶部是100）
   quizIndex?: number // 对应 quizData 章节序号（1-based）；宝箱/奖杯无
+  island?: IslandTheme
 }
 
 // 1~3 年级：启明星大冒险 · 8 座岛（对应 8 集连环画）
 const levelsQmx: Level[] = [
-  { id: 'l1', status: 'completed', title: '启明星岛', x: 50, y: 3, quizIndex: 1 },
-  { id: 'l2', status: 'completed', title: '家居岛', x: 28, y: 13, quizIndex: 2 },
-  { id: 'l3', status: 'current', title: '眼睛岛', x: 72, y: 23, quizIndex: 3 },
-  { id: 'l4', status: 'locked', title: '耳朵岛', x: 22, y: 34, quizIndex: 4 },
+  { id: 'l1', status: 'completed', title: '启明星岛', x: 50, y: 3, quizIndex: 1, island: 'star' },
+  { id: 'l2', status: 'completed', title: '家居岛', x: 28, y: 13, quizIndex: 2, island: 'home' },
+  { id: 'l3', status: 'current', title: '眼睛岛', x: 72, y: 23, quizIndex: 3, island: 'vision' },
+  { id: 'l4', status: 'locked', title: '耳朵岛', x: 22, y: 34, quizIndex: 4, island: 'sound' },
   { id: 'c1', status: 'chest', title: '宝石宝箱', x: 50, y: 44 },
-  { id: 'l5', status: 'locked', title: '智慧岛', x: 78, y: 54, quizIndex: 5 },
-  { id: 'l6', status: 'locked', title: '时光岛', x: 22, y: 64, quizIndex: 6 },
-  { id: 'l7', status: 'locked', title: '迷雾岛', x: 72, y: 74, quizIndex: 7 },
-  { id: 'l8', status: 'locked', title: '城堡岛', x: 28, y: 84, quizIndex: 8 },
+  { id: 'l5', status: 'locked', title: '智慧岛', x: 78, y: 54, quizIndex: 5, island: 'wisdom' },
+  { id: 'l6', status: 'locked', title: '时光岛', x: 22, y: 64, quizIndex: 6, island: 'time' },
+  { id: 'l7', status: 'locked', title: '迷雾岛', x: 72, y: 74, quizIndex: 7, island: 'mist' },
+  { id: 'l8', status: 'locked', title: '城堡岛', x: 28, y: 84, quizIndex: 8, island: 'castle' },
   { id: 't1', status: 'trophy', title: '启明星徽章', x: 50, y: 95 },
 ]
 
 // 4~6 年级：AI 创想大陆 · 6 章读本
 const levelsCxd: Level[] = [
-  { id: 'l1', status: 'completed', title: 'AI超能力图鉴', x: 50, y: 5, quizIndex: 1 },
-  { id: 'l2', status: 'completed', title: '把话说清楚', x: 28, y: 18, quizIndex: 2 },
-  { id: 'l3', status: 'current', title: '创意放大器', x: 72, y: 32, quizIndex: 3 },
-  { id: 'l4', status: 'locked', title: '真相侦探社', x: 22, y: 48, quizIndex: 4 },
-  { id: 'l5', status: 'locked', title: '教AI认世界', x: 78, y: 62, quizIndex: 5 },
+  { id: 'l1', status: 'completed', title: 'AI超能力图鉴', x: 50, y: 5, quizIndex: 1, island: 'star' },
+  { id: 'l2', status: 'completed', title: '把话说清楚', x: 28, y: 18, quizIndex: 2, island: 'sound' },
+  { id: 'l3', status: 'current', title: '创意放大器', x: 72, y: 32, quizIndex: 3, island: 'idea' },
+  { id: 'l4', status: 'locked', title: '真相侦探社', x: 22, y: 48, quizIndex: 4, island: 'detective' },
+  { id: 'l5', status: 'locked', title: '教AI认世界', x: 78, y: 62, quizIndex: 5, island: 'learning' },
   { id: 'c1', status: 'chest', title: '创想宝箱', x: 50, y: 75 },
-  { id: 'l6', status: 'locked', title: '负责任的创想家', x: 28, y: 86, quizIndex: 6 },
+  { id: 'l6', status: 'locked', title: '负责任的创想家', x: 28, y: 86, quizIndex: 6, island: 'ethics' },
   { id: 't1', status: 'trophy', title: '创想家徽章', x: 50, y: 97 },
 ]
 
@@ -226,6 +242,48 @@ function Coin3D({ status, title, onClick }: { status: 'completed' | 'current' | 
   )
 }
 
+/* 小岛地貌只承担氛围与辨识度，关卡按钮仍保持在视觉最前方。 */
+function IslandLandscape({ theme, title }: { theme: IslandTheme; title: string }) {
+  const landmark = (() => {
+    switch (theme) {
+      case 'star':
+        return <g className="island-landmark island-landmark--star"><path d="M66 8l3.5 8 8.5.7-6.5 5.7 2 8.3-7.5-4.4-7.5 4.4 2-8.3-6.5-5.7 8.5-.7z" /><circle cx="91" cy="19" r="3" /><circle cx="43" cy="22" r="2.5" /></g>
+      case 'home':
+        return <g className="island-landmark island-landmark--home"><rect x="53" y="19" width="25" height="19" rx="3" /><path d="M49 21l17-13 17 13z" /><rect x="62" y="27" width="7" height="11" rx="2" /><path d="M88 37V22" /><circle cx="88" cy="18" r="8" /></g>
+      case 'vision':
+        return <g className="island-landmark island-landmark--vision"><path d="M45 25q21-18 42 0-21 18-42 0z" /><circle cx="66" cy="25" r="8" /><circle cx="68" cy="22" r="2.5" /><path d="M88 35l9 8" /></g>
+      case 'sound':
+        return <g className="island-landmark island-landmark--sound"><rect x="61" y="15" width="10" height="24" rx="5" /><path d="M51 21q-8 5 0 10M81 21q8 5 0 10M44 16q-15 10 0 20M88 16q15 10 0 20" /></g>
+      case 'wisdom':
+        return <g className="island-landmark island-landmark--wisdom"><path d="M47 39V24M66 39V18M86 39V26" /><circle cx="47" cy="20" r="9" /><circle cx="66" cy="14" r="11" /><circle cx="86" cy="22" r="8" /><circle cx="72" cy="14" r="2.5" /></g>
+      case 'time':
+        return <g className="island-landmark island-landmark--time"><circle cx="66" cy="24" r="15" /><circle cx="66" cy="24" r="9" /><path d="M66 24V16M66 24l7 4M43 32l-8 4M89 13l8-5" /></g>
+      case 'mist':
+        return <g className="island-landmark island-landmark--mist"><path d="M36 22h26M49 30h46M29 38h55" /><circle cx="78" cy="18" r="8" /><circle cx="87" cy="20" r="6" /></g>
+      case 'castle':
+        return <g className="island-landmark island-landmark--castle"><path d="M47 39V16h12v8h14v-8h12v23z" /><path d="M47 16V9h5v4h3V9h4v7M73 16V9h4v4h4V9h4v7" /><rect x="62" y="29" width="8" height="10" rx="4" /></g>
+      case 'idea':
+        return <g className="island-landmark island-landmark--idea"><path d="M55 22a11 11 0 1 1 19 8c-3 3-4 5-4 8h-9c0-3-1-5-4-8a11 11 0 0 1-2-8z" /><path d="M61 42h9M43 17l-8-4M89 17l8-4M66 5V0" /></g>
+      case 'detective':
+        return <g className="island-landmark island-landmark--detective"><circle cx="61" cy="23" r="13" /><path d="M70 33l13 12M47 11l9-5 14 3 7 8H43z" /></g>
+      case 'learning':
+        return <g className="island-landmark island-landmark--learning"><path d="M43 16q12-5 23 3v22q-11-8-23-3zM89 16q-12-5-23 3v22q11-8 23-3z" /><path d="M66 19v22" /></g>
+      case 'ethics':
+        return <g className="island-landmark island-landmark--ethics"><path d="M66 8l19 8v12c0 10-8 16-19 21-11-5-19-11-19-21V16z" /><path d="M56 28l7 7 14-15" /></g>
+    }
+  })()
+
+  return (
+    <svg className={`island-landscape island-landscape--${theme}`} viewBox="0 0 132 70" role="img" aria-label={`${title}地貌`}>
+      <ellipse className="island-landscape__shadow" cx="66" cy="59" rx="49" ry="7" />
+      <path className="island-landscape__cliff" d="M16 37c6-15 23-22 50-22s44 7 50 22l-13 21c-18 8-56 8-74 0z" />
+      <ellipse className="island-landscape__grass" cx="66" cy="36" rx="50" ry="22" />
+      <path className="island-landscape__shore" d="M20 38c10 9 23 11 46 11s37-2 46-11" />
+      {landmark}
+    </svg>
+  )
+}
+
 /* ===== 关卡节点渲染 ===== */
 function LevelNode({ level, index, onQuiz }: { level: Level; index: number; onQuiz?: (lv: Level) => void }) {
   // 计算路径方向（左右交错）
@@ -279,6 +337,7 @@ function LevelNode({ level, index, onQuiz }: { level: Level; index: number; onQu
       className={`level-node circle-node ${offsetSide} level-${level.status}`}
       style={{ left: `${level.x}%`, bottom: `${level.y}%` }}
     >
+      {level.island && <IslandLandscape theme={level.island} title={level.title} />}
       <div className="level-shadow-circle" />
       <Coin3D
         status={level.status}
@@ -287,6 +346,181 @@ function LevelNode({ level, index, onQuiz }: { level: Level; index: number; onQu
       />
       <span className="level-label">{level.title}</span>
     </div>
+  )
+}
+
+function getActionableLevel(levels: Level[]) {
+  return levels.find((level) => level.status === 'current' && level.quizIndex !== undefined)
+    ?? levels.find((level) => level.quizIndex !== undefined)
+    ?? null
+}
+
+function ElementaryAdventureMap({
+  levels,
+  onQuiz,
+  variant,
+}: {
+  levels: Level[]
+  onQuiz: (level: Level) => void
+  variant: 'qmx' | 'cxd'
+}) {
+  const routeRef = useRef<HTMLDivElement>(null)
+  const nextLevel = getActionableLevel(levels)
+  const companionTarget = nextLevel ? {
+    id: nextLevel.id,
+    x: nextLevel.x,
+    y: Math.max(5, Math.min(94, nextLevel.y + 2)),
+  } : undefined
+  const completedCount = levels.filter((level) => level.status === 'completed' && level.quizIndex !== undefined).length
+  const challengeCount = levels.filter((level) => level.quizIndex !== undefined).length
+  const pathD = levels.map((level, index) => {
+    const cx = level.x
+    const cy = 100 - level.y
+    if (index === 0) return `M ${cx} ${cy}`
+    const previous = levels[index - 1]
+    const previousY = 100 - previous.y
+    return ` Q ${previous.x} ${(cy + previousY) / 2}, ${cx} ${cy}`
+  }).join(' ')
+
+  useEffect(() => {
+    const route = routeRef.current
+    const canvas = route?.querySelector<HTMLElement>('.elementary-route__canvas')
+    if (!route || !canvas || !nextLevel) return
+
+    const canvasHeight = canvas.clientHeight || (variant === 'cxd' ? 780 : 970)
+    const currentCenterFromTop = ((100 - nextLevel.y) / 100) * canvasHeight
+    const centeredScrollTop = currentCenterFromTop - route.clientHeight / 2
+    const maxScrollTop = Math.max(0, route.scrollHeight - route.clientHeight)
+    route.scrollTop = Math.max(0, Math.min(centeredScrollTop, maxScrollTop))
+  }, [levels.length, nextLevel?.id, nextLevel?.y, variant])
+
+  const routeLabel = variant === 'cxd'
+    ? '可上下滑动的4至6年级岛屿路线'
+    : '可上下滑动的岛屿路线'
+
+  return (
+    <section className="level-map level-map--elementary" aria-label="闯关地图">
+      <div className="adventure-brief">
+        <div className="adventure-brief__copy">
+          <span className="adventure-brief__eyebrow"><Sparkles size={14} />冒险进度 {completedCount} / {challengeCount}</span>
+          <h3>下一站：{nextLevel?.title ?? '新的小岛'}</h3>
+          <p>每完成一关，就点亮一颗启明星宝石。</p>
+        </div>
+        {nextLevel && (
+          <button type="button" className="map-action map-action--elementary" onClick={() => onQuiz(nextLevel)}>
+            出发挑战：{nextLevel.title}<ArrowRight size={17} />
+          </button>
+        )}
+      </div>
+
+      <div className="route-scroll-hint" id="elementary-route-hint"><span aria-hidden="true">↕</span>上下滑动，探索完整岛屿路线</div>
+      <div className="elementary-route-shell">
+        <div
+          ref={routeRef}
+          className={`elementary-route elementary-route--${variant}`}
+          role="region"
+          aria-label={routeLabel}
+          aria-describedby="elementary-route-hint"
+          tabIndex={0}
+          style={{ overflowY: 'auto', touchAction: 'pan-y' }}
+        >
+          <div className={`elementary-route__canvas elementary-route__canvas--${variant}`}>
+            <div className="map-bg-glow map-glow-1" aria-hidden="true" />
+            <div className="map-bg-glow map-glow-2" aria-hidden="true" />
+            <svg className="map-path-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="pathStroke" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="var(--path-c1)" />
+                  <stop offset="100%" stopColor="var(--path-c2)" />
+                </linearGradient>
+              </defs>
+              <path d={pathD} fill="none" stroke="url(#pathStroke)" strokeWidth="0.8" strokeLinecap="round" strokeDasharray="1.5 1" className="map-path-line" />
+            </svg>
+            {levels.map((level, index) => <LevelNode key={level.id} level={level} index={index} onQuiz={onQuiz} />)}
+            {companionTarget && <AiCompanion placement="test-map" mapTarget={companionTarget} />}
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function SecondaryResearchMap({
+  levels,
+  onQuiz,
+}: {
+  levels: Level[]
+  onQuiz: (level: Level) => void
+}) {
+  const currentLevel = getActionableLevel(levels)
+  const completedCount = levels.filter((level) => level.status === 'completed' && level.quizIndex !== undefined).length
+  const challengeCount = levels.filter((level) => level.quizIndex !== undefined).length
+
+  return (
+    <section className="level-map level-map--secondary" aria-label="闯关地图">
+      <div className="research-brief">
+        <div className="research-brief__signal" aria-hidden="true"><FlaskConical size={21} /></div>
+        <div className="research-brief__copy">
+          <span>当前研究任务</span>
+          <h3>{currentLevel?.title ?? '等待新的研究任务'}</h3>
+          <p>已完成 {completedCount} / {challengeCount} 个学习实验</p>
+        </div>
+        {currentLevel && (
+          <button type="button" className="map-action map-action--secondary" onClick={() => onQuiz(currentLevel)}>
+            开始任务<ArrowRight size={17} />
+          </button>
+        )}
+      </div>
+
+      <ol className="research-route" aria-label="科研任务路线">
+        {levels.map((level, index) => {
+          const isLesson = level.quizIndex !== undefined
+          const canQuiz = isLesson && (level.status === 'completed' || level.status === 'current')
+          const statusText = level.status === 'completed' ? '已完成' : level.status === 'current' ? '进行中' : '待解锁'
+
+          if (level.status === 'chest') {
+            return (
+              <li key={level.id} className="research-route__milestone research-route__milestone--data">
+                <span className="research-route__marker"><Gift size={18} /></span>
+                <div><strong>实验数据包</strong><small>{level.title}将在路线推进后开启</small></div>
+              </li>
+            )
+          }
+
+          if (level.status === 'trophy') {
+            return (
+              <li key={level.id} className="research-route__milestone research-route__milestone--trophy">
+                <span className="research-route__marker"><Trophy size={18} /></span>
+                <div><strong>项目里程碑</strong><small>{level.title}</small></div>
+              </li>
+            )
+          }
+
+          return (
+            <li key={level.id} className={`research-route__item research-route__item--${level.status}`}>
+              <span className="research-route__line" aria-hidden="true" />
+              <button
+                type="button"
+                className="research-task"
+                disabled={!canQuiz}
+                onClick={canQuiz ? () => onQuiz(level) : undefined}
+                aria-label={`${level.title}，${statusText}`}
+              >
+                <span className="research-task__number">
+                  {level.status === 'completed' ? <Check size={17} /> : level.status === 'locked' ? <Lock size={15} /> : String(index + 1).padStart(2, '0')}
+                </span>
+                <span className="research-task__copy">
+                  <strong>{level.title}</strong>
+                  <small>{level.status === 'current' ? '正在进行 · 完成答题解锁下一项' : statusText}</small>
+                </span>
+                {level.status === 'current' && <Rocket size={18} className="research-task__go" aria-hidden="true" />}
+                {level.status === 'completed' && <CheckCircle2 size={18} className="research-task__done" aria-hidden="true" />}
+              </button>
+            </li>
+          )
+        })}
+      </ol>
+    </section>
   )
 }
 
@@ -319,26 +553,14 @@ export function TestPage() {
   const liveStatus = (lv: Level): LevelStatus => {
     if (lv.status === 'chest' || lv.status === 'trophy') return lv.status
     if (completed.has(lv.id)) return 'completed'
-    // 前一关已完成则解锁为 current，否则保持 locked
+    // 只以前一节真实课程为解锁依据；宝箱是奖励节点，不能跳过尚未完成的课程。
     const idx = baseLevels.findIndex((l) => l.id === lv.id)
-    const prev = baseLevels[idx - 1]
-    if (prev && (completed.has(prev.id) || prev.status === 'chest')) return 'current'
+    const previousLesson = baseLevels.slice(0, idx).reverse().find((level) => level.quizIndex !== undefined)
+    if (previousLesson && completed.has(previousLesson.id)) return 'current'
     return lv.status === 'current' ? 'current' : 'locked'
   }
 
   const levels: Level[] = baseLevels.map((lv) => ({ ...lv, status: liveStatus(lv) }))
-
-  // 构造 SVG 曲线路径：按索引顺序连接所有关卡中心
-  const pathD = levels.map((lv, i) => {
-    const cx = lv.x
-    const cy = 100 - lv.y // SVG y 轴从上往下
-    if (i === 0) return `M ${cx} ${cy}`
-    const prev = levels[i - 1]
-    const px = prev.x
-    const py = 100 - prev.y
-    const cmy = (cy + py) / 2
-    return ` Q ${px} ${cmy}, ${cx} ${cy}`
-  }).join(' ')
 
   // 点击关卡 → 开启答题
   const handleQuiz = (lv: Level) => {
@@ -369,7 +591,7 @@ export function TestPage() {
         : '闯关 · 8 章实验'
 
   return (
-    <div className="test-page">
+    <div className={`test-page test-page--${state.stage}`}>
       {/* 顶部区：章节标题 + 资源 */}
       <header className="test-header">
         <div className="test-unit">
@@ -390,49 +612,9 @@ export function TestPage() {
         </div>
       </header>
 
-      {/* 关卡地图区 */}
-      <section className="level-map" aria-label="闯关地图">
-        {/* 装饰背景：光晕 */}
-        <div className="map-bg-glow map-glow-1" aria-hidden="true" />
-        <div className="map-bg-glow map-glow-2" aria-hidden="true" />
-
-        {/* SVG 路径连线 */}
-        <svg
-          className="map-path-svg"
-          viewBox="0 0 100 100"
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id="pathStroke" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="var(--path-c1)" />
-              <stop offset="100%" stopColor="var(--path-c2)" />
-            </linearGradient>
-          </defs>
-          <path
-            d={pathD}
-            fill="none"
-            stroke="url(#pathStroke)"
-            strokeWidth="0.8"
-            strokeLinecap="round"
-            strokeDasharray="1.5 1"
-            className="map-path-line"
-          />
-        </svg>
-
-        {/* 关卡节点 */}
-        {levels.map((lv, i) => (
-          <LevelNode key={lv.id} level={lv} index={i} onQuiz={handleQuiz} />
-        ))}
-
-        {/* 云朵小羊吉祥物 × 2 —— 对角放置，不同动作，远离所有关卡 */}
-        <div className="mascot-container mascot-bottom-left" aria-label={`${state.stage === 'elementary' ? '小学端' : '中学端'}左下吉祥物`}>
-          <CloudLambMascot variant={state.stage} action="wave" />
-        </div>
-        <div className="mascot-container mascot-top-right" aria-label={`${state.stage === 'elementary' ? '小学端' : '中学端'}右上吉祥物`}>
-          <CloudLambMascot variant={state.stage} action="cheer" />
-        </div>
-      </section>
+      {state.stage === 'elementary'
+        ? <ElementaryAdventureMap levels={levels} onQuiz={handleQuiz} variant={courseId === 'cxd' ? 'cxd' : 'qmx'} />
+        : <SecondaryResearchMap levels={levels} onQuiz={handleQuiz} />}
 
       {/* 答题弹层 */}
       {activeQuiz && activeQuiz.quizIndex !== undefined && (

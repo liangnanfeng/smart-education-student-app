@@ -30,7 +30,7 @@ type Action =
   | { type: 'set-ai-name'; name: string }
   | { type: 'set-ai-personality'; personality: AiPersonality }
   | { type: 'set-ai-skin'; skin: number }
-  | { type: 'purchase-companion-item'; stage: LearningStage; category: CompanionCategory; id: string }
+  | { type: 'purchase-companion-item'; stage: LearningStage; category: CompanionCategory; id: string; price: number }
   | { type: 'equip-companion-item'; stage: LearningStage; category: CompanionCategory; id: string }
   | { type: 'unequip-companion-item'; stage: LearningStage; category: Exclude<CompanionCategory, 'appearance'> }
   | { type: 'set-voice-enabled'; enabled: boolean }
@@ -101,8 +101,10 @@ function reducer(state: AppState, action: Action): AppState {
     case 'purchase-companion-item': {
       const loadout = state.companions[action.stage]
       if (loadout.owned[action.category].includes(action.id)) return state
+      if (!Number.isFinite(action.price) || action.price <= 0 || state.pointsBalance < action.price) return state
       return {
         ...state,
+        pointsBalance: state.pointsBalance - action.price,
         companions: {
           ...state.companions,
           [action.stage]: {
@@ -189,7 +191,7 @@ type AppStateContextValue = {
   setAiName: (name: string) => void
   setAiPersonality: (personality: AiPersonality) => void
   setAiSkin: (skin: number) => void
-  purchaseCompanionItem: (category: CompanionCategory, id: string) => void
+  purchaseCompanionItem: (category: CompanionCategory, id: string, price: number) => void
   equipCompanionItem: (category: CompanionCategory, id: string) => void
   unequipCompanionItem: (category: Exclude<CompanionCategory, 'appearance'>) => void
   setVoiceEnabled: (enabled: boolean) => void
@@ -248,7 +250,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     setAiName: (name) => dispatch({ type: 'set-ai-name', name }),
     setAiPersonality: (personality) => dispatch({ type: 'set-ai-personality', personality }),
     setAiSkin: (skin) => dispatch({ type: 'set-ai-skin', skin }),
-    purchaseCompanionItem: (category, id) => dispatch({ type: 'purchase-companion-item', stage: state.stage, category, id }),
+    purchaseCompanionItem: (category, id, price) => dispatch({ type: 'purchase-companion-item', stage: state.stage, category, id, price }),
     equipCompanionItem: (category, id) => dispatch({ type: 'equip-companion-item', stage: state.stage, category, id }),
     unequipCompanionItem: (category) => dispatch({ type: 'unequip-companion-item', stage: state.stage, category }),
     setVoiceEnabled: (enabled) => dispatch({ type: 'set-voice-enabled', enabled }),

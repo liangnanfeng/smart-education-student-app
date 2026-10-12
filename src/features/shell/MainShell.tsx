@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useAppState } from '../../app/AppState'
 import { AiCompanion } from '../ai_companion/AiCompanion'
 import { HomePage } from '../home/HomePage'
 import { NotificationsPage } from '../home/NotificationsPage'
@@ -52,6 +53,7 @@ type View =
   | { kind: 'course-content'; id: number; courseId: string; chapterNum: number }
 
 export function MainShell() {
+  const { state } = useAppState()
   const [activeTab, setActiveTab] = useState<MainTab>('home')
   const [stack, setStack] = useState<View[]>([{ kind: 'tab', id: 0 }])
   const view = stack[stack.length - 1]
@@ -313,7 +315,7 @@ export function MainShell() {
           />
         )}
       </div>
-      <AiCompanion />
+      {!(activeTab === 'test' && state.stage === 'elementary') && <AiCompanion placement="floating" />}
       <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
     </main>
   )

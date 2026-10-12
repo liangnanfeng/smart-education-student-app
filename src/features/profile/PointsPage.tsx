@@ -1,4 +1,5 @@
 import { ArrowLeft, Plus, Sparkles, Minus } from 'lucide-react'
+import { useAppState } from '../../app/AppState'
 import './profile.css'
 
 type PointRecord = {
@@ -21,7 +22,7 @@ const records: PointRecord[] = [
 ]
 
 export function PointsPage({ onBack }: { onBack: () => void }) {
-  const balance = records.reduce((sum, r) => sum + r.amount, 0) + 1280 - records.reduce((s, r) => s + Math.max(r.amount, 0), 0)
+  const { state } = useAppState()
   const totalEarn = records.filter((r) => r.type === 'earn').reduce((s, r) => s + r.amount, 0)
   const totalSpend = records.filter((r) => r.type === 'spend').reduce((s, r) => s + Math.abs(r.amount), 0)
 
@@ -38,7 +39,7 @@ export function PointsPage({ onBack }: { onBack: () => void }) {
         <Sparkles aria-hidden="true" size={28} />
         <div>
           <span>当前积分</span>
-          <strong>1,280</strong>
+          <strong>{state.pointsBalance.toLocaleString('zh-CN')}</strong>
         </div>
       </div>
 

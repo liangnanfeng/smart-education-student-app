@@ -1,6 +1,8 @@
-import { MessageCircle, Send, ShieldCheck, X } from 'lucide-react'
-import { useCallback, useLayoutEffect, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent } from 'react'
+import { MessageCircle } from 'lucide-react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { useAppState } from '../../app/AppState'
+import { startSpeechCapture, speakCompanionReply, type SpeechCapture } from './browserSpeech'
+import { requestCompanionReply } from './companionChat'
 import { getCompanionItem } from './companionCatalog'
 import { PartnerAppearance } from './PartnerAppearance'
 
@@ -15,23 +17,16 @@ const WELCOME_COPY = {
   secondary: '你好，要从一个问题开始探索吗？',
 } as const
 
-const GUEST_REPLY = {
-  elementary: '我可以先陪你聊一个安全的小问题。登录后，我还能记住你的学习安排和进度。',
-  secondary: '这是未登录体验。我可以做简单科普问答；登录后再使用学习建议、记录与应用控制。',
-} as const
-
 export function LoginCompanion({ onBoundsChange }: LoginCompanionProps) {
   const { state } = useAppState()
   const loadout = state.companions[state.stage]
   const appearance = getCompanionItem(loadout.equipped.appearance)
   const buttonRef = useRef<HTMLButtonElement | null>(null)
   const longPressTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null)
+  const voiceCaptureRef = useRef<SpeechCapture | null>(null)
   const longPressTriggeredRef = useRef(false)
   const [message, setMessage] = useState('')
   const [isInteracting, setIsInteracting] = useState(false)
-  const [guestChatOpen, setGuestChatOpen] = useState(false)
-  const [guestInput, setGuestInput] = useState('')
-  const [guestReply, setGuestReply] = useState('长按伙伴，就可以先和我简单聊聊。')
 
   const measure = useCallback(() => {
     if (buttonRef.current) onBoundsChange(buttonRef.current.getBoundingClientRect())
@@ -43,22 +38,77 @@ export function LoginCompanion({ onBoundsChange }: LoginCompanionProps) {
     return () => window.removeEventListener('resize', measure)
   }, [measure, state.stage, loadout.equipped.appearance, loadout.equipped.outfit, loadout.equipped.decoration])
 
-  const clearLongPress = () => {
+  useEffect(() => () => {
+    voiceCaptureRef.current?.cancel()
+  }, [])
+
+  const answerVoiceQuestion = useCallback(async (question: string) => {
+    if (!question) {
+      setMessage('我没有听清，可以再说一遍吗？')
+      return
+    }
+
+    setMessage('我想一想，马上回答你。')
+    try {
+      const reply = await requestCompanionReply({
+        stage: state.stage,
+        companionId: loadout.equipped.appearance ?? 'unknown',
+        question,
+      })
+      setMessage(reply)
+      speakCompanionReply(reply, state.voiceEnabled)
+    } catch {
+      setMessage('伙伴暂时没听清，我们换个简单的问题试试。')
+    }
+  }, [loadout.equipped.appearance, state.stage, state.voiceEnabled])
+
+  const startVoiceQuestion = useCallback(() => {
+    voiceCaptureRef.current?.cancel()
+    setMessage('请说，我在听。')
+    voiceCaptureRef.current = startSpeechCapture({
+      onComplete: (question) => {
+        voiceCaptureRef.current = null
+        void answerVoiceQuestion(question)
+      },
+      onError: () => {
+        voiceCaptureRef.current = null
+        setMessage('这次没有听清，可以再试一次。')
+      },
+    })
+
+    if (!voiceCaptureRef.current) setMessage('请在支持语音识别的浏览器中使用长按语音。')
+  }, [answerVoiceQuestion])
+
+  const finishLongPress = (event: ReactPointerEvent<HTMLButtonElement>, cancelled = false) => {
     if (longPressTimerRef.current !== null) {
       window.clearTimeout(longPressTimerRef.current)
       longPressTimerRef.current = null
     }
     setIsInteracting(false)
+    if (longPressTriggeredRef.current) {
+      if (cancelled) voiceCaptureRef.current?.cancel()
+      else voiceCaptureRef.current?.stop()
+    }
+    try {
+      if (event.currentTarget.hasPointerCapture?.(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
+    } catch {
+      // Older mobile WebViews may expose pointer APIs without fully implementing capture.
+    }
   }
 
   const startLongPress = (event: ReactPointerEvent<HTMLButtonElement>) => {
     if (event.button !== 0) return
+    try {
+      event.currentTarget.setPointerCapture?.(event.pointerId)
+    } catch {
+      // The long-press still works when pointer capture is unavailable.
+    }
     longPressTriggeredRef.current = false
     setIsInteracting(true)
     longPressTimerRef.current = window.setTimeout(() => {
       longPressTriggeredRef.current = true
-      setGuestChatOpen(true)
       setIsInteracting(false)
+      startVoiceQuestion()
     }, 600)
   }
 
@@ -72,13 +122,6 @@ export function LoginCompanion({ onBoundsChange }: LoginCompanionProps) {
     window.setTimeout(() => setIsInteracting(false), 420)
   }
 
-  const sendGuestMessage = (event: FormEvent) => {
-    event.preventDefault()
-    if (!guestInput.trim()) return
-    setGuestReply(GUEST_REPLY[state.stage])
-    setGuestInput('')
-  }
-
   return (
     <section className="login-companion" aria-label="登录页 AI 伙伴">
       {message && <p className="login-companion__bubble" role="status">{message}</p>}
@@ -89,39 +132,15 @@ export function LoginCompanion({ onBoundsChange }: LoginCompanionProps) {
         aria-label={`和${appearance?.name ?? 'AI 伙伴'}互动`}
         onClick={handleShortInteraction}
         onPointerDown={startLongPress}
-        onPointerUp={clearLongPress}
-        onPointerCancel={clearLongPress}
-        onPointerLeave={clearLongPress}
+        onPointerUp={(event) => finishLongPress(event)}
+        onPointerCancel={(event) => finishLongPress(event, true)}
+        onContextMenu={(event) => event.preventDefault()}
       >
-        <PartnerAppearance stage={state.stage} loadout={loadout} size="login" interactive />
+        <span className="login-companion__frame" data-testid="login-companion-frame">
+          <PartnerAppearance stage={state.stage} loadout={loadout} size="login" />
+        </span>
       </button>
-      <p className="login-companion__hint"><MessageCircle aria-hidden="true" size={13} />轻点打招呼 · 长按聊一聊</p>
-
-      {guestChatOpen && (
-        <div className="login-companion__dialog-backdrop">
-          <section className="login-companion__dialog" role="dialog" aria-modal="true" aria-label="未登录体验">
-            <button className="login-companion__close" type="button" aria-label="关闭未登录体验" onClick={() => setGuestChatOpen(false)}>
-              <X aria-hidden="true" size={18} />
-            </button>
-            <div className="login-companion__dialog-title">
-              <PartnerAppearance stage={state.stage} loadout={loadout} size="floating" />
-              <span><small>AI 伙伴</small><strong>未登录体验</strong></span>
-            </div>
-            <p className="login-companion__privacy"><ShieldCheck aria-hidden="true" size={15} />不会读取账号资料、保存聊天记录或控制应用</p>
-            <div className="login-companion__message" aria-live="polite">{guestReply}</div>
-            <form className="login-companion__form" onSubmit={sendGuestMessage}>
-              <label className="login-companion__visually-hidden" htmlFor="guest-companion-message">想问 AI 伙伴的问题</label>
-              <input
-                id="guest-companion-message"
-                value={guestInput}
-                onChange={(event) => setGuestInput(event.target.value)}
-                placeholder={state.stage === 'elementary' ? '例如：彩虹是怎么来的？' : '例如：什么是生成式 AI？'}
-              />
-              <button type="submit" aria-label="发送体验消息"><Send aria-hidden="true" size={16} /></button>
-            </form>
-          </section>
-        </div>
-      )}
+      <p className="login-companion__hint"><MessageCircle aria-hidden="true" size={13} />轻点打招呼 · 长按直接说话</p>
     </section>
   )
 }

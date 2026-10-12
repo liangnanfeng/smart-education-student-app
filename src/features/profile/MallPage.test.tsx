@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AppStateProvider } from '../../app/AppState'
 import { defaultState } from '../../app/model'
@@ -7,8 +7,32 @@ import { MallPage } from './MallPage'
 
 const STORAGE_KEY = 'student-app-state'
 
-function renderMall(stage: 'elementary' | 'secondary') {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...defaultState, stage }))
+function renderMall(stage: 'elementary' | 'secondary', pointsBalance = 1280) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...defaultState, stage, pointsBalance }))
+  return render(<AppStateProvider><MallPage onBack={() => undefined} /></AppStateProvider>)
+}
+
+function renderOwnedElementaryWardrobe() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    ...defaultState,
+    stage: 'elementary',
+    companions: {
+      ...defaultState.companions,
+      elementary: {
+        owned: {
+          appearance: ['momo', 'yunduo'],
+          outfit: ['cloud-backpack'],
+          decoration: ['cloud-flower-lamp'],
+        },
+        equipped: {
+          appearance: 'momo',
+          outfit: 'cloud-backpack',
+          decoration: 'cloud-flower-lamp',
+        },
+        version: 1,
+      },
+    },
+  }))
   return render(<AppStateProvider><MallPage onBack={() => undefined} /></AppStateProvider>)
 }
 
@@ -90,6 +114,29 @@ describe('points mall companion catalogue', () => {
     expect(screen.getByRole('button', { name: '购买 云朵 Yunduo' })).toBeInTheDocument()
   })
 
+  it('offers a clear purchase button on every unowned product card', () => {
+    renderMall('elementary')
+
+    expect(screen.getByRole('button', { name: '购买 云朵 Yunduo，360 积分' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '购买 云朵小背包，160 积分' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '购买 云光花灯，180 积分' })).toBeInTheDocument()
+  })
+
+  it.each([
+    ['形象', '云朵 Yunduo', 920, '920'],
+    ['服饰', '云朵小背包', 1120, '1,120'],
+    ['装饰', '云光花灯', 1100, '1,100'],
+  ])('buys a %s directly from its card and deducts the correct points', async (category, name, expectedBalance, expectedDisplay) => {
+    const user = userEvent.setup()
+    renderMall('elementary')
+
+    await user.click(screen.getByRole('tab', { name: category }))
+    await user.click(screen.getByRole('button', { name: `购买 ${name}，${1280 - expectedBalance} 积分` }))
+
+    expect(screen.getByRole('dialog', { name: '现在换上吗？' })).toBeInTheDocument()
+    expect(screen.getByText('当前积分').parentElement).toHaveTextContent(expectedDisplay)
+  })
+
   it('keeps the current appearance when purchase equip confirmation is declined', async () => {
     const user = userEvent.setup()
     renderMall('elementary')
@@ -111,5 +158,69 @@ describe('points mall companion catalogue', () => {
     await user.click(screen.getByRole('button', { name: '现在换上' }))
 
     expect(screen.getByText('当前伙伴：云朵 Yunduo')).toBeInTheDocument()
+  })
+
+  it('deducts the item price from the account balance after purchase', async () => {
+    const user = userEvent.setup()
+    renderMall('elementary')
+
+    await user.click(screen.getByRole('button', { name: '查看 云朵 Yunduo' }))
+    await user.click(screen.getByRole('button', { name: '购买 云朵 Yunduo' }))
+
+    expect(screen.getByText('当前积分').parentElement).toHaveTextContent('920')
+  })
+
+  it('keeps an unaffordable item locked and explains that points are insufficient', async () => {
+    const user = userEvent.setup()
+    renderMall('elementary', 300)
+
+    await user.click(screen.getByRole('button', { name: '查看 云朵 Yunduo' }))
+    await user.click(screen.getByRole('button', { name: '购买 云朵 Yunduo' }))
+
+    expect(screen.getByRole('status')).toHaveTextContent('积分不够')
+    expect(screen.getByRole('dialog', { name: '云朵 Yunduo 商品预览' })).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: '现在换上吗？' })).not.toBeInTheDocument()
+  })
+
+  it('collects purchased appearances, outfits, and decorations in My without showing unowned products', async () => {
+    const user = userEvent.setup()
+    renderOwnedElementaryWardrobe()
+
+    await user.click(screen.getByRole('tab', { name: '我的' }))
+
+    const wardrobe = screen.getByRole('region', { name: '我的 AI 伙伴衣橱' })
+    for (const name of ['绒桃 Momo', '云朵 Yunduo', '云朵小背包', '云光花灯']) {
+      expect(within(wardrobe).getByText(name)).toBeInTheDocument()
+    }
+    expect(within(wardrobe).queryByText('云绽 Cloudbloom')).not.toBeInTheDocument()
+    expect(within(wardrobe).queryByText('晨光云杖')).not.toBeInTheDocument()
+  })
+
+  it('switches to another owned appearance from My while keeping the base appearance non-removable', async () => {
+    const user = userEvent.setup()
+    renderOwnedElementaryWardrobe()
+
+    await user.click(screen.getByRole('tab', { name: '我的' }))
+    expect(screen.queryByRole('button', { name: '卸下 绒桃 Momo' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '装上 云朵 Yunduo' }))
+
+    expect(screen.getByText('当前伙伴：云朵 Yunduo')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '卸下 云朵 Yunduo' })).not.toBeInTheDocument()
+  })
+
+  it.each([
+    ['服饰', '云朵小背包', 'companion-outfit'],
+    ['装饰', '云光花灯', 'companion-decoration'],
+  ])('lets the player remove and re-equip an owned %s from My', async (_category, name, testId) => {
+    const user = userEvent.setup()
+    renderOwnedElementaryWardrobe()
+
+    await user.click(screen.getByRole('tab', { name: '我的' }))
+    expect(screen.getAllByTestId(testId).length).toBeGreaterThan(0)
+    await user.click(screen.getByRole('button', { name: `卸下 ${name}` }))
+
+    expect(screen.queryByTestId(testId)).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: `装上 ${name}` }))
+    expect(screen.getAllByTestId(testId).length).toBeGreaterThan(0)
   })
 })

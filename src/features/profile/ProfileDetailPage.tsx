@@ -10,7 +10,7 @@ export function ProfileDetailPage({ onBack, onEdit }: { onBack: () => void; onEd
     { label: '学习天数', value: '45 天' },
     { label: '完成作品', value: '8 个' },
     { label: '获得勋章', value: '8 枚' },
-    { label: '当前积分', value: '1,280' },
+    { label: '当前积分', value: state.pointsBalance.toLocaleString('zh-CN') },
   ]
 
   return (

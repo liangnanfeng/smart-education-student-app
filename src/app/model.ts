@@ -57,6 +57,7 @@ export type AppState = {
   avatar: number
   likes: string[]
   favorites: string[]
+  pointsBalance: number
   notifications: 'important' | 'all' | 'off'
   aiPositions: Record<LearningStage, AiPosition>
   // 账号与安全
@@ -116,6 +117,7 @@ export const defaultState: AppState = {
   avatar: 0,
   likes: [],
   favorites: [],
+  pointsBalance: 1280,
   notifications: 'important',
   aiPositions: {
     elementary: { x: 0.88, y: 0.84 },
