@@ -1,30 +1,11 @@
 import { ArrowLeft, Plus, Sparkles, Minus } from 'lucide-react'
 import { useAppState } from '../../app/AppState'
+import { getPointsSummary } from '../../app/points'
 import './profile.css'
-
-type PointRecord = {
-  id: string
-  type: 'earn' | 'spend'
-  title: string
-  amount: number
-  date: string
-}
-
-const records: PointRecord[] = [
-  { id: 'p1', type: 'earn', title: '完成今日学习任务', amount: 20, date: '今天 19:15' },
-  { id: 'p2', type: 'earn', title: '作品《会分类的照相机》被点赞', amount: 5, date: '今天 14:02' },
-  { id: 'p3', type: 'spend', title: '解锁 AI 形象：星空精灵', amount: -500, date: '昨天 20:30' },
-  { id: 'p4', type: 'earn', title: '连续学习 7 天奖励', amount: 50, date: '昨天 08:00' },
-  { id: 'p5', type: 'earn', title: '勋章「观察家」获得奖励', amount: 30, date: '昨天 07:55' },
-  { id: 'p6', type: 'spend', title: '购买服饰：星空披风', amount: -120, date: '2026-08-28' },
-  { id: 'p7', type: 'earn', title: '完成创意作品《声音地图》', amount: 40, date: '2026-08-27' },
-  { id: 'p8', type: 'earn', title: '首次登录奖励', amount: 100, date: '2026-08-01' },
-]
 
 export function PointsPage({ onBack }: { onBack: () => void }) {
   const { state } = useAppState()
-  const totalEarn = records.filter((r) => r.type === 'earn').reduce((s, r) => s + r.amount, 0)
-  const totalSpend = records.filter((r) => r.type === 'spend').reduce((s, r) => s + Math.abs(r.amount), 0)
+  const summary = getPointsSummary(state.transactions)
 
   return (
     <div className="rewards-page points-page">
@@ -39,25 +20,27 @@ export function PointsPage({ onBack }: { onBack: () => void }) {
         <Sparkles aria-hidden="true" size={28} />
         <div>
           <span>当前积分</span>
-          <strong>{state.pointsBalance.toLocaleString('zh-CN')}</strong>
+          <strong>{summary.balance.toLocaleString('zh-CN')}</strong>
         </div>
       </div>
 
       <div className="points-summary">
-        <div><span>累计获得</span><strong>+{totalEarn}</strong></div>
-        <div><span>累计消耗</span><strong>-{totalSpend}</strong></div>
+        <div><span>累计获得</span><strong>+{summary.earned.toLocaleString('zh-CN')}</strong></div>
+        <div><span>累计消耗</span><strong>-{summary.spent.toLocaleString('zh-CN')}</strong></div>
       </div>
 
       <h3 className="detail-section-title">收支明细</h3>
       <ul className="points-list">
-        {records.map((r) => (
-          <li key={r.id} className={`points-item ${r.type}`}>
-            <div className="points-icon">{r.type === 'earn' ? <Plus size={16} /> : <Minus size={16} />}</div>
+        {[...state.transactions].reverse().map((record) => (
+          <li key={record.id} className={`points-item ${record.amount > 0 ? 'earn' : 'spend'}`}>
+            <div className="points-icon">{record.amount > 0 ? <Plus size={16} /> : <Minus size={16} />}</div>
             <div className="points-copy">
-              <strong>{r.title}</strong>
-              <small>{r.date}</small>
+              <strong>{record.title}</strong>
+              <small>{record.occurredAt}</small>
             </div>
-            <span className="points-amount">{r.amount > 0 ? '+' : ''}{r.amount}</span>
+            <span className="points-amount">
+              {record.amount > 0 ? '+' : ''}{record.amount.toLocaleString('zh-CN')}
+            </span>
           </li>
         ))}
       </ul>

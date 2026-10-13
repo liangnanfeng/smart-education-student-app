@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { AppStateProvider } from '../../app/AppState'
+import { createDefaultState } from '../../app/model'
 import { ProfilePage } from './ProfilePage'
 
 describe('profile dashboard', () => {
@@ -41,5 +42,18 @@ describe('profile dashboard', () => {
     await user.click(screen.getByRole('button', { name: '看看 AI 建议' }))
     expect(screen.getByRole('dialog', { name: '安排建议预览' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '确认调整' })).toBeInTheDocument()
+  })
+
+  it('derives the profile medal count from course progress and earned growth medals', () => {
+    const state = createDefaultState()
+    state.learningProgress['grade5-6'] = {
+      knowledgeCompleted: ['ael-1'],
+      testsPassed: ['ael-1'],
+    }
+    localStorage.setItem('student-app-state', JSON.stringify(state))
+
+    render(<AppStateProvider><ProfilePage onOpenSettings={vi.fn()} onOpenProfileDetail={vi.fn()} /></AppStateProvider>)
+
+    expect(screen.getByText('我的勋章').closest('button')).toHaveTextContent('7 枚')
   })
 })

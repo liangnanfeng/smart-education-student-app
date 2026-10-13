@@ -1,5 +1,7 @@
 import { Crown, Eye, Medal, Rocket, Sparkles, Star } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import type { BandProgress } from '../../app/learning'
+import type { CourseMedal, CoursePackage } from '../knowledge/courseCatalog'
 
 export interface MedalInfo {
   id: string
@@ -12,7 +14,7 @@ export interface MedalInfo {
 
 // 勋章图片：/public/medals/<学段>/<id>.png
 // 图片缺失时自动回退到下面的 lucide 图标。
-export const medals: MedalInfo[] = [
+export const growthMedals: MedalInfo[] = [
   { id: 'm1', name: '初露锋芒', desc: '完成第一节 AI 课程', earned: true, icon: Star, color: '#A8C8E4' },
   { id: 'm2', name: '观察家', desc: '连续学习 7 天', earned: true, icon: Eye, color: '#CFBDE8' },
   { id: 'm3', name: '创意探索者', desc: '完成 3 个创意作品', earned: true, icon: Sparkles, color: '#F5B5C8' },
@@ -22,3 +24,30 @@ export const medals: MedalInfo[] = [
   { id: 'm7', name: '知识先锋', desc: '连续 3 周保持学习', earned: false, icon: Medal, color: '#D0D0D0' },
   { id: 'm8', name: 'AI 大师', desc: '完成全部 AI 通识课程', earned: false, icon: Crown, color: '#D0D0D0' },
 ]
+
+export const medals = growthMedals
+
+export type DerivedCourseMedal = CourseMedal & {
+  earned: boolean
+  progressText: string
+}
+
+export function deriveCourseMedals(
+  course: CoursePackage,
+  progress: BandProgress,
+): DerivedCourseMedal[] {
+  return course.medals.map((medal) => {
+    const knowledge = progress.knowledgeCompleted.includes(medal.partId)
+    const test = progress.testsPassed.includes(medal.partId)
+
+    return {
+      ...medal,
+      earned: knowledge && test,
+      progressText: knowledge && test
+        ? '已点亮'
+        : knowledge
+          ? '知识已完成，测试待通过'
+          : '先完成对应知识',
+    }
+  })
+}
