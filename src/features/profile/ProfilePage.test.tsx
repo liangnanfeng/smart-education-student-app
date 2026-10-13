@@ -4,8 +4,34 @@ import { describe, expect, it, vi } from 'vitest'
 import { AppStateProvider } from '../../app/AppState'
 import { createDefaultState } from '../../app/model'
 import { ProfilePage } from './ProfilePage'
+import { ProfileDetailPage } from './ProfileDetailPage'
+import { ProfileEditPage } from './ProfileEditPage'
 
 describe('profile dashboard', () => {
+  it('presents the current primary grade and band without stage labels', () => {
+    const view = render(<AppStateProvider><ProfilePage onOpenSettings={vi.fn()} onOpenProfileDetail={vi.fn()} /></AppStateProvider>)
+
+    expect(screen.getByText('五年级 · 5—6 年级')).toBeInTheDocument()
+    expect(screen.queryByText('小学端')).not.toBeInTheDocument()
+    expect(screen.queryByText('中学端')).not.toBeInTheDocument()
+
+    view.unmount()
+    render(<AppStateProvider><ProfileDetailPage onBack={vi.fn()} onEdit={vi.fn()} /></AppStateProvider>)
+    expect(screen.getByText('年级')).toBeInTheDocument()
+    expect(screen.getByText('五年级 · 5—6 年级')).toBeInTheDocument()
+    expect(screen.queryByText('学段')).not.toBeInTheDocument()
+  })
+
+  it('edits only primary grades without a stage selector', () => {
+    render(<AppStateProvider><ProfileEditPage onBack={vi.fn()} onDone={vi.fn()} /></AppStateProvider>)
+
+    expect(screen.queryByRole('radiogroup', { name: '选择学段' })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('radio')).toHaveLength(6)
+    expect(screen.getByRole('radio', { name: '一年级' })).toBeInTheDocument()
+    expect(screen.getByRole('radio', { name: '六年级' })).toBeInTheDocument()
+    expect(screen.queryByRole('radio', { name: '初一' })).not.toBeInTheDocument()
+  })
+
   it('contains every approved profile module in the agreed order', async () => {
     const user = userEvent.setup()
     render(<AppStateProvider><ProfilePage onOpenSettings={vi.fn()} onOpenProfileDetail={vi.fn()} /></AppStateProvider>)

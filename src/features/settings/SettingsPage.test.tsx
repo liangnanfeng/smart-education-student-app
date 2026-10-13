@@ -9,11 +9,26 @@ describe('settings page', () => {
     render(<AppStateProvider><SettingsPage onBack={vi.fn()} /></AppStateProvider>)
 
     expect(screen.getByRole('heading', { name: '设置' })).toBeInTheDocument()
-    for (const group of ['账号与学段', 'AI 伙伴', '学习与使用体验', '隐私与内容安全', '通用与支持']) {
+    for (const group of ['账号与年级', 'AI 伙伴', '学习与使用体验', '隐私与内容安全', '通用与支持']) {
       expect(screen.getByRole('heading', { name: group })).toBeInTheDocument()
     }
-    expect(screen.getByText('小学端 · 五年级')).toBeInTheDocument()
+    expect(screen.getAllByText('五年级 · 5—6 年级')).not.toHaveLength(0)
+    expect(screen.queryByText('账号与学段')).not.toBeInTheDocument()
+    expect(screen.queryByText('学段与年级')).not.toBeInTheDocument()
+    expect(screen.queryByText('中学端')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: '退出当前账号' })).toBeInTheDocument()
+  })
+
+  it('changes the primary grade directly without a stage confirmation', async () => {
+    const user = userEvent.setup()
+    render(<AppStateProvider><SettingsPage onBack={vi.fn()} /></AppStateProvider>)
+
+    await user.click(screen.getByRole('button', { name: /学习年级/ }))
+    expect(screen.queryByRole('button', { name: '小学端' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '中学端' })).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '二年级' }))
+    expect(screen.getByRole('status')).toHaveTextContent('年级已切换为 二年级')
+    expect(screen.queryByRole('dialog', { name: '确认更改学段' })).not.toBeInTheDocument()
   })
 
   it('changes font scale locally and confirms logout on screen', async () => {

@@ -8,10 +8,13 @@ describe('student app integration', () => {
     const user = userEvent.setup()
     render(<App />)
 
+    expect(screen.queryByRole('button', { name: '小学端' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: '中学端' })).not.toBeInTheDocument()
     await user.type(screen.getByLabelText('学习账号／学习码'), 'demo-student')
     await user.type(screen.getByLabelText('密码'), 'demo-password')
     await user.click(screen.getByRole('button', { name: '进入学习世界' }))
     expect(screen.getByRole('heading', { name: '精选 AI 创意游戏' })).toBeInTheDocument()
+    expect(screen.getByText('AI 通识新鲜报')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: '知识' }))
     expect(screen.getByRole('heading', { name: 'AI 探索实验室' })).toBeInTheDocument()

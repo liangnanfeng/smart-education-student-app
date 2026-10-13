@@ -1,33 +1,23 @@
 import type { PropsWithChildren, ReactNode } from 'react'
-import { GraduationCap, Rocket } from 'lucide-react'
-import { useAppState } from '../../app/AppState'
 import './auth.css'
 
 type AuthLayoutProps = PropsWithChildren<{
   title: string
   subtitle: string
   backAction?: ReactNode
-  showStageSelector?: boolean
   companion?: ReactNode
 }>
 
-export function AuthLayout({ title, subtitle, backAction, showStageSelector = false, companion, children }: AuthLayoutProps) {
-  const { state, setStage } = useAppState()
+export function AuthLayout({ title, subtitle, backAction, companion, children }: AuthLayoutProps) {
   return (
     <main className="auth-page">
       <div className="auth-ambient auth-ambient-one" />
       <div className="auth-ambient auth-ambient-two" />
       <section className={`auth-shell ${companion ? 'auth-shell--with-companion' : ''}`}>
-        {showStageSelector && (
-          <div className="stage-switch" aria-label="选择学习端">
-            <button type="button" aria-pressed={state.stage === 'elementary'} onClick={() => setStage('elementary')}>
-              <Rocket aria-hidden="true" size={18} />小学端
-            </button>
-            <button type="button" aria-pressed={state.stage === 'secondary'} onClick={() => setStage('secondary')}>
-              <GraduationCap aria-hidden="true" size={18} />中学端
-            </button>
-          </div>
-        )}
+        <div className="auth-brand-block" aria-label="数智学习小学成长空间">
+          <span className="auth-brand-eyebrow">小学一至六年级</span>
+          <strong>每一次好奇，都能长成新本领</strong>
+        </div>
         {backAction}
         {companion}
         <header className="auth-heading">

@@ -1,17 +1,9 @@
 import { Camera, FileScan, Languages, ScanLine, SearchCheck, Sparkles } from 'lucide-react'
-import type { LearningStage } from '../../app/model'
 
-export const stageCopy: Record<LearningStage, { greeting: string; subline: string; news: string[] }> = {
-  elementary: {
-    greeting: '你好，小小探索家',
-    subline: '今天想和 AI 一起发现什么？',
-    news: ['AI 也要学会分清“像”和“一样”', '机器人怎样听懂不同的说话声音', '让电脑看图时，为什么要多看几个例子'],
-  },
-  secondary: {
-    greeting: '你好，未来探索者',
-    subline: '从一个好问题开始今天的学习。',
-    news: ['多模态模型如何同时处理文字、图像与声音', '训练数据质量为什么会影响模型判断', '生成式 AI 的回答应怎样进行来源核验'],
-  },
+export const homeCopy = {
+  greeting: '你好，小小探索家',
+  subline: '今天想和 AI 一起发现什么？',
+  news: ['AI 也要学会分清“像”和“一样”', '机器人怎样听懂不同的说话声音', '让电脑看图时，为什么要多看几个例子'],
 }
 
 export const games = [

@@ -16,6 +16,8 @@ describe('home page', () => {
     const games = within(screen.getByRole('region', { name: '创意 AI 游戏' }))
     expect(games.getAllByRole('button')).toHaveLength(6)
     expect(screen.getByRole('button', { name: '继续学习' })).toBeInTheDocument()
+    expect(screen.getByText('AI 通识新鲜报')).toBeInTheDocument()
+    expect(screen.queryByText('AI 前沿资讯')).not.toBeInTheDocument()
   })
 
   it('opens honest tool states and keeps showcase interactions local', async () => {

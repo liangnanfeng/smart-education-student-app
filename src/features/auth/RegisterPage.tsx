@@ -1,5 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { ArrowLeft, CalendarDays, ChevronLeft, ChevronRight, Mail, ShieldCheck } from 'lucide-react'
+import { useAppState } from '../../app/AppState'
+import { GRADE_LABELS, PRIMARY_GRADES, type PrimaryGrade } from '../../app/learning'
 import { AuthLayout } from './AuthLayout'
 import { isGuardianConsentRequired } from './age'
 
@@ -9,7 +11,9 @@ type RegisterPageProps = {
 }
 
 export function RegisterPage({ onBack, onGuardianRequired }: RegisterPageProps) {
+  const { setGrade } = useAppState()
   const today = new Date()
+  const [grade, setLocalGrade] = useState<PrimaryGrade | ''>('')
   const [birthYear, setBirthYear] = useState('')
   const [birthMonth, setBirthMonth] = useState('')
   const [birthDay, setBirthDay] = useState('')
@@ -64,6 +68,11 @@ export function RegisterPage({ onBack, onGuardianRequired }: RegisterPageProps) 
       setMessage('请填写完整且有效的出生日期')
       return
     }
+    if (!grade) {
+      setMessage('请选择年级')
+      return
+    }
+    setGrade(grade)
     if (isGuardianConsentRequired(birthDate)) {
       onGuardianRequired()
       return
@@ -72,9 +81,9 @@ export function RegisterPage({ onBack, onGuardianRequired }: RegisterPageProps) 
   }
 
   return (
-    <AuthLayout title="创建学习账号" subtitle="先了解你的学习阶段，再为你准备合适的体验" backAction={<button className="text-back" type="button" onClick={onBack}><ArrowLeft aria-hidden="true" size={18} />返回登录</button>}>
+    <AuthLayout title="创建学习账号" subtitle="选择你的年级，为你准备合适的学习体验" backAction={<button className="text-back" type="button" onClick={onBack}><ArrowLeft aria-hidden="true" size={18} />返回登录</button>}>
       <form className="auth-card auth-form-grid" onSubmit={submit}>
-        <label>选择年级<select required defaultValue=""><option value="" disabled>请选择</option>{['一年级','二年级','三年级','四年级','五年级','六年级','初一','初二','初三','高一','高二','高三'].map((grade) => <option key={grade}>{grade}</option>)}</select></label>
+        <label>选择年级<select required aria-label="选择年级" value={grade} onChange={(event) => setLocalGrade(event.target.value as PrimaryGrade)}><option value="">请选择年级</option>{PRIMARY_GRADES.map((id) => <option key={id} value={id}>{GRADE_LABELS[id]}</option>)}</select></label>
         <fieldset className="birth-date-field">
           <legend>出生日期</legend>
           <div className="birth-date-input-row" role="group" aria-label="出生日期输入">

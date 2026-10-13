@@ -1,12 +1,13 @@
 import { ArrowLeft, ChevronRight, UserRound } from 'lucide-react'
 import { useAppState } from '../../app/AppState'
-import { GRADE_LABELS } from '../../app/model'
+import { GRADE_BAND_LABELS, GRADE_LABELS, getGradeBand, type PrimaryGrade } from '../../app/learning'
 
 export function ProfileDetailPage({ onBack, onEdit }: { onBack: () => void; onEdit: () => void }) {
   const { state } = useAppState()
+  const grade = state.grade as PrimaryGrade
 
   const infoRows = [
-    { label: '学段', value: `${state.stage === 'elementary' ? '小学端' : '中学端'} · ${GRADE_LABELS[state.grade]}` },
+    { label: '年级', value: `${GRADE_LABELS[grade]} · ${GRADE_BAND_LABELS[getGradeBand(grade)]}` },
     { label: '学习天数', value: '45 天' },
     { label: '完成作品', value: '8 个' },
     { label: '获得勋章', value: '8 枚' },
@@ -46,7 +47,7 @@ export function ProfileDetailPage({ onBack, onEdit }: { onBack: () => void; onEd
       </section>
 
       <button className="profile-detail-more" type="button" onClick={onEdit}>
-        <span><strong>头像与昵称</strong><small>更换头像颜色、修改昵称与学段</small></span>
+        <span><strong>头像与昵称</strong><small>更换头像颜色、修改昵称与年级</small></span>
         <ChevronRight aria-hidden="true" />
       </button>
     </div>

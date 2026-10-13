@@ -1,23 +1,15 @@
 import { ArrowLeft, Check, Camera, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { useAppState } from '../../app/AppState'
-import type { PrimaryGrade } from '../../app/learning'
-import {
-  ELEMENTARY_GRADE_IDS,
-  GRADE_LABELS,
-  SECONDARY_GRADE_IDS,
-  type Grade,
-  type LearningStage,
-} from '../../app/model'
+import { GRADE_LABELS, PRIMARY_GRADES, type PrimaryGrade } from '../../app/learning'
 
 const AVATAR_GRADIENTS = 5
 
 export function ProfileEditPage({ onBack, onDone }: { onBack: () => void; onDone: () => void }) {
-  const { state, setProfile, setStage, setGrade } = useAppState()
+  const { state, setProfile, setGrade } = useAppState()
   const [nickname, setNickname] = useState(state.nickname)
   const [avatar, setAvatar] = useState(state.avatar)
-  const [stage, setLocalStage] = useState<LearningStage>(state.stage)
-  const [grade, setLocalGrade] = useState<Grade[LearningStage]>(state.grade)
+  const [grade, setLocalGrade] = useState<PrimaryGrade>(state.grade as PrimaryGrade)
   const [saved, setSaved] = useState(false)
 
   const trimmed = nickname.trim()
@@ -25,26 +17,12 @@ export function ProfileEditPage({ onBack, onDone }: { onBack: () => void; onDone
   const dirty =
     trimmed !== state.nickname ||
     avatar !== state.avatar ||
-    stage !== state.stage ||
     grade !== state.grade
-
-  const gradeOptions = stage === 'elementary' ? ELEMENTARY_GRADE_IDS : SECONDARY_GRADE_IDS
-
-  const switchStage = (next: LearningStage) => {
-    setLocalStage(next)
-    // 切换学段时，若当前年级不属于新学段则重置为默认年级
-    const validIds: readonly string[] = next === 'elementary' ? ELEMENTARY_GRADE_IDS : SECONDARY_GRADE_IDS
-    if (!validIds.includes(grade)) {
-      setLocalGrade(next === 'elementary' ? 'grade5' : 'grade8')
-    }
-  }
 
   const handleSave = () => {
     if (!canSave) return
     setProfile({ nickname: trimmed, avatar })
-    if (stage !== state.stage) setStage(stage)
-    const primaryGrade: PrimaryGrade | undefined = ELEMENTARY_GRADE_IDS.find((id) => id === grade)
-    if (primaryGrade && primaryGrade !== state.grade) setGrade(primaryGrade)
+    if (grade !== state.grade) setGrade(grade)
     setSaved(true)
     window.setTimeout(onDone, 400)
   }
@@ -86,33 +64,9 @@ export function ProfileEditPage({ onBack, onDone }: { onBack: () => void; onDone
         <p className="profile-edit-hint">{trimmed.length}/12 个字符</p>
 
         <div className="profile-edit-field">
-          <span>学段</span>
-          <div className="profile-stage-options" role="radiogroup" aria-label="选择学段">
-            <button
-              type="button"
-              role="radio"
-              aria-checked={stage === 'elementary'}
-              className={stage === 'elementary' ? 'active' : ''}
-              onClick={() => switchStage('elementary')}
-            >
-              小学端
-            </button>
-            <button
-              type="button"
-              role="radio"
-              aria-checked={stage === 'secondary'}
-              className={stage === 'secondary' ? 'active' : ''}
-              onClick={() => switchStage('secondary')}
-            >
-              中学端
-            </button>
-          </div>
-        </div>
-
-        <div className="profile-edit-field">
           <span>年级</span>
           <div className="profile-grade-grid" role="radiogroup" aria-label="选择年级">
-            {gradeOptions.map((id) => (
+            {PRIMARY_GRADES.map((id) => (
               <button
                 key={id}
                 type="button"

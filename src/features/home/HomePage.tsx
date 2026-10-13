@@ -1,9 +1,8 @@
 import { ArrowRight, Camera, ChevronRight, Clock3, Search, Sparkles } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { useAppState } from '../../app/AppState'
 import { AchievementShowcase } from './AchievementShowcase'
 import { CameraToolSheet } from './CameraToolSheet'
-import { games, stageCopy } from './homeData'
+import { games, homeCopy } from './homeData'
 import './home.css'
 
 const carouselGradientsElementary = [
@@ -12,14 +11,6 @@ const carouselGradientsElementary = [
   'linear-gradient(135deg, #FFF8E0 0%, #FFE8A8 30%, #FFC958 65%, #FFA82E 100%)',
   'linear-gradient(135deg, #F3E6FF 0%, #E0B8E8 30%, #C88AB4 65%, #A85F8A 100%)',
   'linear-gradient(135deg, #FFF0E0 0%, #FFCFA8 30%, #FF9D8A 65%, #E87060 100%)',
-]
-
-const carouselGradientsSecondary = [
-  'linear-gradient(135deg, #D0E4F5 0%, #8AB8E0 35%, #5A7EC8 70%, #3A4FA8 100%)',
-  'linear-gradient(135deg, #E8D5F5 0%, #B88AE0 35%, #8A4FC8 70%, #6A2FA8 100%)',
-  'linear-gradient(135deg, #C0E4EC 0%, #5AB0D8 35%, #2A7AB8 70%, #1A4A88 100%)',
-  'linear-gradient(135deg, #FFDDE8 0%, #E890B0 35%, #B85A8A 70%, #88386A 100%)',
-  'linear-gradient(135deg, #C8D0F0 0%, #8898D8 35%, #6868C0 70%, #4838A0 100%)',
 ]
 
 const carouselDecorations = [
@@ -31,17 +22,13 @@ const carouselDecorations = [
 ]
 
 export function HomePage({ onWorkClick, onMoreWorks, onOpenNotifications, onNavigateToKnowledge }: { onWorkClick?: (workId: string) => void; onMoreWorks?: () => void; onOpenNotifications?: () => void; onNavigateToKnowledge?: () => void }) {
-  const { state } = useAppState()
   const [cameraOpen, setCameraOpen] = useState(false)
   const [notice, setNotice] = useState('')
   const [currentNewsIndex, setCurrentNewsIndex] = useState(0)
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
-  const copy = stageCopy[state.stage]
-
-  const gradients = state.stage === 'elementary'
-    ? carouselGradientsElementary
-    : carouselGradientsSecondary
+  const copy = homeCopy
+  const gradients = carouselGradientsElementary
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -78,7 +65,7 @@ export function HomePage({ onWorkClick, onMoreWorks, onOpenNotifications, onNavi
     <div className="home-page">
       <header className="home-header">
         <div><p>{copy.subline}</p><h1>{copy.greeting}</h1></div>
-        <button className="icon-button" type="button" aria-label="消息通知" onClick={() => onOpenNotifications?.()}><img src={`/icons/${state.stage}/bell.png`} alt="" aria-hidden="true" /></button>
+        <button className="icon-button" type="button" aria-label="消息通知" onClick={() => onOpenNotifications?.()}><img src="/icons/elementary/bell.png" alt="" aria-hidden="true" /></button>
       </header>
       {notice && <p className="inline-notice" role="status">{notice}</p>}
 
@@ -90,14 +77,14 @@ export function HomePage({ onWorkClick, onMoreWorks, onOpenNotifications, onNavi
 
       <section className="news-carousel-section" aria-label="最新 AI 通识资讯">
         <div
-          className={`news-carousel stage-${state.stage}`}
+          className="news-carousel stage-elementary"
           style={{ background: currentGradient }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
         >
           <div className="carousel-content">
-            <span className="carousel-tag">{state.stage === 'elementary' ? 'AI 通识新鲜报' : 'AI 前沿资讯'}</span>
+            <span className="carousel-tag">AI 通识新鲜报</span>
             <h2 className="carousel-title">{currentNews}</h2>
             <p className="carousel-desc">点击了解更多 AI 精彩内容</p>
           </div>
@@ -121,8 +108,8 @@ export function HomePage({ onWorkClick, onMoreWorks, onOpenNotifications, onNavi
       <section className="games-section section-block" aria-label="创意 AI 游戏">
         <div className="section-heading-row"><div><p className="section-kicker">动手创造</p><h2>精选 AI 创意游戏</h2></div><span className="tiny-status">5 个精选</span></div>
         <div className="games-grid">
-          {games.map(({ id, title, note, icon }) => <button key={id} type="button" onClick={() => setNotice(`${title}内容正在准备中`)}><span className="game-icon"><img src={`/games/${state.stage}/${icon}.png`} alt="" aria-hidden="true" /></span><strong>{title}</strong><small>{note}</small></button>)}
-          <button className="all-games" type="button" onClick={() => setNotice('全部游戏页面正在准备中')}><span className="game-icon"><img src={`/games/${state.stage}/all.png`} alt="" aria-hidden="true" /></span><strong>全部游戏</strong><small>看看更多创意玩法</small></button>
+          {games.map(({ id, title, note, icon }) => <button key={id} type="button" onClick={() => setNotice(`${title}内容正在准备中`)}><span className="game-icon"><img src={`/games/elementary/${icon}.png`} alt="" aria-hidden="true" /></span><strong>{title}</strong><small>{note}</small></button>)}
+          <button className="all-games" type="button" onClick={() => setNotice('全部游戏页面正在准备中')}><span className="game-icon"><img src="/games/elementary/all.png" alt="" aria-hidden="true" /></span><strong>全部游戏</strong><small>看看更多创意玩法</small></button>
         </div>
       </section>
 

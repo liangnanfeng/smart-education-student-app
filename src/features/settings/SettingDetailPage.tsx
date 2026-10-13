@@ -1,16 +1,11 @@
 import { ArrowLeft, Bell, Camera, CheckCircle2, Database, Eye, EyeOff, FileText, HelpCircle, Headphones, LayoutDashboard, LogOut, Mic, MessageSquare, RotateCcw, ShieldCheck, ShieldOff, Smartphone, Sparkles, Trash2, UserRound, Volume2 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useAppState } from '../../app/AppState'
-import type { PrimaryGrade } from '../../app/learning'
-import { ELEMENTARY_GRADE_IDS, GRADE_LABELS, SECONDARY_GRADE_IDS, type AiPersonality, type ContentLevel, type FontScale, type Grade, type GuardianInfo, type LearningStage, type PermissionStatus, type SafeMode, type VoiceMode } from '../../app/model'
+import { GRADE_LABELS, PRIMARY_GRADES, type PrimaryGrade } from '../../app/learning'
+import { type AiPersonality, type ContentLevel, type FontScale, type GuardianInfo, type PermissionStatus, type SafeMode, type VoiceMode } from '../../app/model'
 import { getCompanionItem } from '../ai_companion/companionCatalog'
 import { PartnerAppearance } from '../ai_companion/PartnerAppearance'
 import { settingGroups } from './settingsData'
-
-const ELEMENTARY_GRADES: Array<[Grade['elementary'], string]> =
-  ELEMENTARY_GRADE_IDS.map((id) => [id, GRADE_LABELS[id]])
-const SECONDARY_GRADES: Array<[Grade['secondary'], string]> =
-  SECONDARY_GRADE_IDS.map((id) => [id, GRADE_LABELS[id]])
 
 const RELATIONSHIP_LABEL: Record<GuardianInfo['relationship'], string> = {
   father: '父亲',
@@ -21,7 +16,7 @@ const RELATIONSHIP_LABEL: Record<GuardianInfo['relationship'], string> = {
 
 export function SettingDetailPage({ itemId, onBack, onOpenMall }: { itemId: string; onBack: () => void; onOpenMall: () => void }) {
   const app = useAppState()
-  const { state, setFontScale, setStage, setGrade, setNotifications, setTwoFactor, updatePassword, setGuardian, setFamilyName, removeDevice, resetAiPosition, setAiName, setAiPersonality, setVoiceEnabled, setAutoListen, setVoiceMode, setSaveHistory, setAiMemory, clearHistory, setConfirmDangerous, setGuardianApprove, setSafeMode, setSoundEnabled, setSoundVolume, setHapticEnabled, setShowStats, setFriendFind, setDataCollection, setCameraPermission, setMicPermission, setAlbumPermission, setContentLevel, setPersonalizedRec, setAutoClean, clearCache } = app
+  const { state, setFontScale, setGrade, setNotifications, setTwoFactor, updatePassword, setGuardian, setFamilyName, removeDevice, resetAiPosition, setAiName, setAiPersonality, setVoiceEnabled, setAutoListen, setVoiceMode, setSaveHistory, setAiMemory, clearHistory, setConfirmDangerous, setGuardianApprove, setSafeMode, setSoundEnabled, setSoundVolume, setHapticEnabled, setShowStats, setFriendFind, setDataCollection, setCameraPermission, setMicPermission, setAlbumPermission, setContentLevel, setPersonalizedRec, setAutoClean, clearCache } = app
   const [notice, setNotice] = useState('')
   const item = settingGroups.flatMap((group) => group.items).find((entry) => entry.id === itemId)
   if (!item) return null
@@ -32,7 +27,7 @@ export function SettingDetailPage({ itemId, onBack, onOpenMall }: { itemId: stri
 
       {itemId === 'security' && <SecuritySection state={state} setTwoFactor={setTwoFactor} updatePassword={updatePassword} setNotice={setNotice} />}
       {itemId === 'guardian' && <GuardianSection state={state} setGuardian={setGuardian} setFamilyName={setFamilyName} setNotice={setNotice} />}
-      {itemId === 'stage' && <StageSection state={state} setStage={setStage} setGrade={setGrade} setNotice={setNotice} />}
+      {itemId === 'grade' && <GradeSection state={state} setGrade={setGrade} setNotice={setNotice} />}
       {itemId === 'companion' && <CompanionSection state={state} setAiName={setAiName} setAiPersonality={setAiPersonality} resetAiPosition={resetAiPosition} setNotice={setNotice} onOpenMall={onOpenMall} />}
       {itemId === 'voice' && <VoiceSection state={state} setVoiceEnabled={setVoiceEnabled} setAutoListen={setAutoListen} setVoiceMode={setVoiceMode} setNotice={setNotice} />}
       {itemId === 'memory' && <MemorySection state={state} setSaveHistory={setSaveHistory} setAiMemory={setAiMemory} clearHistory={clearHistory} setNotice={setNotice} />}
@@ -272,62 +267,25 @@ function GuardianSection({ state, setGuardian, setFamilyName, setNotice }: {
   )
 }
 
-/* ---------- 学段与年级 ---------- */
-function StageSection({ state, setStage, setGrade, setNotice }: {
+/* ---------- 学习年级 ---------- */
+function GradeSection({ state, setGrade, setNotice }: {
   state: ReturnType<typeof useAppState>['state']
-  setStage: (s: LearningStage) => void
   setGrade: (g: PrimaryGrade) => void
   setNotice: (s: string) => void
 }) {
-  const [pendingStage, setPendingStage] = useState<LearningStage | null>(null)
-
-  const gradeOptions = state.stage === 'elementary' ? ELEMENTARY_GRADES : SECONDARY_GRADES
-
   return (
-    <>
-      <section className="choice-card">
-        <h2>选择学习端</h2>
-        <p>更改后，首页文案和临时视觉皮肤会一起调整。</p>
-        <div className="segmented-choices">
-          <button type="button" aria-pressed={state.stage === 'elementary'} onClick={() => setPendingStage('elementary')}>小学端</button>
-          <button type="button" aria-pressed={state.stage === 'secondary'} onClick={() => setPendingStage('secondary')}>中学端</button>
-        </div>
-      </section>
-
-      <section className="choice-card">
-        <h2>年级</h2>
-        <p>选择当前年级，学习内容会对应调整。</p>
-        <div className="grade-grid">
-          {gradeOptions.map(([id, label]) => (
-            <button key={id} type="button" aria-pressed={state.grade === id} onClick={() => {
-              const primaryGrade: PrimaryGrade | undefined = ELEMENTARY_GRADE_IDS.find((grade) => grade === id)
-              if (!primaryGrade) return
-              setGrade(primaryGrade)
-              setNotice(`年级已切换为 ${label}`)
-            }}>{label}</button>
-          ))}
-        </div>
-      </section>
-
-      {pendingStage && (
-        <div className="settings-dialog-backdrop">
-          <section className="settings-dialog" role="dialog" aria-modal="true" aria-label="确认更改学段">
-            <ShieldCheck aria-hidden="true" />
-            <h2>确认更改学习端？</h2>
-            <p>布局位置保持一致，文案和临时视觉皮肤会切换为对应学段，年级也会重置为默认值。</p>
-            <div className="dialog-actions">
-              <button type="button" onClick={() => setPendingStage(null)}>暂不更改</button>
-              <button type="button" onClick={() => {
-                setStage(pendingStage)
-                if (pendingStage === 'elementary') setGrade('grade5')
-                setPendingStage(null)
-                setNotice(`已切换至${pendingStage === 'elementary' ? '小学端' : '中学端'}`)
-              }}>确认更改</button>
-            </div>
-          </section>
-        </div>
-      )}
-    </>
+    <section className="choice-card">
+      <h2>年级</h2>
+      <p>选择当前年级，学习内容会对应调整。</p>
+      <div className="grade-grid">
+        {PRIMARY_GRADES.map((id) => (
+          <button key={id} type="button" aria-pressed={state.grade === id} onClick={() => {
+            setGrade(id)
+            setNotice(`年级已切换为 ${GRADE_LABELS[id]}`)
+          }}>{GRADE_LABELS[id]}</button>
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -347,13 +305,13 @@ function CompanionSection({ state, setAiName, setAiPersonality, resetAiPosition,
   onOpenMall: () => void
 }) {
   const [nameInput, setNameInput] = useState(state.aiName)
-  const loadout = state.companions[state.stage]
+  const loadout = state.companion
   const appearanceName = getCompanionItem(loadout.equipped.appearance)?.name ?? state.aiName
 
   return (
     <>
       <section className="detail-card companion-settings-summary">
-        <PartnerAppearance stage={state.stage} loadout={loadout} size="preview" />
+        <PartnerAppearance stage="elementary" loadout={loadout} size="preview" />
         <div className="companion-settings-copy">
           <span className="companion-settings-eyebrow">当前伙伴</span>
           <div>
@@ -779,7 +737,7 @@ function StorageSection({ state, setAutoClean, clearCache, setNotice }: {
 /* ---------- 帮助与意见反馈 ---------- */
 function HelpSection() {
   const faqs = [
-    { q: '如何切换学习端？', a: '进入「设置 → 账号与学段 → 学段与年级」，选择小学端或中学端。' },
+    { q: '如何更改学习年级？', a: '进入「设置 → 账号与年级 → 学习年级」，选择一至六年级。' },
     { q: 'AI 伙伴的对话记录存放在哪里？', a: '所有对话记录保存在本机浏览器存储中，不会上传到服务器。' },
     { q: '忘记密码怎么办？', a: '点击登录页的「忘记密码」，通过绑定的监护人手机号重置。' },
     { q: '如何让监护人查看我的学习报告？', a: '在「设置 → 监护与家庭」中确保监护⼈已授权，报告将定期发送。' },

@@ -4,10 +4,10 @@ export type SettingItem = { id: string; label: string; status: string; Icon: typ
 export type SettingGroup = { id: string; title: string; items: SettingItem[] }
 
 export const settingGroups: SettingGroup[] = [
-  { id: 'account', title: '账号与学段', items: [
+  { id: 'account', title: '账号与年级', items: [
     { id: 'security', label: '账号与安全', status: '密码与设备', Icon: LockKeyhole },
     { id: 'guardian', label: '监护与家庭', status: '查看授权', Icon: UsersRound },
-    { id: 'stage', label: '学段与年级', status: '当前学习端', Icon: Smartphone },
+    { id: 'grade', label: '学习年级', status: '当前年级', Icon: Smartphone },
   ] },
   { id: 'ai', title: 'AI 伙伴', items: [
     { id: 'companion', label: '伙伴与互动', status: '位置、形象与回应', Icon: Bot },

@@ -21,7 +21,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
 
   const captureCompanionHandoff = () => {
     const rect = companionBoundsRef.current
-    const loadout = state.companions[state.stage]
+    const loadout = state.companion
     if (!rect || rect.width <= 0 || rect.height <= 0) {
       sessionStorage.removeItem(LOGIN_COMPANION_HANDOFF_KEY)
       return
@@ -29,7 +29,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
 
     sessionStorage.setItem(LOGIN_COMPANION_HANDOFF_KEY, JSON.stringify({
       version: 1,
-      stage: state.stage,
+      stage: 'elementary',
       appearanceId: loadout.equipped.appearance,
       outfitId: loadout.equipped.outfit,
       decorationId: loadout.equipped.decoration,
@@ -58,8 +58,7 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
   return (
     <AuthLayout
       title="欢迎来到数智学习世界"
-      subtitle={state.stage === 'elementary' ? '带上好奇心，一起发现 AI 的奇妙吧' : '从问题出发，探索 AI 背后的科学与创造'}
-      showStageSelector
+      subtitle="带上好奇心，一起发现 AI 的奇妙吧"
       companion={<LoginCompanion onBoundsChange={updateCompanionBounds} />}
     >
       <form className="auth-card" onSubmit={submit}>
@@ -73,7 +72,6 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
         </div>
         {error && <p className="form-alert" role="alert">{error}</p>}
         <button className="primary-button" type="submit">进入学习世界<ArrowRight aria-hidden="true" size={19} /></button>
-        <p className="prototype-note">页面初版，不会发送或保存真实账号和密码</p>
       </form>
       <div className="auth-side-actions">
         <button type="button" onClick={() => onNavigate('register')}>创建学习账号</button>

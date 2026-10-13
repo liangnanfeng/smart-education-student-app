@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { AppStateProvider } from '../../app/AppState'
@@ -16,6 +16,13 @@ function renderRegisterPage() {
 }
 
 describe('registration birth date', () => {
+  it('offers only grades one through six during registration', () => {
+    renderRegisterPage()
+
+    const options = within(screen.getByLabelText('选择年级')).getAllByRole('option').map((option) => option.textContent)
+    expect(options).toEqual(['请选择年级', '一年级', '二年级', '三年级', '四年级', '五年级', '六年级'])
+  })
+
   it('groups the year, month, and day fields into one readable date card', () => {
     renderRegisterPage()
 
@@ -29,7 +36,7 @@ describe('registration birth date', () => {
     await user.type(screen.getByLabelText('出生年'), '2015')
     await user.type(screen.getByLabelText('出生月'), '8')
     await user.type(screen.getByLabelText('出生日'), '25')
-    await user.selectOptions(screen.getByLabelText('选择年级'), '一年级')
+    await user.selectOptions(screen.getByLabelText('选择年级'), 'grade1')
     await user.type(screen.getByLabelText('学习账号／学习码'), 'learning-demo')
     await user.type(screen.getByLabelText('手机号／邮箱'), 'demo@example.com')
     await user.type(screen.getByRole('textbox', { name: /验证码/ }), '123456')
@@ -37,6 +44,7 @@ describe('registration birth date', () => {
     await user.click(screen.getByRole('button', { name: '检查并继续' }))
 
     expect(onGuardianRequired).toHaveBeenCalledOnce()
+    await waitFor(() => expect(localStorage.getItem('student-app-state')).toContain('"grade":"grade1"'))
   })
 
   it('synchronizes a date picked in the calendar into the numeric fields', async () => {
