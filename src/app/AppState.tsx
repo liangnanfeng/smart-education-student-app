@@ -6,12 +6,16 @@ import {
   useReducer,
   type PropsWithChildren,
 } from 'react'
+import { getGradeBand, getPartIdsForBand, type CoursePartId, type PrimaryGrade } from './learning'
 import { defaultState, type AiPersonality, type AiPosition, type AppState, type CompanionCategory, type ContentLevel, type FontScale, type Grade, type GuardianInfo, type LearningStage, type PermissionStatus, type SafeMode, type VoiceMode } from './model'
+import { applyTransactionOnce, buildProgressRewardTransactions, getPointsBalance } from './points'
 import { loadState, saveState } from './storage'
 
 type Action =
   | { type: 'set-stage'; stage: LearningStage }
-  | { type: 'set-grade'; grade: Grade[LearningStage] }
+  | { type: 'set-grade'; grade: PrimaryGrade }
+  | { type: 'complete-knowledge'; partId: CoursePartId; title: string; occurredAt: string }
+  | { type: 'pass-test'; partId: CoursePartId; title: string; occurredAt: string }
   | { type: 'login' }
   | { type: 'logout' }
   | { type: 'set-font-scale'; scale: FontScale }
@@ -19,7 +23,7 @@ type Action =
   | { type: 'toggle-like'; id: string }
   | { type: 'toggle-favorite'; id: string }
   | { type: 'set-notifications'; value: AppState['notifications'] }
-  | { type: 'set-ai-position'; stage: LearningStage; position: AiPosition }
+  | { type: 'set-ai-position'; position: AiPosition }
   | { type: 'reset-ai-position'; stage: LearningStage }
   | { type: 'set-two-factor'; enabled: boolean }
   | { type: 'update-password'; lastChange: string }
@@ -30,9 +34,9 @@ type Action =
   | { type: 'set-ai-name'; name: string }
   | { type: 'set-ai-personality'; personality: AiPersonality }
   | { type: 'set-ai-skin'; skin: number }
-  | { type: 'purchase-companion-item'; stage: LearningStage; category: CompanionCategory; id: string; price: number }
-  | { type: 'equip-companion-item'; stage: LearningStage; category: CompanionCategory; id: string }
-  | { type: 'unequip-companion-item'; stage: LearningStage; category: Exclude<CompanionCategory, 'appearance'> }
+  | { type: 'purchase-companion-item'; category: CompanionCategory; id: string; price: number; name: string; occurredAt: string }
+  | { type: 'equip-companion-item'; category: CompanionCategory; id: string }
+  | { type: 'unequip-companion-item'; category: Exclude<CompanionCategory, 'appearance'> }
   | { type: 'set-voice-enabled'; enabled: boolean }
   | { type: 'set-auto-listen'; enabled: boolean }
   | { type: 'set-voice-mode'; mode: VoiceMode }
@@ -65,10 +69,80 @@ function toggle(items: string[], id: string) {
   return items.includes(id) ? items.filter((item) => item !== id) : [...items, id]
 }
 
+function syncLegacyConsumerBridge(state: AppState): AppState {
+  return {
+    ...state,
+    pointsBalance: getPointsBalance(state.transactions),
+    aiPositions: { elementary: state.aiPosition, secondary: state.aiPosition },
+    companions: { elementary: state.companion, secondary: state.companion },
+  }
+}
+
+function updateProgress(
+  state: AppState,
+  action: Extract<Action, { type: 'complete-knowledge' | 'pass-test' }>,
+) {
+  const band = getGradeBand(state.grade as PrimaryGrade)
+  const before = state.learningProgress[band]
+  const field = action.type === 'complete-knowledge' ? 'knowledgeCompleted' : 'testsPassed'
+  if (before[field].includes(action.partId)) return state
+  if (action.type === 'pass-test' && !before.knowledgeCompleted.includes(action.partId)) return state
+
+  const after = { ...before, [field]: [...before[field], action.partId] }
+  let next = {
+    ...state,
+    learningProgress: { ...state.learningProgress, [band]: after },
+  }
+  for (const transaction of buildProgressRewardTransactions(
+    before,
+    after,
+    band,
+    getPartIdsForBand(band),
+    action.occurredAt,
+  )) {
+    next = applyTransactionOnce(next, {
+      ...transaction,
+      title: transaction.kind === 'knowledge'
+        ? `完成知识：${action.title}`
+        : transaction.kind === 'test'
+          ? `通过测试：${action.title}`
+          : transaction.title,
+    })
+  }
+  return syncLegacyConsumerBridge(next)
+}
+
+function purchase(
+  state: AppState,
+  action: Extract<Action, { type: 'purchase-companion-item' }>,
+) {
+  if (state.companion.owned[action.category].includes(action.id)) return state
+  if (!Number.isFinite(action.price) || action.price <= 0 || getPointsBalance(state.transactions) < action.price) return state
+
+  const transaction = {
+    id: `purchase:${action.id}`,
+    eventId: `purchase:${action.id}`,
+    kind: 'purchase' as const,
+    title: `积分商城购买：${action.name}`,
+    amount: -action.price,
+    occurredAt: action.occurredAt,
+  }
+  const companion = {
+    ...state.companion,
+    owned: {
+      ...state.companion.owned,
+      [action.category]: [...state.companion.owned[action.category], action.id],
+    },
+  }
+  return syncLegacyConsumerBridge(applyTransactionOnce({ ...state, companion }, transaction))
+}
+
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'set-stage': return { ...state, stage: action.stage }
     case 'set-grade': return { ...state, grade: action.grade }
+    case 'complete-knowledge':
+    case 'pass-test': return updateProgress(state, action)
     case 'login': return { ...state, isLoggedIn: true }
     case 'logout': return { ...state, isLoggedIn: false }
     case 'set-font-scale': return { ...state, fontScale: action.scale }
@@ -76,10 +150,7 @@ function reducer(state: AppState, action: Action): AppState {
     case 'toggle-like': return { ...state, likes: toggle(state.likes, action.id) }
     case 'toggle-favorite': return { ...state, favorites: toggle(state.favorites, action.id) }
     case 'set-notifications': return { ...state, notifications: action.value }
-    case 'set-ai-position': return {
-      ...state,
-      aiPositions: { ...state.aiPositions, [action.stage]: action.position },
-    }
+    case 'set-ai-position': return syncLegacyConsumerBridge({ ...state, aiPosition: action.position })
     case 'reset-ai-position': return {
       ...state,
       aiPositions: {
@@ -98,51 +169,27 @@ function reducer(state: AppState, action: Action): AppState {
     case 'set-ai-name': return { ...state, aiName: action.name }
     case 'set-ai-personality': return { ...state, aiPersonality: action.personality }
     case 'set-ai-skin': return { ...state, aiSkin: action.skin }
-    case 'purchase-companion-item': {
-      const loadout = state.companions[action.stage]
-      if (loadout.owned[action.category].includes(action.id)) return state
-      if (!Number.isFinite(action.price) || action.price <= 0 || state.pointsBalance < action.price) return state
-      return {
-        ...state,
-        pointsBalance: state.pointsBalance - action.price,
-        companions: {
-          ...state.companions,
-          [action.stage]: {
-            ...loadout,
-            owned: {
-              ...loadout.owned,
-              [action.category]: [...loadout.owned[action.category], action.id],
-            },
-          },
-        },
-      }
-    }
+    case 'purchase-companion-item': return purchase(state, action)
     case 'equip-companion-item': {
-      const loadout = state.companions[action.stage]
+      const loadout = state.companion
       if (!loadout.owned[action.category].includes(action.id)) return state
-      return {
+      return syncLegacyConsumerBridge({
         ...state,
-        companions: {
-          ...state.companions,
-          [action.stage]: {
-            ...loadout,
-            equipped: { ...loadout.equipped, [action.category]: action.id },
-          },
+        companion: {
+          ...loadout,
+          equipped: { ...loadout.equipped, [action.category]: action.id },
         },
-      }
+      })
     }
     case 'unequip-companion-item': {
-      const loadout = state.companions[action.stage]
-      return {
+      const loadout = state.companion
+      return syncLegacyConsumerBridge({
         ...state,
-        companions: {
-          ...state.companions,
-          [action.stage]: {
-            ...loadout,
-            equipped: { ...loadout.equipped, [action.category]: null },
-          },
+        companion: {
+          ...loadout,
+          equipped: { ...loadout.equipped, [action.category]: null },
         },
-      }
+      })
     }
     case 'set-voice-enabled': return { ...state, voiceEnabled: action.enabled }
     case 'set-auto-listen': return { ...state, autoListenEnabled: action.enabled }
@@ -172,8 +219,11 @@ function reducer(state: AppState, action: Action): AppState {
 
 type AppStateContextValue = {
   state: AppState
+  pointsBalance: number
   setStage: (stage: LearningStage) => void
   setGrade: (grade: Grade[LearningStage]) => void
+  completeKnowledge: (partId: CoursePartId, title: string) => void
+  passTest: (partId: CoursePartId, title: string) => void
   login: () => void
   logout: () => void
   setFontScale: (scale: FontScale) => void
@@ -191,7 +241,7 @@ type AppStateContextValue = {
   setAiName: (name: string) => void
   setAiPersonality: (personality: AiPersonality) => void
   setAiSkin: (skin: number) => void
-  purchaseCompanionItem: (category: CompanionCategory, id: string, price: number) => void
+  purchaseCompanionItem: (category: CompanionCategory, id: string, price: number, name?: string) => void
   equipCompanionItem: (category: CompanionCategory, id: string) => void
   unequipCompanionItem: (category: Exclude<CompanionCategory, 'appearance'>) => void
   setVoiceEnabled: (enabled: boolean) => void
@@ -231,8 +281,11 @@ export function AppStateProvider({ children }: PropsWithChildren) {
 
   const value = useMemo<AppStateContextValue>(() => ({
     state,
+    pointsBalance: getPointsBalance(state.transactions),
     setStage: (stage) => dispatch({ type: 'set-stage', stage }),
-    setGrade: (grade) => dispatch({ type: 'set-grade', grade }),
+    setGrade: (grade) => dispatch({ type: 'set-grade', grade: grade as PrimaryGrade }),
+    completeKnowledge: (partId, title) => dispatch({ type: 'complete-knowledge', partId, title, occurredAt: new Date().toISOString() }),
+    passTest: (partId, title) => dispatch({ type: 'pass-test', partId, title, occurredAt: new Date().toISOString() }),
     login: () => dispatch({ type: 'login' }),
     logout: () => dispatch({ type: 'logout' }),
     setFontScale: (scale) => dispatch({ type: 'set-font-scale', scale }),
@@ -240,7 +293,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     toggleLike: (id) => dispatch({ type: 'toggle-like', id }),
     toggleFavorite: (id) => dispatch({ type: 'toggle-favorite', id }),
     setNotifications: (value) => dispatch({ type: 'set-notifications', value }),
-    setAiPosition: (position) => dispatch({ type: 'set-ai-position', stage: state.stage, position }),
+    setAiPosition: (position) => dispatch({ type: 'set-ai-position', position }),
     resetAiPosition: () => dispatch({ type: 'reset-ai-position', stage: state.stage }),
     setTwoFactor: (enabled) => dispatch({ type: 'set-two-factor', enabled }),
     updatePassword: (lastChange) => dispatch({ type: 'update-password', lastChange }),
@@ -250,9 +303,9 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     setAiName: (name) => dispatch({ type: 'set-ai-name', name }),
     setAiPersonality: (personality) => dispatch({ type: 'set-ai-personality', personality }),
     setAiSkin: (skin) => dispatch({ type: 'set-ai-skin', skin }),
-    purchaseCompanionItem: (category, id, price) => dispatch({ type: 'purchase-companion-item', stage: state.stage, category, id, price }),
-    equipCompanionItem: (category, id) => dispatch({ type: 'equip-companion-item', stage: state.stage, category, id }),
-    unequipCompanionItem: (category) => dispatch({ type: 'unequip-companion-item', stage: state.stage, category }),
+    purchaseCompanionItem: (category, id, price, name = id) => dispatch({ type: 'purchase-companion-item', category, id, price, name, occurredAt: new Date().toISOString() }),
+    equipCompanionItem: (category, id) => dispatch({ type: 'equip-companion-item', category, id }),
+    unequipCompanionItem: (category) => dispatch({ type: 'unequip-companion-item', category }),
     setVoiceEnabled: (enabled) => dispatch({ type: 'set-voice-enabled', enabled }),
     setAutoListen: (enabled) => dispatch({ type: 'set-auto-listen', enabled }),
     setVoiceMode: (mode) => dispatch({ type: 'set-voice-mode', mode }),
