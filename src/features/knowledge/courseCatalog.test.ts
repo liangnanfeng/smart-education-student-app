@@ -29,6 +29,17 @@ describe('primary course packages', () => {
     expect(JSON.stringify(course)).not.toMatch(/初中|中学生|七至九年级|7—9/)
   })
 
+  it('models the project privacy response as a three-action scenario', () => {
+    const privacyQuestion = COURSE_PACKAGES['grade5-6'].quizzes[8].questions.find(
+      (question) => question.id === 'ael-9-q4',
+    )
+
+    expect(privacyQuestion).toMatchObject({
+      type: 'scenario',
+      options: ['停止收集并改用不敏感的方案', '继续收集', '悄悄保存'],
+    })
+  })
+
   it('finds each quiz by the same stable part id', () => {
     expect(getQuizForPart('qmx-1')?.title).toBe('启明星岛 · 认识 AI')
     expect(getQuizForPart('cxd-6')?.title).toBe('负责任的创想家')
