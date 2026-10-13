@@ -3,7 +3,6 @@ import { ArrowRight, BookOpen, Map, Sparkles, X } from 'lucide-react'
 import { useAppState } from '../../app/AppState'
 import { GRADE_BAND_LABELS, getGradeBand, isTestUnlocked, type PrimaryGrade } from '../../app/learning'
 import { AiCompanion } from '../ai_companion/AiCompanion'
-import { CourseContentPage } from '../knowledge/CourseContentPage'
 import { getCourseForBand, type CoursePart } from '../knowledge/courseCatalog'
 import { QuizModal } from './QuizModal'
 import { TestLevelNode, type TestLevelStatus } from './TestLevelNode'
@@ -16,7 +15,11 @@ type ChallengeResult = {
   passed: boolean
 }
 
-export function TestPage() {
+type Props = {
+  onReviewKnowledge?: (courseId: string, chapterNum: number) => void
+}
+
+export function TestPage({ onReviewKnowledge }: Props = {}) {
   const { state, passTest } = useAppState()
   const band = getGradeBand(state.grade as PrimaryGrade)
   const course = getCourseForBand(band)
@@ -29,7 +32,6 @@ export function TestPage() {
   const [introPart, setIntroPart] = useState<CoursePart | null>(null)
   const [activePart, setActivePart] = useState<CoursePart | null>(null)
   const [result, setResult] = useState<ChallengeResult | null>(null)
-  const [reviewPart, setReviewPart] = useState<CoursePart | null>(null)
 
   useEffect(() => {
     const route = routeRef.current
@@ -75,24 +77,15 @@ export function TestPage() {
   }
 
   function reviewKnowledge() {
-    setReviewPart(activePart)
+    const part = activePart
     closeChallenge()
+    if (part) onReviewKnowledge?.(course.id, part.number)
   }
 
   const activeQuiz = activePart
     ? course.quizzes.find((quiz) => quiz.partId === activePart.id)
     : undefined
   const routeHeight = Math.max(840, course.parts.length * 128)
-
-  if (reviewPart) {
-    return (
-      <CourseContentPage
-        courseId={course.id}
-        chapterNum={reviewPart.number}
-        onBack={() => setReviewPart(null)}
-      />
-    )
-  }
 
   return (
     <div className="test-page" data-band={band}>

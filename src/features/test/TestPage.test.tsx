@@ -1,6 +1,6 @@
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { beforeEach, describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AppStateProvider } from '../../app/AppState'
 import { createEmptyLearningProgress, getGradeBand, getPartIdsForBand } from '../../app/learning'
 import { defaultState, type AppState } from '../../app/model'
@@ -10,9 +10,12 @@ import { getCourseForBand } from '../knowledge/courseCatalog'
 import { getMapNodes } from './testMapData'
 import { TestPage } from './TestPage'
 
-function renderMap(state: Partial<AppState> = {}) {
+function renderMap(
+  state: Partial<AppState> = {},
+  onReviewKnowledge?: (courseId: string, chapterNum: number) => void,
+) {
   saveState({ ...defaultState, ...state })
-  return render(<AppStateProvider><TestPage /></AppStateProvider>)
+  return render(<AppStateProvider><TestPage onReviewKnowledge={onReviewKnowledge} /></AppStateProvider>)
 }
 
 describe('TestPage', () => {
@@ -104,7 +107,8 @@ describe('TestPage', () => {
 
   it('offers knowledge review and retry after a failed challenge without a reward', async () => {
     const user = userEvent.setup()
-    renderMap({ grade: 'grade5' })
+    const onReviewKnowledge = vi.fn()
+    renderMap({ grade: 'grade5' }, onReviewKnowledge)
 
     await user.click(screen.getByRole('button', { name: '算法工具箱 · 当前关卡' }))
     await user.click(screen.getByRole('button', { name: '开始答题' }))
@@ -116,8 +120,8 @@ describe('TestPage', () => {
     expect(screen.getByText('再试一次吧')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '再试一次' })).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '回顾第 3 部分知识' }))
-    expect(screen.getByRole('heading', { name: '第3章 · 算法工具箱' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '返回' })).toBeInTheDocument()
+    expect(onReviewKnowledge).toHaveBeenCalledWith('ael', 3)
+    expect(screen.queryByRole('dialog', { name: '算法工具箱答题' })).not.toBeInTheDocument()
     const saved = JSON.parse(localStorage.getItem('student-app-state') ?? '{}') as AppState
     expect(saved.learningProgress['grade5-6'].testsPassed).toEqual(['ael-1', 'ael-2'])
     expect(saved.transactions.some((item) => item.eventId === 'test:ael-3')).toBe(false)

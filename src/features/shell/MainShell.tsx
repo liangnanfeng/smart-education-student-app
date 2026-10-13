@@ -81,6 +81,15 @@ export function MainShell() {
     setStack([{ kind: 'tab', id: nextIdRef.current++ }])
   }
 
+  const openKnowledgeContent = (courseId: string, chapterNum: number) => {
+    scrollMemories.current.set(view.id, window.scrollY)
+    setActiveTab('knowledge')
+    setStack([
+      { kind: 'tab', id: nextIdRef.current++ },
+      { kind: 'course-content', id: nextIdRef.current++, courseId, chapterNum },
+    ])
+  }
+
   if (view.kind === 'settings') {
     return (
       <main className="main-shell">
@@ -291,7 +300,7 @@ export function MainShell() {
         {activeTab === 'knowledge' && (
           <KnowledgePage onOpenContent={(courseId, chapterNum) => push({ kind: 'course-content', courseId, chapterNum })} />
         )}
-        {activeTab === 'test' && <TestPage />}
+        {activeTab === 'test' && <TestPage onReviewKnowledge={openKnowledgeContent} />}
         {activeTab === 'profile' && (
           <ProfilePage
             onOpenSettings={() => push({ kind: 'settings' })}

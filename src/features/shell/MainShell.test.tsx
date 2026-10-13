@@ -47,4 +47,23 @@ describe('main shell navigation', () => {
     expect(companions).toHaveLength(1)
     expect(companions[0]).toHaveAttribute('data-companion-placement', 'test-map')
   })
+
+  it('reviews a failed challenge in the matching Knowledge chapter', async () => {
+    const user = userEvent.setup()
+    render(<AppStateProvider><MainShell /></AppStateProvider>)
+
+    await user.click(screen.getByRole('button', { name: '测试' }))
+    await user.click(screen.getByRole('button', { name: '算法工具箱 · 当前关卡' }))
+    await user.click(screen.getByRole('button', { name: '开始答题' }))
+    for (const answer of ['聚类', '分类', '分类', '对', '直接替所有人决定']) {
+      await user.click(screen.getByRole('button', { name: answer }))
+      await user.click(screen.getByRole('button', { name: /下一题|查看成绩/ }))
+    }
+
+    await user.click(screen.getByRole('button', { name: '回顾第 3 部分知识' }))
+
+    expect(screen.getByRole('heading', { name: '第3章 · 算法工具箱' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '知识' })).toHaveAttribute('aria-current', 'page')
+    expect(screen.getByRole('button', { name: '测试' })).not.toHaveAttribute('aria-current')
+  })
 })
