@@ -14,6 +14,7 @@ function Harness() {
       <output aria-label="tests">{app.state.learningProgress[band].testsPassed.join(',')}</output>
       <button type="button" onClick={() => app.completeKnowledge('ael-4', '第一次 AI 实验')}>完成知识</button>
       <button type="button" onClick={() => app.passTest('ael-4', '第一次 AI 实验')}>通过测试</button>
+      <button type="button" onClick={() => app.passTest('ael-5', '给 AI 当评委')}>越过知识直接测试</button>
     </>
   )
 }
@@ -58,5 +59,15 @@ describe('learning progress actions', () => {
     expect(screen.getByLabelText('active progress')).toBeEmptyDOMElement()
     await user.click(screen.getByRole('button', { name: '切回五年级' }))
     expect(screen.getByLabelText('active progress')).toHaveTextContent('ael-1,ael-2,ael-3')
+  })
+
+  it('does not pass a test or award points before its knowledge is complete', async () => {
+    const user = userEvent.setup()
+    render(<AppStateProvider><Harness /></AppStateProvider>)
+
+    await user.click(screen.getByRole('button', { name: '越过知识直接测试' }))
+
+    expect(screen.getByLabelText('tests')).not.toHaveTextContent('ael-5')
+    expect(screen.getByLabelText('balance')).toHaveTextContent('2000')
   })
 })

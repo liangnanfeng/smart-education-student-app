@@ -1,6 +1,7 @@
 import { ArrowLeft, Bell, Camera, CheckCircle2, Database, Eye, EyeOff, FileText, HelpCircle, Headphones, LayoutDashboard, LogOut, Mic, MessageSquare, RotateCcw, ShieldCheck, ShieldOff, Smartphone, Sparkles, Trash2, UserRound, Volume2 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useAppState } from '../../app/AppState'
+import type { PrimaryGrade } from '../../app/learning'
 import { ELEMENTARY_GRADE_IDS, GRADE_LABELS, SECONDARY_GRADE_IDS, type AiPersonality, type ContentLevel, type FontScale, type Grade, type GuardianInfo, type LearningStage, type PermissionStatus, type SafeMode, type VoiceMode } from '../../app/model'
 import { getCompanionItem } from '../ai_companion/companionCatalog'
 import { PartnerAppearance } from '../ai_companion/PartnerAppearance'
@@ -275,7 +276,7 @@ function GuardianSection({ state, setGuardian, setFamilyName, setNotice }: {
 function StageSection({ state, setStage, setGrade, setNotice }: {
   state: ReturnType<typeof useAppState>['state']
   setStage: (s: LearningStage) => void
-  setGrade: (g: Grade[LearningStage]) => void
+  setGrade: (g: PrimaryGrade) => void
   setNotice: (s: string) => void
 }) {
   const [pendingStage, setPendingStage] = useState<LearningStage | null>(null)
@@ -299,7 +300,9 @@ function StageSection({ state, setStage, setGrade, setNotice }: {
         <div className="grade-grid">
           {gradeOptions.map(([id, label]) => (
             <button key={id} type="button" aria-pressed={state.grade === id} onClick={() => {
-              setGrade(id)
+              const primaryGrade: PrimaryGrade | undefined = ELEMENTARY_GRADE_IDS.find((grade) => grade === id)
+              if (!primaryGrade) return
+              setGrade(primaryGrade)
               setNotice(`年级已切换为 ${label}`)
             }}>{label}</button>
           ))}
@@ -316,8 +319,7 @@ function StageSection({ state, setStage, setGrade, setNotice }: {
               <button type="button" onClick={() => setPendingStage(null)}>暂不更改</button>
               <button type="button" onClick={() => {
                 setStage(pendingStage)
-                const defaultGrade = pendingStage === 'elementary' ? 'grade5' : 'grade8'
-                setGrade(defaultGrade as Grade[LearningStage])
+                if (pendingStage === 'elementary') setGrade('grade5')
                 setPendingStage(null)
                 setNotice(`已切换至${pendingStage === 'elementary' ? '小学端' : '中学端'}`)
               }}>确认更改</button>

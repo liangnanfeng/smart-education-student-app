@@ -7,7 +7,7 @@ import {
   type PropsWithChildren,
 } from 'react'
 import { getGradeBand, getPartIdsForBand, type CoursePartId, type PrimaryGrade } from './learning'
-import { defaultState, type AiPersonality, type AiPosition, type AppState, type CompanionCategory, type ContentLevel, type FontScale, type Grade, type GuardianInfo, type LearningStage, type PermissionStatus, type SafeMode, type VoiceMode } from './model'
+import { defaultState, type AiPersonality, type AiPosition, type AppState, type CompanionCategory, type ContentLevel, type FontScale, type GuardianInfo, type LearningStage, type PermissionStatus, type SafeMode, type VoiceMode } from './model'
 import { applyTransactionOnce, buildProgressRewardTransactions, getPointsBalance } from './points'
 import { loadState, saveState } from './storage'
 
@@ -24,7 +24,7 @@ type Action =
   | { type: 'toggle-favorite'; id: string }
   | { type: 'set-notifications'; value: AppState['notifications'] }
   | { type: 'set-ai-position'; position: AiPosition }
-  | { type: 'reset-ai-position'; stage: LearningStage }
+  | { type: 'reset-ai-position' }
   | { type: 'set-two-factor'; enabled: boolean }
   | { type: 'update-password'; lastChange: string }
   | { type: 'set-guardian'; guardian: GuardianInfo }
@@ -69,6 +69,15 @@ function toggle(items: string[], id: string) {
   return items.includes(id) ? items.filter((item) => item !== id) : [...items, id]
 }
 
+function isPrimaryGrade(grade: AppState['grade']): grade is PrimaryGrade {
+  return grade === 'grade1'
+    || grade === 'grade2'
+    || grade === 'grade3'
+    || grade === 'grade4'
+    || grade === 'grade5'
+    || grade === 'grade6'
+}
+
 function syncLegacyConsumerBridge(state: AppState): AppState {
   return {
     ...state,
@@ -82,7 +91,8 @@ function updateProgress(
   state: AppState,
   action: Extract<Action, { type: 'complete-knowledge' | 'pass-test' }>,
 ) {
-  const band = getGradeBand(state.grade as PrimaryGrade)
+  if (!isPrimaryGrade(state.grade)) return state
+  const band = getGradeBand(state.grade)
   const before = state.learningProgress[band]
   const field = action.type === 'complete-knowledge' ? 'knowledgeCompleted' : 'testsPassed'
   if (before[field].includes(action.partId)) return state
@@ -127,14 +137,19 @@ function purchase(
     amount: -action.price,
     occurredAt: action.occurredAt,
   }
-  const companion = {
-    ...state.companion,
-    owned: {
-      ...state.companion.owned,
-      [action.category]: [...state.companion.owned[action.category], action.id],
+  const debited = applyTransactionOnce(state, transaction)
+  if (debited === state) return state
+
+  return syncLegacyConsumerBridge({
+    ...debited,
+    companion: {
+      ...debited.companion,
+      owned: {
+        ...debited.companion.owned,
+        [action.category]: [...debited.companion.owned[action.category], action.id],
+      },
     },
-  }
-  return syncLegacyConsumerBridge(applyTransactionOnce({ ...state, companion }, transaction))
+  })
 }
 
 function reducer(state: AppState, action: Action): AppState {
@@ -151,13 +166,10 @@ function reducer(state: AppState, action: Action): AppState {
     case 'toggle-favorite': return { ...state, favorites: toggle(state.favorites, action.id) }
     case 'set-notifications': return { ...state, notifications: action.value }
     case 'set-ai-position': return syncLegacyConsumerBridge({ ...state, aiPosition: action.position })
-    case 'reset-ai-position': return {
+    case 'reset-ai-position': return syncLegacyConsumerBridge({
       ...state,
-      aiPositions: {
-        ...state.aiPositions,
-        [action.stage]: defaultState.aiPositions[action.stage],
-      },
-    }
+      aiPosition: defaultState.aiPosition,
+    })
     case 'set-two-factor': return { ...state, twoFactorEnabled: action.enabled }
     case 'update-password': return { ...state, lastPasswordChange: action.lastChange, passwordHint: '刚刚修改' }
     case 'set-guardian': return { ...state, guardian: action.guardian }
@@ -221,7 +233,7 @@ type AppStateContextValue = {
   state: AppState
   pointsBalance: number
   setStage: (stage: LearningStage) => void
-  setGrade: (grade: Grade[LearningStage]) => void
+  setGrade: (grade: PrimaryGrade) => void
   completeKnowledge: (partId: CoursePartId, title: string) => void
   passTest: (partId: CoursePartId, title: string) => void
   login: () => void
@@ -283,7 +295,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     state,
     pointsBalance: getPointsBalance(state.transactions),
     setStage: (stage) => dispatch({ type: 'set-stage', stage }),
-    setGrade: (grade) => dispatch({ type: 'set-grade', grade: grade as PrimaryGrade }),
+    setGrade: (grade) => dispatch({ type: 'set-grade', grade }),
     completeKnowledge: (partId, title) => dispatch({ type: 'complete-knowledge', partId, title, occurredAt: new Date().toISOString() }),
     passTest: (partId, title) => dispatch({ type: 'pass-test', partId, title, occurredAt: new Date().toISOString() }),
     login: () => dispatch({ type: 'login' }),
@@ -294,7 +306,7 @@ export function AppStateProvider({ children }: PropsWithChildren) {
     toggleFavorite: (id) => dispatch({ type: 'toggle-favorite', id }),
     setNotifications: (value) => dispatch({ type: 'set-notifications', value }),
     setAiPosition: (position) => dispatch({ type: 'set-ai-position', position }),
-    resetAiPosition: () => dispatch({ type: 'reset-ai-position', stage: state.stage }),
+    resetAiPosition: () => dispatch({ type: 'reset-ai-position' }),
     setTwoFactor: (enabled) => dispatch({ type: 'set-two-factor', enabled }),
     updatePassword: (lastChange) => dispatch({ type: 'update-password', lastChange }),
     setGuardian: (guardian) => dispatch({ type: 'set-guardian', guardian }),

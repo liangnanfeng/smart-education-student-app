@@ -1,6 +1,7 @@
 import { ArrowLeft, Check, Camera, UserRound } from 'lucide-react'
 import { useState } from 'react'
 import { useAppState } from '../../app/AppState'
+import type { PrimaryGrade } from '../../app/learning'
 import {
   ELEMENTARY_GRADE_IDS,
   GRADE_LABELS,
@@ -42,7 +43,8 @@ export function ProfileEditPage({ onBack, onDone }: { onBack: () => void; onDone
     if (!canSave) return
     setProfile({ nickname: trimmed, avatar })
     if (stage !== state.stage) setStage(stage)
-    if (grade !== state.grade) setGrade(grade)
+    const primaryGrade: PrimaryGrade | undefined = ELEMENTARY_GRADE_IDS.find((id) => id === grade)
+    if (primaryGrade && primaryGrade !== state.grade) setGrade(primaryGrade)
     setSaved(true)
     window.setTimeout(onDone, 400)
   }
