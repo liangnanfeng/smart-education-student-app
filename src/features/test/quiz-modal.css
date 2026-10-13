@@ -467,3 +467,20 @@
   .quiz-overlay, .quiz-modal, .quiz-question, .quiz-sit-answer,
   .quiz-feedback, .medal-win { animation: none !important; }
 }
+
+.quiz-modal--catalog .quiz-q-tag-choice { background: var(--quiz-accent-soft); color: var(--quiz-accent); }
+.quiz-modal--catalog .quiz-q-tag-judgment { background: var(--quiz-ok-soft); color: var(--quiz-ok); }
+.quiz-modal--catalog .quiz-q-tag-scenario { background: var(--quiz-no-soft); color: var(--quiz-no); }
+
+.quiz-modal--catalog .quiz-option-text {
+  display: block;
+  flex: 1;
+}
+
+.quiz-modal--catalog .quiz-result-actions {
+  flex-wrap: wrap;
+}
+
+.quiz-modal--catalog .quiz-result-actions .quiz-btn {
+  min-width: 128px;
+}
