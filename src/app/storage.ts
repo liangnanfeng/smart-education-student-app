@@ -1,6 +1,6 @@
 import { COMPANION_CATALOG } from '../features/ai_companion/companionCatalog'
 import { createEmptyLearningProgress, getPartIdsForBand, PRIMARY_GRADES, type CoursePartId, type PrimaryGrade } from './learning'
-import { APP_STATE_VERSION, createDefaultState, withLegacyConsumerBridge, type AppState, type CompanionCategory, type CompanionLoadout, type LearningStage, type LegacyConsumerBridge } from './model'
+import { APP_STATE_VERSION, createDefaultState, withLegacyConsumerBridge, type AppState, type CompanionCategory, type CompanionLoadout } from './model'
 
 const STORAGE_KEY = 'student-app-state'
 const MIGRATION_KEY = 'student-app-primary-v2-migrated'
@@ -51,10 +51,6 @@ function normalizePrimaryState(parsed: Partial<AppState>, fresh: AppState): AppS
   const primaryGrade = PRIMARY_GRADES.includes(allowed.grade as PrimaryGrade)
     ? allowed.grade as PrimaryGrade
     : fresh.grade
-  const compatibilityStage = isLearningStage(parsed.stage) ? parsed.stage : 'elementary'
-  const runtimeGrade = compatibilityStage === 'secondary' && isLegacySecondaryGrade(parsed.grade)
-    ? parsed.grade
-    : primaryGrade
   const learningProgress = createEmptyLearningProgress()
 
   for (const band of ['grade1-2', 'grade3-4', 'grade5-6'] as const) {
@@ -69,39 +65,14 @@ function normalizePrimaryState(parsed: Partial<AppState>, fresh: AppState): AppS
   return withLegacyConsumerBridge({
     ...allowed,
     stateVersion: APP_STATE_VERSION,
-    grade: runtimeGrade,
+    grade: primaryGrade,
     learningProgress,
     transactions: Array.isArray(allowed.transactions) ? allowed.transactions : fresh.transactions,
     processedRewardIds: Array.isArray(allowed.processedRewardIds)
       ? allowed.processedRewardIds.filter((id): id is string => typeof id === 'string')
       : fresh.processedRewardIds,
     companion: normalizePrimaryLoadout(allowed.companion, fresh.companion),
-  }, readLegacyCompatibility(parsed, compatibilityStage))
-}
-
-function isLearningStage(value: unknown): value is LearningStage {
-  return value === 'elementary' || value === 'secondary'
-}
-
-function isLegacySecondaryGrade(value: unknown): value is AppState['grade'] {
-  return typeof value === 'string' && ['grade7', 'grade8', 'grade9', 'grade10', 'grade11', 'grade12'].includes(value)
-}
-
-function readLegacyCompatibility(
-  parsed: Partial<AppState>,
-  stage: LearningStage,
-): Partial<LegacyConsumerBridge> {
-  const compatibility: Partial<LegacyConsumerBridge> = { stage }
-  if (typeof parsed.pointsBalance === 'number' && Number.isFinite(parsed.pointsBalance)) {
-    compatibility.pointsBalance = parsed.pointsBalance
-  }
-  if (parsed.aiPositions?.elementary && parsed.aiPositions?.secondary) {
-    compatibility.aiPositions = parsed.aiPositions
-  }
-  if (parsed.companions?.elementary && parsed.companions?.secondary) {
-    compatibility.companions = parsed.companions
-  }
-  return compatibility
+  })
 }
 
 function filterCoursePartIds(value: unknown, validIds: Set<CoursePartId>): CoursePartId[] {

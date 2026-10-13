@@ -58,7 +58,7 @@ export type CompanionLoadout = {
   version: number
 }
 
-export type LegacyConsumerBridge = {
+type LegacyConsumerBridge = {
   /** @deprecated Read-only compatibility value. Never persisted. */
   stage: LearningStage
   /** @deprecated Derived from transactions. Never persisted. */
@@ -200,23 +200,15 @@ export function createDefaultState(): AppState {
 
 type PrimaryState = Omit<AppState, keyof LegacyConsumerBridge>
 
-export function withLegacyConsumerBridge(
-  state: PrimaryState,
-  compatibility: Partial<LegacyConsumerBridge> = {},
-): AppState {
+export function withLegacyConsumerBridge(state: PrimaryState): AppState {
   const position = state.aiPosition
   const companion = state.companion
-  const legacySecondaryCompanion: CompanionLoadout = {
-    owned: { appearance: ['nimbo'], outfit: [], decoration: [] },
-    equipped: { appearance: 'nimbo', outfit: null, decoration: null },
-    version: 1,
-  }
   return {
     ...state,
-    stage: compatibility.stage ?? 'elementary',
-    pointsBalance: compatibility.pointsBalance ?? getPointsBalance(state.transactions),
-    aiPositions: compatibility.aiPositions ?? { elementary: position, secondary: position },
-    companions: compatibility.companions ?? { elementary: companion, secondary: legacySecondaryCompanion },
+    stage: 'elementary',
+    pointsBalance: getPointsBalance(state.transactions),
+    aiPositions: { elementary: position, secondary: position },
+    companions: { elementary: companion, secondary: companion },
   }
 }
 
