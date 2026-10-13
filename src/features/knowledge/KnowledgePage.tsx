@@ -1,34 +1,50 @@
 import { BookOpen, Check, ChevronDown, ChevronUp, Lock } from 'lucide-react'
 import { useState } from 'react'
 import { useAppState } from '../../app/AppState'
-import { getCourseData, type CourseActivity } from './knowledgeData'
+import { GRADE_BAND_LABELS, getGradeBand, type CoursePartId, type PrimaryGrade } from '../../app/learning'
+import { getCourseForBand, type CoursePart } from './courseCatalog'
 import './knowledge.css'
-
-const typeColors: Record<CourseActivity['type'], string> = {
-  story: 'story',
-  knowledge: 'knowledge',
-  gem: 'gem',
-  experiment: 'experiment',
-  'try-it': 'try-it',
-}
 
 type Props = {
   onOpenContent?: (courseId: string, chapterNum: number) => void
 }
 
+type PartStatus = 'completed' | 'current' | 'available'
+
+const statusLabels: Record<PartStatus, string> = {
+  completed: '已完成',
+  current: '当前学习',
+  available: '待学习',
+}
+
+const activityRows = (part: CoursePart) => [
+  { icon: '💡', title: '核心知识', type: 'knowledge', typeLabel: '学知识', desc: part.concept },
+  { icon: '🧪', title: '小实验', type: 'experiment', typeLabel: '做实验', desc: part.experiment },
+  { icon: '🛡️', title: '安全提醒', type: 'knowledge', typeLabel: '保安全', desc: part.safety },
+  { icon: '🎯', title: '本章挑战', type: 'try-it', typeLabel: '去挑战', desc: part.challenge },
+] as const
+
 export function KnowledgePage({ onOpenContent }: Props) {
   const { state } = useAppState()
-  const course = getCourseData(state.stage, state.grade)
-  const [expandedDay, setExpandedDay] = useState<string | null>('第一天')
-  const [expandedCh, setExpandedCh] = useState<number | null>(1)
+  const band = getGradeBand(state.grade as PrimaryGrade)
+  const course = getCourseForBand(band)
+  const progress = state.learningProgress[band]
+  const firstIncomplete = course.parts.find((part) => !progress.knowledgeCompleted.includes(part.id))?.id
+  const [expandedPart, setExpandedPart] = useState<CoursePartId | null>(() => firstIncomplete ?? course.parts[0]?.id ?? null)
   const [showTreasure, setShowTreasure] = useState(false)
 
+  function partStatus(part: CoursePart): PartStatus {
+    if (progress.knowledgeCompleted.includes(part.id)) return 'completed'
+    if (part.id === firstIncomplete) return 'current'
+    return 'available'
+  }
+
   return (
-    <div className="knowledge-page">
+    <div className="knowledge-page" data-band={band}>
       <header className="knowledge-header">
         <div>
-          <p className="knowledge-grade">{course.gradeLabel}</p>
-          <h1>{course.courseName}</h1>
+          <p className="knowledge-grade">{GRADE_BAND_LABELS[band]}</p>
+          <h1>{course.name}</h1>
           <p className="knowledge-subtitle">{course.subtitle}</p>
         </div>
         <span className="knowledge-motto">{course.motto}</span>
@@ -36,32 +52,29 @@ export function KnowledgePage({ onOpenContent }: Props) {
 
       <section className="knowledge-plan-card">
         <div className="plan-card-head">
-          <h2>{course.courseName}计划</h2>
+          <h2>{course.name}计划</h2>
           <span className="plan-pill">
             <span className="plan-dot" />
-            {course.gems.length} {(course.id === 'qmx' ? '颗宝石' : '枚徽章')}挑战
+            {course.parts.length} {course.id === 'qmx' ? '颗宝石' : '枚徽章'}挑战
           </span>
         </div>
 
-        {course.days && course.days.map((d, di) => {
-          const key = d.day
-          const isOpen = expandedDay === key
-          const allDone = d.activities.every((a) => a.done)
+        {course.parts.map((part) => {
+          const status = partStatus(part)
+          const isOpen = expandedPart === part.id
+          const completed = status === 'completed'
           return (
-            <div key={key} className={`day-card ${isOpen ? 'expanded' : ''}`}>
+            <div key={part.id} className={`day-card ${status} ${isOpen ? 'expanded' : ''}`}>
               <button
                 type="button"
                 className="day-title-row"
-                onClick={() => setExpandedDay(isOpen ? null : key)}
+                aria-expanded={isOpen}
+                onClick={() => setExpandedPart(isOpen ? null : part.id)}
               >
-                <span className="day-label">{d.day}</span>
-                <span className="day-island">{d.island}</span>
-                <span className="day-steps">{d.activities.length} 个环节</span>
-                {allDone ? (
-                  <span className="day-badge done">已完成</span>
-                ) : (
-                  <span className="day-badge locked">未解锁</span>
-                )}
+                <span className="day-label">{course.id === 'qmx' ? `第${part.number}天` : `第${part.number}章`}</span>
+                <span className="day-island">{part.title}</span>
+                <span className="day-steps">4 个环节</span>
+                <span className={`day-badge ${status}`}>{statusLabels[status]}</span>
                 {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
               </button>
 
@@ -69,87 +82,22 @@ export function KnowledgePage({ onOpenContent }: Props) {
                 <div className="day-body">
                   <div className="day-tag-row">
                     <span className="subject-tag">AI课</span>
-                    <span className="subject-topic">{course.gradeLabel} · {d.island}</span>
+                    <span className="subject-topic">{GRADE_BAND_LABELS[band]} · {part.title}</span>
                   </div>
+                  <p className="chapter-summary">{part.summary}</p>
                   <div className="activity-list">
-                    {d.activities.map((a, i) => (
-                      <div key={i} className="activity-row">
-                        <span className="activity-icon">{a.icon}</span>
+                    {activityRows(part).map((activity) => (
+                      <div key={activity.title} className="activity-row">
+                        <span className="activity-icon">{activity.icon}</span>
                         <div className="activity-text">
                           <div className="activity-title-row">
-                            <span className="activity-title">{a.title}</span>
-                            <span className={`activity-chip ${typeColors[a.type]}`}>{a.typeLabel}</span>
+                            <span className="activity-title">{activity.title}</span>
+                            <span className={`activity-chip ${activity.type}`}>{activity.typeLabel}</span>
                           </div>
-                          <p className="activity-desc">{a.desc}</p>
+                          <p className="activity-desc">{activity.desc}</p>
                         </div>
                         <span className="activity-state">
-                          {a.done ? (
-                            <span className="check-circle"><Check size={14} strokeWidth={3} /></span>
-                          ) : (
-                            <Lock size={16} className="lock-icon" />
-                          )}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="day-unlock">{d.unlockText}</p>
-                  {onOpenContent && (
-                    <button
-                      type="button"
-                      className="read-content-btn"
-                      onClick={() => onOpenContent(course.id, di + 1)}
-                    >
-                      <BookOpen size={16} />
-                      <span>阅读本集内容</span>
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          )
-        })}
-
-        {course.chapters && course.chapters.map((ch) => {
-          const isOpen = expandedCh === ch.num
-          const allDone = ch.activities.every((a) => a.done)
-          return (
-            <div key={ch.num} className={`day-card ${isOpen ? 'expanded' : ''}`}>
-              <button
-                type="button"
-                className="day-title-row"
-                onClick={() => setExpandedCh(isOpen ? null : ch.num)}
-              >
-                <span className="day-label">第{ch.num}章</span>
-                <span className="day-island">{ch.title}</span>
-                <span className="day-steps">{ch.activities.length} 个环节</span>
-                {allDone ? (
-                  <span className="day-badge done">已完成</span>
-                ) : (
-                  <span className="day-badge locked">未解锁</span>
-                )}
-                {isOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-              </button>
-
-              {isOpen && (
-                <div className="day-body">
-                  <div className="day-tag-row">
-                    <span className="subject-tag">AI课</span>
-                    <span className="subject-topic">{course.gradeLabel} · {ch.badgeIcon} {ch.badge}</span>
-                  </div>
-                  <p className="chapter-summary">{ch.summary}</p>
-                  <div className="activity-list">
-                    {ch.activities.map((a, i) => (
-                      <div key={i} className="activity-row">
-                        <span className="activity-icon">{a.icon}</span>
-                        <div className="activity-text">
-                          <div className="activity-title-row">
-                            <span className="activity-title">{a.title}</span>
-                            <span className={`activity-chip ${typeColors[a.type]}`}>{a.typeLabel}</span>
-                          </div>
-                          <p className="activity-desc">{a.desc}</p>
-                        </div>
-                        <span className="activity-state">
-                          {a.done ? (
+                          {completed ? (
                             <span className="check-circle"><Check size={14} strokeWidth={3} /></span>
                           ) : (
                             <Lock size={16} className="lock-icon" />
@@ -160,16 +108,16 @@ export function KnowledgePage({ onOpenContent }: Props) {
                   </div>
                   <div className="try-it-box">
                     <span className="try-it-label">试一试</span>
-                    <p>{ch.tryIt}</p>
+                    <p>{part.challenge}</p>
                   </div>
                   {onOpenContent && (
                     <button
                       type="button"
                       className="read-content-btn"
-                      onClick={() => onOpenContent(course.id, ch.num)}
+                      onClick={() => onOpenContent(course.id, part.number)}
                     >
                       <BookOpen size={16} />
-                      <span>阅读本章内容</span>
+                      <span>阅读本{course.id === 'qmx' ? '集' : '章'}内容</span>
                     </button>
                   )}
                 </div>
@@ -179,50 +127,28 @@ export function KnowledgePage({ onOpenContent }: Props) {
         })}
       </section>
 
-      <button
-        type="button"
-        className="treasure-toggle"
-        onClick={() => setShowTreasure((v) => !v)}
-      >
-        <span>💎 {course.treasureBlurb}</span>
+      <button type="button" className="treasure-toggle" onClick={() => setShowTreasure((value) => !value)}>
+        <span>💎 {course.id === 'qmx' ? '宝石' : '徽章'}宝库</span>
         {showTreasure ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
       </button>
 
       {showTreasure && (
         <section className="treasure-section">
           <div className="gem-grid">
-            {course.gems.map((g, i) => (
-              <div key={i} className="gem-card">
+            {course.medals.map((medal) => (
+              <div key={medal.partId} className="gem-card">
                 <div className="gem-head">
-                  <span className="gem-icon">{g.icon}</span>
-                  <span className="gem-name">{g.name}</span>
+                  <span className="gem-icon">{medal.icon}</span>
+                  <span className="gem-name">{medal.name}</span>
                 </div>
-                <p className="gem-source">{g.island}</p>
-                <p className="gem-desc">{g.desc}</p>
+                <p className="gem-source">{course.parts.find((part) => part.id === medal.partId)?.title}</p>
+                <p className="gem-desc">{medal.description}</p>
               </div>
             ))}
           </div>
-
-          <div className="safety-tips">
-            <h3>🌟 安全小贴士</h3>
-            {course.safetyTips.map((t, i) => (
-              <div key={i} className="safety-item">
-                <span className="safety-icon">{t.icon}</span>
-                <div>
-                  <strong>{t.title}</strong>
-                  <p>{t.text}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
           <div className="achievement-banner">
             <span className="achievement-icon">🏅</span>
-            <span className="achievement-text">
-              {course.id === 'qmx' && '恭喜点亮启明星，你已经是「AI启明星·小新星」啦！'}
-              {course.id === 'cxd' && '恭喜集齐六枚徽章，你已经是「AI创想家」啦！'}
-              {course.id === 'lab' && '恭喜完成全部实验，你已经是「AI研究员」啦！'}
-            </span>
+            <span className="achievement-text">完成全部学习，点亮「{course.finaleMedal.name}」！</span>
           </div>
         </section>
       )}

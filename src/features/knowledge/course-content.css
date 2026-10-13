@@ -449,6 +449,23 @@
   border: 0;
 }
 
+.lesson-video-card__fallback {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 18px;
+  color: #fff;
+  text-align: center;
+  background: linear-gradient(145deg, #596174, #303748);
+}
+
+.lesson-video-card__fallback strong { font-size: 14px; }
+.lesson-video-card__fallback span { color: rgba(255, 255, 255, 0.76); font-size: 12px; }
+
 .lesson-video-card__link {
   display: inline-flex;
   align-items: center;
@@ -486,6 +503,77 @@
   .lesson-video-card { padding: 10px; border-radius: 15px; }
   .lesson-video-card__heading h4 { font-size: 14px; }
   .lesson-video-card__link { width: 100%; }
+}
+
+.grade56-content {
+  display: grid;
+  gap: 12px;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 18px 16px;
+}
+
+.grade56-section {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 20%, var(--line));
+  border-radius: 17px;
+  background: linear-gradient(145deg, #FFFDF9, color-mix(in srgb, var(--warm-accent-wash) 54%, #fff));
+  box-shadow: 0 9px 20px rgba(112, 76, 43, 0.07);
+}
+
+.grade56-section__icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: #fff;
+  font-size: 17px;
+}
+
+.grade56-section h2 {
+  margin: 0 0 5px;
+  color: var(--ink);
+  font-size: 17px;
+  font-weight: 850;
+}
+
+.grade56-section p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.content-completion {
+  max-width: 720px;
+  margin: 2px auto 0;
+  padding: 0 16px 20px;
+  text-align: center;
+}
+
+.content-completion button {
+  width: 100%;
+  min-height: 46px;
+  border: 0;
+  border-radius: 14px;
+  color: #fff;
+  background: linear-gradient(90deg, var(--accent), var(--accent-deep));
+  font: inherit;
+  font-size: 15px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.content-completion p {
+  margin: 10px 0 0;
+  color: #238653;
+  font-size: 14px;
+  font-weight: 800;
 }
 
 /* ===== 7-9年级 HTML 内容 ===== */

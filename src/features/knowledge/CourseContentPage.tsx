@@ -1,10 +1,9 @@
 import { ArrowLeft, BookOpen, ExternalLink, Lightbulb, PlayCircle, Target } from 'lucide-react'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useAppState } from '../../app/AppState'
-import { getCourseData } from './knowledgeData'
+import { getGradeBand, type PrimaryGrade } from '../../app/learning'
 import { stories } from './content/storyContent'
-import { GRADE56_PARTS } from './content/grade56Content'
-import type { CoursePart } from './courseCatalog'
+import { COURSE_PACKAGES, getCourseForBand, type CoursePart } from './courseCatalog'
 import './course-content.css'
 
 // 3-4年级 markdown 文件通过 Vite ?raw 导入
@@ -138,7 +137,17 @@ function LessonVideoCard({
   bvid: string
   notes: string[]
 }) {
+  const [embedFailed, setEmbedFailed] = useState(false)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
   const playerUrl = `https://player.bilibili.com/player.html?bvid=${bvid}&page=1&high_quality=1&danmaku=0&autoplay=0`
+
+  useEffect(() => {
+    const iframe = iframeRef.current
+    if (!iframe) return
+    const showFallback = () => setEmbedFailed(true)
+    iframe.addEventListener('error', showFallback)
+    return () => iframe.removeEventListener('error', showFallback)
+  }, [embedFailed])
 
   return (
     <section className="lesson-video-card" aria-label={title}>
@@ -150,13 +159,23 @@ function LessonVideoCard({
         </div>
       </div>
       <div className="lesson-video-card__player">
-        <iframe
-          src={playerUrl}
-          title={title}
-          loading="lazy"
-          allow="autoplay; fullscreen; picture-in-picture"
-          allowFullScreen
-        />
+        {embedFailed ? (
+          <div className="lesson-video-card__fallback" role="status">
+            <PlayCircle size={34} aria-hidden="true" />
+            <strong>视频暂时无法在页内播放</strong>
+            <span>可以使用下方按钮前往原平台观看。</span>
+          </div>
+        ) : (
+          <iframe
+            ref={iframeRef}
+            src={playerUrl}
+            title={title}
+            loading="lazy"
+            allow="autoplay; fullscreen; picture-in-picture"
+            allowFullScreen
+            onError={() => setEmbedFailed(true)}
+          />
+        )}
       </div>
       <a
         className="lesson-video-card__link"
@@ -210,8 +229,13 @@ type Props = {
 }
 
 export function CourseContentPage({ courseId, chapterNum, onBack }: Props) {
-  const { state } = useAppState()
-  const course = getCourseData(state.stage, state.grade)
+  const { state, completeKnowledge } = useAppState()
+  const activeCourse = getCourseForBand(getGradeBand(state.grade as PrimaryGrade))
+  const course = Object.values(COURSE_PACKAGES).find((candidate) => candidate.id === courseId) ?? activeCourse
+  const part = course.parts.find((candidate) => candidate.number === chapterNum) ?? null
+  const progress = state.learningProgress[course.band]
+  const alreadyComplete = part ? progress.knowledgeCompleted.includes(part.id) : false
+  const [showReward, setShowReward] = useState(false)
 
   const content = useMemo(() => {
     if (courseId === 'qmx') {
@@ -220,11 +244,17 @@ export function CourseContentPage({ courseId, chapterNum, onBack }: Props) {
     if (courseId === 'cxd') {
       return cxdChapters[chapterNum - 1] ?? null
     }
-    if (courseId === 'ael' || courseId === 'lab') {
-      return GRADE56_PARTS[chapterNum - 1] ?? null
+    if (courseId === 'ael') {
+      return part
     }
     return null
-  }, [courseId, chapterNum])
+  }, [courseId, chapterNum, part])
+
+  function markComplete() {
+    if (!part || alreadyComplete) return
+    completeKnowledge(part.id, part.title)
+    setShowReward(true)
+  }
 
   return (
     <div className="course-content-page">
@@ -233,11 +263,9 @@ export function CourseContentPage({ courseId, chapterNum, onBack }: Props) {
           <ArrowLeft size={20} />
         </button>
         <div>
-          <p className="content-course-name">{course.courseName}</p>
+          <p className="content-course-name">{course.name}</p>
           <h1 className="content-title">
-            {courseId === 'qmx' && `第${chapterNum}天 · ${(content as any)?.title ?? ''}`}
-            {courseId === 'cxd' && `第${chapterNum}章 · ${course.chapters?.[chapterNum - 1]?.title ?? ''}`}
-            {(courseId === 'ael' || courseId === 'lab') && `第${chapterNum}章 · ${(content as CoursePart | null)?.title ?? ''}`}
+            {courseId === 'qmx' ? `第${chapterNum}天 · ${part?.title ?? ''}` : `第${chapterNum}章 · ${part?.title ?? ''}`}
           </h1>
         </div>
       </header>
@@ -250,25 +278,42 @@ export function CourseContentPage({ courseId, chapterNum, onBack }: Props) {
         <div className="markdown-body">{renderMarkdown(content)}</div>
       )}
 
-      {(courseId === 'ael' || courseId === 'lab') && content && typeof content !== 'string' && (
+      {courseId === 'ael' && content && typeof content !== 'string' && (
         <Grade56Content part={content as CoursePart} />
+      )}
+
+      {part && (
+        <section className="content-completion" aria-label="学习进度">
+          <button type="button" onClick={markComplete}>
+            {alreadyComplete ? '已完成本部分知识' : '完成本部分知识'}
+          </button>
+          {showReward && <p role="status">🎉 已完成，获得 30 积分</p>}
+        </section>
       )}
     </div>
   )
 }
 
 function Grade56Content({ part }: { part: CoursePart }) {
+  const sections = [
+    { icon: '🏠', title: '生活问题', text: part.summary },
+    { icon: '💡', title: '核心知识', text: part.concept },
+    { icon: '🧪', title: '小实验', text: part.experiment },
+    { icon: '🛡️', title: '安全提醒', text: part.safety },
+    { icon: '🎯', title: '本章挑战', text: part.challenge },
+  ]
+
   return (
-    <article className="markdown-body">
-      <p>{part.summary}</p>
-      <h2>核心知识</h2>
-      <p>{part.concept}</p>
-      <h2>小实验</h2>
-      <p>{part.experiment}</p>
-      <h2>安全提醒</h2>
-      <p>{part.safety}</p>
-      <h2>本章挑战</h2>
-      <p>{part.challenge}</p>
+    <article className="grade56-content">
+      {sections.map((section) => (
+        <section key={section.title} className="grade56-section">
+          <span className="grade56-section__icon" aria-hidden="true">{section.icon}</span>
+          <div>
+            <h2>{section.title}</h2>
+            <p>{section.text}</p>
+          </div>
+        </section>
+      ))}
     </article>
   )
 }

@@ -1,4 +1,5 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { AppStateProvider } from '../../app/AppState'
 import { CourseContentPage } from './CourseContentPage'
@@ -43,6 +44,19 @@ describe('CourseContentPage', () => {
     expect(firstVideoLinks).toHaveLength(1)
   })
 
+  it('shows a clear fallback when an embedded lesson video cannot load', () => {
+    render(
+      <AppStateProvider>
+        <CourseContentPage courseId="cxd" chapterNum={1} onBack={() => undefined} />
+      </AppStateProvider>,
+    )
+
+    fireEvent.error(screen.getByTitle('视频 1-1《AI 在身边：无处不在的智能应用》'))
+
+    expect(screen.getByRole('status')).toHaveTextContent('视频暂时无法在页内播放')
+    expect(screen.getByRole('link', { name: '在原平台打开视频 1-1《AI 在身边：无处不在的智能应用》' })).toBeInTheDocument()
+  })
+
   it('uses the illustrated page with dialogue for the primary comic', () => {
     render(
       <AppStateProvider>
@@ -79,5 +93,20 @@ describe('CourseContentPage', () => {
     expect(screen.getByRole('heading', { name: '第1章 · AI 系统拆解站' })).toBeInTheDocument()
     expect(screen.getByText('AI 系统像一支合作队，每个部分都有自己的任务。')).toBeInTheDocument()
     expect(screen.getByText('AI 只是工具，重要决定要让人来负责。')).toBeInTheDocument()
+  })
+
+  it('marks a reading complete once and adds thirty points', async () => {
+    const user = userEvent.setup()
+    render(
+      <AppStateProvider>
+        <CourseContentPage courseId="ael" chapterNum={4} onBack={() => undefined} />
+      </AppStateProvider>,
+    )
+
+    await user.click(screen.getByRole('button', { name: '完成本部分知识' }))
+    expect(screen.getByRole('status')).toHaveTextContent('获得 30 积分')
+
+    await user.click(screen.getByRole('button', { name: '已完成本部分知识' }))
+    expect(screen.getAllByText(/获得 30 积分/)).toHaveLength(1)
   })
 })
