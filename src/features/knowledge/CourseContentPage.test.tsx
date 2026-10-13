@@ -68,4 +68,16 @@ describe('CourseContentPage', () => {
     expect(comicPage).toHaveAttribute('height', '720')
     expect(comicPage).toHaveStyle({ aspectRatio: '16 / 9', objectFit: 'contain' })
   })
+
+  it('renders the grade 5-6 primary chapter structure without the legacy lab HTML', () => {
+    render(
+      <AppStateProvider>
+        <CourseContentPage courseId="ael" chapterNum={1} onBack={() => undefined} />
+      </AppStateProvider>,
+    )
+
+    expect(screen.getByRole('heading', { name: '第1章 · AI 系统拆解站' })).toBeInTheDocument()
+    expect(screen.getByText('AI 系统像一支合作队，每个部分都有自己的任务。')).toBeInTheDocument()
+    expect(screen.getByText('AI 只是工具，重要决定要让人来负责。')).toBeInTheDocument()
+  })
 })

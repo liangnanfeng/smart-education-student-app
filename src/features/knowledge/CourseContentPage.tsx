@@ -3,18 +3,17 @@ import { useMemo } from 'react'
 import { useAppState } from '../../app/AppState'
 import { getCourseData } from './knowledgeData'
 import { stories } from './content/storyContent'
+import { GRADE56_PARTS } from './content/grade56Content'
+import type { CoursePart } from './courseCatalog'
 import './course-content.css'
 
-// 4-6年级 markdown 文件通过 Vite ?raw 导入
+// 3-4年级 markdown 文件通过 Vite ?raw 导入
 import ch1 from './content/cxd/01_AI超能力图鉴.md?raw'
 import ch2 from './content/cxd/02_把话说清楚.md?raw'
 import ch3 from './content/cxd/03_创意放大器.md?raw'
 import ch4 from './content/cxd/04_真相侦探社.md?raw'
 import ch5 from './content/cxd/05_教AI认世界.md?raw'
 import ch6 from './content/cxd/06_负责任的创想家.md?raw'
-
-// 7-9年级 HTML 文件
-import labHtml from './content/lab/course.html?raw'
 
 const cxdChapters = [ch1, ch2, ch3, ch4, ch5, ch6]
 
@@ -204,42 +203,6 @@ function renderInline(text: string): React.ReactNode {
   return <>{parts}</>
 }
 
-// 从7-9年级 HTML 中提取 body 内容
-function extractHtmlBody(html: string): string {
-  const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/)
-  if (!bodyMatch) return html
-  let body = bodyMatch[1]
-  // 移除 script 标签
-  body = body.replace(/<script[\s\S]*?<\/script>/g, '')
-  // 移除 backtop 按钮
-  body = body.replace(/<a[^>]*class="backtop"[\s\S]*?<\/a>/g, '')
-  // 修正图片路径（去掉 images/ 前缀，使用外部链接或 placeholder）
-  body = body.replace(/src="images\//g, 'src="https://via.placeholder.com/800x400?text=')
-  return body
-}
-
-// 从7-9年级 HTML 中提取某一章的内容（含其 hero/导言可选）
-function extractLabChapter(html: string, chapterNum: number): string | null {
-  const body = extractHtmlBody(html)
-  if (chapterNum === 0) {
-    // 导言部分：hero + 写在前面 + 学习路线图（第一个 div.chapter 之前）
-    const firstChapter = body.indexOf('<div class="chapter"')
-    if (firstChapter === -1) return body
-    return body.slice(0, firstChapter)
-  }
-  // 找到第 N 个 <div class="chapter" ...> ... 到下一个 <div class="chapter" 或末尾
-  const chapters: string[] = []
-  const re = /<div\s+class="chapter"[^>]*>/g
-  let m: RegExpExecArray | null
-  const starts: number[] = []
-  while ((m = re.exec(body)) !== null) starts.push(m.index)
-  for (let i = 0; i < starts.length; i++) {
-    const end = i + 1 < starts.length ? starts[i + 1] : body.length
-    chapters.push(body.slice(starts[i], end))
-  }
-  return chapters[chapterNum - 1] ?? null
-}
-
 type Props = {
   courseId: string
   chapterNum: number
@@ -257,9 +220,8 @@ export function CourseContentPage({ courseId, chapterNum, onBack }: Props) {
     if (courseId === 'cxd') {
       return cxdChapters[chapterNum - 1] ?? null
     }
-    if (courseId === 'lab') {
-      // 按章节 div 分割，正确取第 N 章内容
-      return extractLabChapter(labHtml, chapterNum)
+    if (courseId === 'ael' || courseId === 'lab') {
+      return GRADE56_PARTS[chapterNum - 1] ?? null
     }
     return null
   }, [courseId, chapterNum])
@@ -275,7 +237,7 @@ export function CourseContentPage({ courseId, chapterNum, onBack }: Props) {
           <h1 className="content-title">
             {courseId === 'qmx' && `第${chapterNum}天 · ${(content as any)?.title ?? ''}`}
             {courseId === 'cxd' && `第${chapterNum}章 · ${course.chapters?.[chapterNum - 1]?.title ?? ''}`}
-            {courseId === 'lab' && `第${chapterNum}章 · ${course.chapters?.[chapterNum - 1]?.title ?? ''}`}
+            {(courseId === 'ael' || courseId === 'lab') && `第${chapterNum}章 · ${(content as CoursePart | null)?.title ?? ''}`}
           </h1>
         </div>
       </header>
@@ -288,14 +250,30 @@ export function CourseContentPage({ courseId, chapterNum, onBack }: Props) {
         <div className="markdown-body">{renderMarkdown(content)}</div>
       )}
 
-      {courseId === 'lab' && typeof content === 'string' && (
-        <div className="html-body" dangerouslySetInnerHTML={{ __html: content }} />
+      {(courseId === 'ael' || courseId === 'lab') && content && typeof content !== 'string' && (
+        <Grade56Content part={content as CoursePart} />
       )}
     </div>
   )
 }
 
-// 1-3年级 故事内容渲染
+function Grade56Content({ part }: { part: CoursePart }) {
+  return (
+    <article className="markdown-body">
+      <p>{part.summary}</p>
+      <h2>核心知识</h2>
+      <p>{part.concept}</p>
+      <h2>小实验</h2>
+      <p>{part.experiment}</p>
+      <h2>安全提醒</h2>
+      <p>{part.safety}</p>
+      <h2>本章挑战</h2>
+      <p>{part.challenge}</p>
+    </article>
+  )
+}
+
+// 1-2年级 故事内容渲染
 function QmxContent({ story }: { story: NonNullable<typeof stories[0]> }) {
   const illustratedPages = qmxTextPages[story.day] ?? []
 

@@ -1,3 +1,7 @@
+import { makeCoursePartId } from '../../app/learning'
+import type { CoursePartId } from '../../app/learning'
+import { GRADE56_PARTS } from './content/grade56Content'
+
 // 三年级段课程体系数据
 
 export type CourseActivity = {
@@ -10,6 +14,7 @@ export type CourseActivity = {
 }
 
 export type CourseDay = {
+    id: CoursePartId
     day: string
     island: string
     activities: CourseActivity[]
@@ -17,6 +22,7 @@ export type CourseDay = {
 }
 
 export type CourseChapter = {
+    id: CoursePartId
     num: number
     title: string
     badge: string
@@ -39,16 +45,16 @@ export type CourseData = {
     safetyTips: { icon: string; title: string; text: string }[]
 }
 
-// 1~3年级：启明星大冒险
-const elementaryLow: CourseData = {
+// 1~2年级：启明星大冒险
+export const elementaryLow: CourseData = {
     id: 'qmx',
-    gradeLabel: '一~三年级',
+    gradeLabel: '一~二年级',
     courseName: '启明星大冒险',
     subtitle: '认识 AI：会看、会听、会学',
     motto: '8 集漫画 · 8 颗宝石',
     days: [
         {
-            day: '第一天', island: '启明星岛',
+            id: makeCoursePartId('qmx', 1), day: '第一天', island: '启明星岛',
             activities: [
                 { icon: '🌟', title: '启明星变暗了', type: 'story', typeLabel: '听故事', desc: '信息城堡失去了光明，集齐8颗AI宝石才能恢复', done: true },
                 { icon: '🤖', title: 'AI 是什么呀？', type: 'knowledge', typeLabel: '学知识', desc: '不是天上的星星，是会看、会听、会帮忙的聪明工具', done: true },
@@ -57,7 +63,7 @@ const elementaryLow: CourseData = {
             unlockText: '嘀嘀！AI 探险队集合，出发点亮启明星！',
         },
         {
-            day: '第二天', island: '家居岛',
+            id: makeCoursePartId('qmx', 2), day: '第二天', island: '家居岛',
             activities: [
                 { icon: '🏠', title: '哇，这里好像我家呀', type: 'story', typeLabel: '听故事', desc: '小音箱、门锁、扫地机器人，大家都在忙什么？' },
                 { icon: '🎵', title: '家里的 AI 帮手', type: 'knowledge', typeLabel: '学知识', desc: '音箱听懂儿歌，门锁认出小脸，机器人会看哪里脏' },
@@ -66,7 +72,7 @@ const elementaryLow: CourseData = {
             unlockText: '完成以上内容后解锁下一座岛',
         },
         {
-            day: '第三天', island: '眼睛岛',
+            id: makeCoursePartId('qmx', 3), day: '第三天', island: '眼睛岛',
             activities: [
                 { icon: '🐱', title: '这是猫还是狗呀？', type: 'story', typeLabel: '听故事', desc: 'AI眼睛学校有好多照片，连小蓝都一时分不出来' },
                 { icon: '👀', title: 'AI 怎么认出小猫', type: 'knowledge', typeLabel: '学知识', desc: '先看很多很多猫的照片，记住尖耳朵、长胡须' },
@@ -75,7 +81,7 @@ const elementaryLow: CourseData = {
             unlockText: '完成以上内容后解锁下一座岛',
         },
         {
-            day: '第四天', island: '耳朵岛',
+            id: makeCoursePartId('qmx', 4), day: '第四天', island: '耳朵岛',
             activities: [
                 { icon: '👂', title: '咦，我听错啦！', type: 'story', typeLabel: '听故事', desc: '小多把"开灯"听岔了，花朵一样的耳朵岛真好玩' },
                 { icon: '💬', title: '让 AI 听清你说话', type: 'knowledge', typeLabel: '学知识', desc: '一个字一个字慢慢说、大声说：开——灯！' },
@@ -84,7 +90,7 @@ const elementaryLow: CourseData = {
             unlockText: '完成以上内容后解锁下一座岛',
         },
         {
-            day: '第五天', island: '智慧岛',
+            id: makeCoursePartId('qmx', 5), day: '第五天', island: '智慧岛',
             activities: [
                 { icon: '🍎', title: '哇，好多水果呀', type: 'story', typeLabel: '听故事', desc: '哪个是苹果，哪个是香蕉？小多也有点分不清' },
                 { icon: '🧠', title: 'AI 学习的秘密', type: 'knowledge', typeLabel: '学知识', desc: '看很多苹果的样子：圆圆的、红红的、有个小柄' },
@@ -93,7 +99,7 @@ const elementaryLow: CourseData = {
             unlockText: '完成以上内容后解锁下一座岛',
         },
         {
-            day: '第六天', island: '时光岛',
+            id: makeCoursePartId('qmx', 6), day: '第六天', island: '时光岛',
             activities: [
                 { icon: '🚀', title: '坐上时光机出发', type: 'story', typeLabel: '听故事', desc: '去很久很久以前，看看AI刚出生时的样子' },
                 { icon: '⏳', title: 'AI 成长记', type: 'knowledge', typeLabel: '学知识', desc: '小小零件 → 装上身体学会走路 → 厉害的大帮手' },
@@ -102,7 +108,7 @@ const elementaryLow: CourseData = {
             unlockText: '完成以上内容后解锁下一座岛',
         },
         {
-            day: '第七天', island: '迷雾岛',
+            id: makeCoursePartId('qmx', 7), day: '第七天', island: '迷雾岛',
             activities: [
                 { icon: '🦋', title: '雾中的"小鸟"', type: 'story', typeLabel: '听故事', desc: '雾太大啦，小多把蝴蝶错看成了一只小鸟' },
                 { icon: '🔍', title: 'AI 也会犯错哦', type: 'knowledge', typeLabel: '学知识', desc: '当小侦探：仔细看一看、想一想，再下结论' },
@@ -111,7 +117,7 @@ const elementaryLow: CourseData = {
             unlockText: '完成以上内容后解锁下一座岛',
         },
         {
-            day: '第八天', island: '城堡岛',
+            id: makeCoursePartId('qmx', 8), day: '第八天', island: '城堡岛',
             activities: [
                 { icon: '🏰', title: '城堡门口的陌生人', type: 'story', typeLabel: '听故事', desc: '黑影打听住址、生日和爸爸妈妈的电话号码' },
                 { icon: '🤫', title: '我的秘密不乱说', type: 'knowledge', typeLabel: '学知识', desc: '住址、生日、爸妈电话，都是不能乱说的小秘密' },
@@ -137,16 +143,16 @@ const elementaryLow: CourseData = {
     ],
 }
 
-// 4~6年级：AI创想大陆
-const elementaryHigh: CourseData = {
+// 3~4年级：AI创想大陆
+export const elementaryHigh: CourseData = {
     id: 'cxd',
-    gradeLabel: '四~六年级',
+    gradeLabel: '三~四年级',
     courseName: 'AI 创想大陆',
     subtitle: '使用 AI：会用 · 会创 · 会改 · 会查',
     motto: '6 章读本 · 6 枚创想徽章',
     chapters: [
         {
-            num: 1, title: 'AI 超能力图鉴', badge: '全景徽章', badgeIcon: '🔭',
+            id: makeCoursePartId('cxd', 1), num: 1, title: 'AI 超能力图鉴', badge: '全景徽章', badgeIcon: '🔭',
             summary: 'AI 会写、会画、会听、会看、会推荐；但也有四条边界——幻觉、知识截止、无真实经历、无道德判断。',
             tryIt: '给 AI 出三道难题，记录它的回答和自信度，验证"猜而非回忆"',
             activities: [
@@ -156,7 +162,7 @@ const elementaryHigh: CourseData = {
             ],
         },
         {
-            num: 2, title: '把话说清楚', badge: '沟通徽章', badgeIcon: '💬',
+            id: makeCoursePartId('cxd', 2), num: 2, title: '把话说清楚', badge: '沟通徽章', badgeIcon: '💬',
             summary: '怎样表达 AI 才听得懂——目标、对象、场合、格式、限制五要素；结果不满意时如何追问和修改。',
             tryIt: '你画我猜 AI 版：通过限制轮次与补充描述体验"明确需求→生成→反馈"',
             activities: [
@@ -166,7 +172,7 @@ const elementaryHigh: CourseData = {
             ],
         },
         {
-            num: 3, title: '创意放大器', badge: '创意徽章', badgeIcon: '🎨',
+            id: makeCoursePartId('cxd', 3), num: 3, title: '创意放大器', badge: '创意徽章', badgeIcon: '🎨',
             summary: 'AI 是乐器，你是作曲家——先手写构思，再用 AI 生成，然后修改定稿。创作四步法：构思→生成→修改→定稿。',
             tryIt: '做一本属于自己的绘本，严格按四步执行，并标注 AI 参与部分',
             activities: [
@@ -177,7 +183,7 @@ const elementaryHigh: CourseData = {
             ],
         },
         {
-            num: 4, title: '真相侦探社', badge: '侦探徽章', badgeIcon: '🔍',
+            id: makeCoursePartId('cxd', 4), num: 4, title: '真相侦探社', badge: '侦探徽章', badgeIcon: '🔍',
             summary: 'AI 会一本正经地胡说八道（幻觉）——追求"像"而非"真"。核验三步法：找源头、交叉查、问常识。',
             tryIt: '侦探委托案：对三条 AI 答案逐条查证，撰写《侦探查证报告》',
             activities: [
@@ -187,7 +193,7 @@ const elementaryHigh: CourseData = {
             ],
         },
         {
-            num: 5, title: '教 AI 认世界', badge: '训练师徽章', badgeIcon: '🧪',
+            id: makeCoursePartId('cxd', 5), num: 5, title: '教 AI 认世界', badge: '训练师徽章', badgeIcon: '🧪',
             summary: 'AI 学认东西和小孩学认猫类似——通过大量例子训练。四步流程：收集样本→打标签→训练→测试。',
             tryIt: '写一份训练日志：小组完成分类训练实验，记录样本、标签、测试和准确率',
             activities: [
@@ -197,7 +203,7 @@ const elementaryHigh: CourseData = {
             ],
         },
         {
-            num: 6, title: '负责任的创想家', badge: '责任徽章', badgeIcon: '🛡️',
+            id: makeCoursePartId('cxd', 6), num: 6, title: '负责任的创想家', badge: '责任徽章', badgeIcon: '🛡️',
             summary: '数字安全三条红线：不传人脸照片、不输入真实姓名、不透露学校住址。综合项目"身边问题解决者"。',
             tryIt: '创想发布会：从真实问题选题，规划、创作、发布，以"问题真、构思清、查证实、复盘诚"评审',
             activities: [
@@ -222,127 +228,44 @@ const elementaryHigh: CourseData = {
     ],
 }
 
-// 7~9年级：AI原理实验室
-const secondary: CourseData = {
-    id: 'lab',
-    gradeLabel: '七~九年级',
-    courseName: 'AI 原理实验室',
-    subtitle: '理解与设计 AI：懂数据 · 懂模型 · 会实验 · 会设计',
-    motto: '9 章实验手册 · 1 个真实项目',
-    chapters: [
-        {
-            num: 1, title: 'AI 系统解剖室', badge: '解剖徽章', badgeIcon: '🔧',
-            summary: '说出AI系统五部件（数据、模型、算力、算法、应用），区分AI、普通程序、自动化设备和机器人。',
-            tryIt: '拆解一个真实AI应用，标注五部件各自的角色',
-            activities: [
-                { icon: '🔧', title: 'AI系统的五部件', type: 'knowledge', typeLabel: '学原理', desc: '数据、模型、算力、算法、应用——AI由什么组成', done: true },
-                { icon: '🤔', title: 'AI vs 普通程序', type: 'knowledge', typeLabel: '学原理', desc: '学会区分AI、普通程序、自动化设备和机器人', done: true },
-                { icon: '🏅', title: '获得解剖徽章', type: 'gem', typeLabel: '集徽章', desc: '拆开AI看内部结构', done: true },
-            ],
-        },
-        {
-            num: 2, title: '数据侦探营', badge: '数据徽章', badgeIcon: '📊',
-            summary: '数据的五站旅程：采集→清洗→标注→训练集/测试集分离→找坏样本。动手标注，理解数据质量为何影响模型。',
-            tryIt: '动手标注一批样本，找出并修正数据中的"坏样本"',
-            activities: [
-                { icon: '📊', title: '数据五站旅程', type: 'knowledge', typeLabel: '学原理', desc: '采集→清洗→标注→分割→质检' },
-                { icon: '🏷️', title: '训练集与测试集', type: 'knowledge', typeLabel: '学原理', desc: '为什么要分开训练和测试数据' },
-                { icon: '🏅', title: '获得数据徽章', type: 'gem', typeLabel: '集徽章', desc: '理解数据质量决定模型能力' },
-            ],
-        },
-        {
-            num: 3, title: '算法的工具箱', badge: '算法徽章', badgeIcon: '🧮',
-            summary: '分类、回归、聚类、推荐——四类机器学习任务及与规则程序的区别。理解"算法"不是魔法而是工具。',
-            tryIt: '给生活中的问题选择合适的算法类型并说明理由',
-            activities: [
-                { icon: '🧮', title: '四类学习任务', type: 'knowledge', typeLabel: '学原理', desc: '分类、回归、聚类、推荐——不同问题用不同算法' },
-                { icon: '⚖️', title: '算法 vs 规则', type: 'knowledge', typeLabel: '学原理', desc: '为什么AI不从规则出发而从数据出发' },
-                { icon: '🏅', title: '获得算法徽章', type: 'gem', typeLabel: '集徽章', desc: '理解算法是工具不是魔法' },
-            ],
-        },
-        {
-            num: 4, title: '第一次 AI 实验', badge: '实验徽章', badgeIcon: '🔬',
-            summary: '用免编程工具完成采集→训练→测试全流程，理解样本数量、均衡性、背景对结果的影响。',
-            tryIt: '用免编程工具训练一个图像分类器，记录准确率变化',
-            activities: [
-                { icon: '🔬', title: '采集-训练-测试', type: 'experiment', typeLabel: '做实验', desc: '亲手完成一次完整的AI训练实验' },
-                { icon: '⚖️', title: '样本均衡与背景', type: 'knowledge', typeLabel: '学原理', desc: '样本多少、类别均衡、背景干扰如何影响结果' },
-                { icon: '🏅', title: '获得实验徽章', type: 'gem', typeLabel: '集徽章', desc: '完成第一次AI实验' },
-            ],
-        },
-        {
-            num: 5, title: '给 AI 打分', badge: '评价徽章', badgeIcon: '📈',
-            summary: '准确率、混淆矩阵、错误案例分析——学会用数据评价AI表现，而不只凭"感觉"。',
-            tryIt: '分析一个模型的混淆矩阵，找出最容易混淆的类别并解释原因',
-            activities: [
-                { icon: '📈', title: '准确率与混淆矩阵', type: 'knowledge', typeLabel: '学原理', desc: '用数字而不是感觉来评价AI' },
-                { icon: '🔍', title: '错误案例分析', type: 'knowledge', typeLabel: '学原理', desc: '从错误中找规律，改进模型' },
-                { icon: '🏅', title: '获得评价徽章', type: 'gem', typeLabel: '集徽章', desc: '学会科学评价AI表现' },
-            ],
-        },
-        {
-            num: 6, title: '生成式 AI 的真相', badge: '真相徽章', badgeIcon: '💡',
-            summary: '生成式AI的工作原理：概率预测下一个词/像素，不是"理解"而是"猜得像"。幻觉为何产生。',
-            tryIt: '设计三个能引发AI幻觉的问题，分析幻觉产生的原因',
-            activities: [
-                { icon: '💡', title: '概率预测原理', type: 'knowledge', typeLabel: '学原理', desc: '生成式AI预测下一个词，不是理解而是猜得像' },
-                { icon: '🎭', title: '幻觉的产生', type: 'knowledge', typeLabel: '学原理', desc: '为什么AI会一本正经地编造信息' },
-                { icon: '🏅', title: '获得真相徽章', type: 'gem', typeLabel: '集徽章', desc: '理解生成式AI的原理与局限' },
-            ],
-        },
-        {
-            num: 7, title: '从模型到产品', badge: '产品徽章', badgeIcon: '🏗️',
-            summary: '一个AI功能怎样变成完整应用——从模型到产品需要设计交互、处理异常、考虑用户体验。',
-            tryIt: '为一个AI功能设计完整的产品方案（交互、异常处理、用户体验）',
-            activities: [
-                { icon: '🏗️', title: '给一个想法盖楼', type: 'experiment', typeLabel: '做实验', desc: '从模型到产品的完整设计' },
-                { icon: '🎨', title: '交互与异常处理', type: 'knowledge', typeLabel: '学原理', desc: 'AI产品不只有模型，还要考虑用户体验' },
-                { icon: '🏅', title: '获得产品徽章', type: 'gem', typeLabel: '集徽章', desc: '学会从模型到产品的设计' },
-            ],
-        },
-        {
-            num: 8, title: '与 AI 共处', badge: '共处徽章', badgeIcon: '🌐',
-            summary: '信息茧房、深度伪造、隐私与偏见、版权与AI作业——学会负责任地与AI共处：先核验再传播，如实标注，保护自己。',
-            tryIt: '和家人商量"我能用哪些 AI 工具、哪些不能用"，写一条双方都同意的使用约定',
-            activities: [
-                { icon: '🌐', title: '信息茧房与算法推荐', type: 'knowledge', typeLabel: '学原理', desc: '算法只给你看喜欢的，长期世界变窄' },
-                { icon: '🎭', title: '深度伪造与隐私偏见', type: 'knowledge', typeLabel: '学原理', desc: '先核实再传播；不传人脸、不写真名、不透露住址' },
-                { icon: '🗣️', title: '伦理辩论会', type: 'experiment', typeLabel: '做实验', desc: '从正反两方分析AI的社会影响' },
-                { icon: '🏅', title: '获得共处徽章', type: 'gem', typeLabel: '集徽章', desc: '学会辩证思考与负责任地使用AI' },
-            ],
-        },
-        {
-            num: 9, title: '我的 AI 项目', badge: '项目徽章', badgeIcon: '🏁',
-            summary: '围绕校园或社区的真实问题做原型：项目报告 8 板块——问题定义、数据来源、系统流程、实验过程、错误案例、改进方案、隐私伦理、展示反思。',
-            tryIt: '为小组项目填写《项目报告》的"问题定义"与"错误案例"板块，3 分钟向全班介绍',
-            activities: [
-                { icon: '🎯', title: '真实问题与原型', type: 'try-it', typeLabel: '动手做', desc: '围绕校园/社区的真实问题做原型' },
-                { icon: '📋', title: '项目报告 8 板块', type: 'knowledge', typeLabel: '学原理', desc: '不只展示结果，更要记录数据来源与错误案例' },
-                { icon: '🎤', title: '展示与反思', type: 'experiment', typeLabel: '做实验', desc: '3 分钟向全班介绍，接受提问与复盘' },
-                { icon: '🏅', title: '获得项目徽章', type: 'gem', typeLabel: '集徽章', desc: '完成综合项目，拿到最高荣誉' },
-            ],
-        },
-    ],
-    treasureBlurb: '九枚实验徽章宝库',
-    gems: [
-        { icon: '🔧', name: '解剖徽章', island: 'AI系统解剖室', desc: '拆开AI看五部件结构' },
-        { icon: '📊', name: '数据徽章', island: '数据侦探营', desc: '数据五站旅程与质量' },
-        { icon: '🧮', name: '算法徽章', island: '算法的工具箱', desc: '四类学习任务与工具' },
-        { icon: '🔬', name: '实验徽章', island: '第一次AI实验', desc: '采集-训练-测试全流程' },
-        { icon: '📈', name: '评价徽章', island: '给AI打分', desc: '准确率与混淆矩阵' },
-        { icon: '💡', name: '真相徽章', island: '生成式AI的真相', desc: '概率预测与幻觉' },
-        { icon: '🏗️', name: '产品徽章', island: '从模型到产品', desc: 'AI产品设计与交互' },
-        { icon: '🌐', name: '共处徽章', island: '与 AI 共处', desc: '信息茧房、深度伪造、隐私与偏见' },
-        { icon: '🏁', name: '项目徽章', island: '我的 AI 项目', desc: '真实问题原型与 8 板块报告' },
-    ],
+// 5~6年级：AI 探索实验室（旧入口在页面完成迁移前仍读取这份小学内容）
+const grade56Primary: CourseData = {
+    id: 'ael',
+    gradeLabel: '五~六年级',
+    courseName: 'AI 探索实验室',
+    subtitle: '探索 AI：会拆解 · 会实验 · 会评价 · 会创造',
+    motto: '9 个探究部分 · 9 枚课程徽章',
+    chapters: GRADE56_PARTS.map((part) => ({
+        id: part.id,
+        num: part.number,
+        title: part.title,
+        badge: `${part.title.replace(/^AI\s*/, '')}徽章`,
+        badgeIcon: ['🧩', '🔎', '🧰', '🧪', '📋', '✨', '🛠️', '🛡️', '🏁'][part.number - 1],
+        summary: part.summary,
+        tryIt: part.challenge,
+        activities: [
+            { icon: '💡', title: '核心知识', type: 'knowledge', typeLabel: '学知识', desc: part.concept },
+            { icon: '🧪', title: '小实验', type: 'experiment', typeLabel: '做实验', desc: part.experiment },
+            { icon: '🛡️', title: '安全提醒', type: 'knowledge', typeLabel: '保安全', desc: part.safety },
+            { icon: '🏅', title: '本章挑战', type: 'try-it', typeLabel: '去挑战', desc: part.challenge },
+        ],
+    })),
+    treasureBlurb: '九枚课程徽章宝库',
+    gems: GRADE56_PARTS.map((part, index) => ({
+        icon: ['🧩', '🔎', '🧰', '🧪', '📋', '✨', '🛠️', '🛡️', '🏁'][index],
+        name: `${part.title.replace(/^AI\s*/, '')}徽章`,
+        island: part.title,
+        desc: part.challenge,
+    })),
     safetyTips: [
-        { icon: '📊', title: '数据质量决定模型', text: 'AI 的能力取决于训练数据——垃圾进，垃圾出。学会关注数据来源与质量。' },
-        { icon: '⚖️', title: '辩证看待AI', text: 'AI不是万能也不是万恶——用证据说话，从数据、模型、评价三方面分析。' },
+        { icon: '🔒', title: '保护个人信息', text: '不收集姓名、人脸、住址等敏感信息。' },
+        { icon: '🧭', title: '重要决定由人负责', text: 'AI 是工具，重要结果要查证并让人来负责。' },
     ],
 }
 
 export function getCourseData(stage: string, grade: string): CourseData {
-    if (stage === 'secondary') return secondary
-    if (['grade1', 'grade2', 'grade3'].includes(grade)) return elementaryLow
-    return elementaryHigh
+    if (stage === 'secondary') return grade56Primary
+    if (['grade1', 'grade2'].includes(grade)) return elementaryLow
+    if (['grade3', 'grade4'].includes(grade)) return elementaryHigh
+    return grade56Primary
 }
