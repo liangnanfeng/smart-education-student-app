@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { AppStateProvider } from '../../app/AppState'
 import { defaultState } from '../../app/model'
+import { saveState } from '../../app/storage'
 import { AiCompanion } from './AiCompanion'
 import { classifyDemoCommand } from './safety'
 
@@ -72,25 +73,22 @@ describe('temporary AI companion', () => {
 
   it('keeps tap and chat available after an appearance, outfit, and decoration are equipped', async () => {
     const user = userEvent.setup()
-    localStorage.setItem('student-app-state', JSON.stringify({
+    saveState({
       ...defaultState,
-      companions: {
-        ...defaultState.companions,
-        elementary: {
-          owned: {
-            appearance: ['momo', 'yunduo'],
-            outfit: ['cloud-backpack'],
-            decoration: ['cloud-flower-lamp'],
-          },
-          equipped: {
-            appearance: 'yunduo',
-            outfit: 'cloud-backpack',
-            decoration: 'cloud-flower-lamp',
-          },
-          version: 1,
+      companion: {
+        owned: {
+          appearance: ['momo', 'yunduo'],
+          outfit: ['cloud-backpack'],
+          decoration: ['cloud-flower-lamp'],
         },
+        equipped: {
+          appearance: 'yunduo',
+          outfit: 'cloud-backpack',
+          decoration: 'cloud-flower-lamp',
+        },
+        version: 1,
       },
-    }))
+    })
     render(<AppStateProvider><AiCompanion /></AppStateProvider>)
 
     const control = screen.getByRole('button', { name: 'AI伙伴' })

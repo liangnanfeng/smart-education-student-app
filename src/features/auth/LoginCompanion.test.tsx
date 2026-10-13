@@ -3,12 +3,11 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { AppStateProvider } from '../../app/AppState'
 import { defaultState } from '../../app/model'
+import { saveState } from '../../app/storage'
 import { LoginCompanion } from '../ai_companion/LoginCompanion'
 
-const STORAGE_KEY = 'student-app-state'
-
-function renderCompanion(stage: 'elementary' | 'secondary' = 'elementary') {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...defaultState, stage }))
+function renderCompanion() {
+  saveState(defaultState)
   const onBoundsChange = vi.fn()
   render(
     <AppStateProvider>
@@ -27,27 +26,27 @@ describe('login companion', () => {
     vi.useRealTimers()
   })
 
-  it('shows the equipped companion for the selected learning stage', () => {
-    renderCompanion('elementary')
+  it('shows the equipped primary companion', () => {
+    renderCompanion()
 
     expect(screen.getByRole('img', { name: '绒桃 Momo AI 伙伴形象' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '和绒桃 Momo互动' })).toBeInTheDocument()
   })
 
   it('places the companion inside a compact circular login frame', () => {
-    renderCompanion('elementary')
+    renderCompanion()
 
     const frame = screen.getByTestId('login-companion-frame')
     expect(frame).toContainElement(screen.getByRole('img', { name: '绒桃 Momo AI 伙伴形象' }))
   })
 
-  it('responds with a stage-specific welcome on a short tap', async () => {
+  it('responds with a primary welcome on a short tap', async () => {
     const user = userEvent.setup()
-    renderCompanion('secondary')
+    renderCompanion()
 
-    await user.click(screen.getByRole('button', { name: '和云宝 Nimbo互动' }))
+    await user.click(screen.getByRole('button', { name: '和绒桃 Momo互动' }))
 
-    expect(screen.getByRole('status')).toHaveTextContent('要从一个问题开始探索吗')
+    expect(screen.getByRole('status')).toHaveTextContent('今天想先去哪里冒险')
   })
 
   it('starts voice listening beside the companion after a 600ms long press', () => {

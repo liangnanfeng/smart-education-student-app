@@ -3,10 +3,11 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AppStateProvider } from '../../app/AppState'
 import { defaultState, type AppState } from '../../app/model'
+import { saveState } from '../../app/storage'
 import { TestPage } from './TestPage'
 
 function renderMap(state: Partial<AppState>) {
-  localStorage.setItem('student-app-state', JSON.stringify({ ...defaultState, ...state }))
+  saveState({ ...defaultState, ...state })
   return render(<AppStateProvider><TestPage /></AppStateProvider>)
 }
 
@@ -15,7 +16,7 @@ describe('TestPage', () => {
 
   it('lets elementary students start the highlighted next island challenge', async () => {
     const user = userEvent.setup()
-    renderMap({ stage: 'elementary', grade: 'grade1' })
+    renderMap({ grade: 'grade1' })
 
     expect(screen.getByText('下一站：眼睛岛')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '出发挑战：眼睛岛' }))
@@ -23,7 +24,7 @@ describe('TestPage', () => {
   })
 
   it('keeps the complete elementary island route vertically explorable', () => {
-    renderMap({ stage: 'elementary', grade: 'grade1' })
+    renderMap({ grade: 'grade1' })
 
     const islandRoute = screen.getByRole('region', { name: '可上下滑动的岛屿路线' })
     expect(islandRoute).toHaveAttribute('tabindex', '0')
@@ -34,7 +35,7 @@ describe('TestPage', () => {
   })
 
   it('uses the compact 4-6 grade island route instead of the longer lower-grade layout', () => {
-    renderMap({ stage: 'elementary', grade: 'grade4' })
+    renderMap({ grade: 'grade4' })
 
     const islandRoute = screen.getByRole('region', { name: '可上下滑动的4至6年级岛屿路线' })
     expect(islandRoute).toHaveClass('elementary-route--cxd')
@@ -42,7 +43,7 @@ describe('TestPage', () => {
   })
 
   it('does not unlock the chapter after a treasure chest before the preceding lesson is completed', () => {
-    renderMap({ stage: 'elementary', grade: 'grade4' })
+    renderMap({ grade: 'grade4' })
 
     expect(screen.getByRole('button', { name: '创意放大器 · 当前关卡' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '负责任的创想家 · 未解锁' })).toBeInTheDocument()
@@ -51,23 +52,19 @@ describe('TestPage', () => {
   it('keeps the player-equipped companion interactive inside the elementary test map', async () => {
     const user = userEvent.setup()
     renderMap({
-      stage: 'elementary',
       grade: 'grade4',
-      companions: {
-        ...defaultState.companions,
-        elementary: {
-          owned: {
-            appearance: ['momo', 'yunduo'],
-            outfit: ['cloud-backpack'],
-            decoration: ['cloud-flower-lamp'],
-          },
-          equipped: {
-            appearance: 'yunduo',
-            outfit: 'cloud-backpack',
-            decoration: 'cloud-flower-lamp',
-          },
-          version: 1,
+      companion: {
+        owned: {
+          appearance: ['momo', 'yunduo'],
+          outfit: ['cloud-backpack'],
+          decoration: ['cloud-flower-lamp'],
         },
+        equipped: {
+          appearance: 'yunduo',
+          outfit: 'cloud-backpack',
+          decoration: 'cloud-flower-lamp',
+        },
+        version: 1,
       },
     })
 
@@ -81,41 +78,16 @@ describe('TestPage', () => {
   })
 
   it('centers the elementary companion directly above the current level icon', () => {
-    renderMap({ stage: 'elementary', grade: 'grade4' })
+    renderMap({ grade: 'grade4' })
 
     const mapCompanion = screen.getByRole('button', { name: 'AI伙伴' })
     expect(mapCompanion).toHaveStyle({ left: '72%', bottom: '34%' })
     expect(mapCompanion).toHaveAttribute('data-map-node-id', 'l3')
   })
 
-  it('does not add a second companion inside the secondary test map', () => {
-    renderMap({
-      stage: 'secondary',
-      grade: 'grade7',
-      companions: {
-        ...defaultState.companions,
-        secondary: {
-          owned: {
-            appearance: ['nimbo', 'nimbli'],
-            outfit: ['moon-bell'],
-            decoration: ['wing-crystal-gate'],
-          },
-          equipped: {
-            appearance: 'nimbli',
-            outfit: 'moon-bell',
-            decoration: 'wing-crystal-gate',
-          },
-          version: 1,
-        },
-      },
-    })
-
-    expect(screen.queryByRole('button', { name: 'AI伙伴' })).not.toBeInTheDocument()
-  })
-
   it('moves the elementary companion from the current island to the newly unlocked test', async () => {
     const user = userEvent.setup()
-    renderMap({ stage: 'elementary', grade: 'grade1' })
+    renderMap({ grade: 'grade1' })
 
     expect(screen.getByRole('button', { name: 'AI伙伴' })).toHaveAttribute('data-map-node-id', 'l3')
     await user.click(screen.getByRole('button', { name: '出发挑战：眼睛岛' }))
@@ -134,11 +106,11 @@ describe('TestPage', () => {
     expect(screen.getByRole('button', { name: 'AI伙伴' })).toHaveAttribute('data-map-node-id', 'l4')
   })
 
-  it('frames secondary learning as a current research task while keeping the map accessible', () => {
-    renderMap({ stage: 'secondary', grade: 'grade7' })
+  it('frames primary learning as an adventure while keeping the map accessible', () => {
+    renderMap({ grade: 'grade5' })
 
-    expect(screen.getByText('当前研究任务')).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: '算法的工具箱' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'AI 创想大陆' })).toBeInTheDocument()
+    expect(screen.getByText('下一站：创意放大器')).toBeInTheDocument()
     expect(screen.getByRole('region', { name: '闯关地图' })).toBeInTheDocument()
   })
 })

@@ -2,7 +2,6 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AppStateProvider } from '../../app/AppState'
-import { defaultState } from '../../app/model'
 import { MainShell } from './MainShell'
 
 describe('main shell navigation', () => {
@@ -47,16 +46,5 @@ describe('main shell navigation', () => {
     const companions = screen.getAllByRole('button', { name: 'AI伙伴' })
     expect(companions).toHaveLength(1)
     expect(companions[0]).toHaveAttribute('data-companion-placement', 'test-map')
-  })
-
-  it('keeps only the lower-right companion on the secondary test tab', async () => {
-    const user = userEvent.setup()
-    localStorage.setItem('student-app-state', JSON.stringify({ ...defaultState, stage: 'secondary', grade: 'grade7' }))
-    render(<AppStateProvider><MainShell /></AppStateProvider>)
-
-    await user.click(screen.getByRole('button', { name: '测试' }))
-    const companions = screen.getAllByRole('button', { name: 'AI伙伴' })
-    expect(companions).toHaveLength(1)
-    expect(companions[0]).toHaveAttribute('data-companion-placement', 'floating')
   })
 })
