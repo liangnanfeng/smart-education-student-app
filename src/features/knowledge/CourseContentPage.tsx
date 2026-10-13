@@ -233,8 +233,10 @@ export function CourseContentPage({ courseId, chapterNum, onBack }: Props) {
   const activeCourse = getCourseForBand(getGradeBand(state.grade as PrimaryGrade))
   const course = Object.values(COURSE_PACKAGES).find((candidate) => candidate.id === courseId) ?? activeCourse
   const part = course.parts.find((candidate) => candidate.number === chapterNum) ?? null
-  const progress = state.learningProgress[course.band]
-  const alreadyComplete = part ? progress.knowledgeCompleted.includes(part.id) : false
+  const isActiveCourse = course.id === activeCourse.id
+  const activePart = isActiveCourse ? part : null
+  const progress = state.learningProgress[activeCourse.band]
+  const alreadyComplete = activePart ? progress.knowledgeCompleted.includes(activePart.id) : false
   const [showReward, setShowReward] = useState(false)
 
   const content = useMemo(() => {
@@ -251,8 +253,8 @@ export function CourseContentPage({ courseId, chapterNum, onBack }: Props) {
   }, [courseId, chapterNum, part])
 
   function markComplete() {
-    if (!part || alreadyComplete) return
-    completeKnowledge(part.id, part.title)
+    if (!activePart || alreadyComplete) return
+    completeKnowledge(activePart.id, activePart.title)
     setShowReward(true)
   }
 
@@ -284,10 +286,16 @@ export function CourseContentPage({ courseId, chapterNum, onBack }: Props) {
 
       {part && (
         <section className="content-completion" aria-label="学习进度">
-          <button type="button" onClick={markComplete}>
-            {alreadyComplete ? '已完成本部分知识' : '完成本部分知识'}
-          </button>
-          {showReward && <p role="status">🎉 已完成，获得 30 积分</p>}
+          {isActiveCourse ? (
+            <>
+              <button type="button" onClick={markComplete}>
+                {alreadyComplete ? '已完成本部分知识' : '完成本部分知识'}
+              </button>
+              {showReward && <p role="status">🎉 已完成，获得 30 积分</p>}
+            </>
+          ) : (
+            <p>切换到对应年级后才能记录学习进度</p>
+          )}
         </section>
       )}
     </div>
