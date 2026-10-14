@@ -1,5 +1,7 @@
 .profile-page {
-  padding: max(22px, env(safe-area-inset-top)) 18px 30px;
+  min-width: 0;
+  max-width: 100%;
+  padding: max(22px, env(safe-area-inset-top)) 18px calc(var(--bottom-nav-height, 76px) + env(safe-area-inset-bottom) + 24px);
 }
 
 .identity-card {
@@ -2004,6 +2006,7 @@
 
 .mall-grid {
   display: grid;
+  min-width: 0;
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }

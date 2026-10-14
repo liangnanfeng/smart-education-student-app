@@ -1,5 +1,7 @@
 .knowledge-page {
-  padding: 16px 16px 32px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 16px 16px calc(var(--bottom-nav-height, 76px) + env(safe-area-inset-bottom) + 24px);
   font-size: var(--learning-copy-size, .92rem);
 }
 
@@ -92,11 +94,16 @@
 
 /* ===== 天/章卡片 ===== */
 .day-card {
+  min-width: 0;
   background: #fff;
   border-radius: var(--radius-md);
   margin-top: var(--learning-card-gap, 12px);
   overflow: hidden;
   transition: box-shadow 0.2s;
+}
+
+.course-card {
+  min-width: 0;
 }
 
 .day-card.expanded {
@@ -265,6 +272,33 @@
 .activity-text {
   flex: 1;
   min-width: 0;
+}
+
+@media (max-width: 360px) {
+  .knowledge-header {
+    flex-wrap: wrap;
+  }
+
+  .knowledge-header > div {
+    flex-basis: 100%;
+  }
+
+  .knowledge-motto {
+    white-space: normal;
+  }
+
+  .day-title-row {
+    flex-wrap: wrap;
+  }
+
+  .day-island {
+    flex-basis: calc(100% - 68px);
+    white-space: normal;
+  }
+
+  .day-title-row > svg {
+    margin-left: auto;
+  }
 }
 
 .activity-title-row {

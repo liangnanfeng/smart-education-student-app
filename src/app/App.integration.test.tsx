@@ -40,4 +40,26 @@ describe('student app integration', () => {
     await user.click(screen.getByRole('button', { name: '确认退出' }))
     expect(screen.getByRole('heading', { name: '欢迎来到数智学习世界' })).toBeInTheDocument()
   })
+
+  it('completes the approved primary-only demonstration journey', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await user.type(screen.getByLabelText('学习账号／学习码'), 'chenxi_2026')
+    await user.type(screen.getByLabelText('密码'), 'demo-password')
+    await user.click(screen.getByRole('button', { name: '进入学习世界' }))
+
+    await user.click(screen.getByRole('button', { name: '知识' }))
+    expect(screen.getByRole('heading', { name: 'AI 探索实验室' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /第一次 AI 实验.*当前学习/ })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '测试' }))
+    expect(screen.getByRole('button', { name: '算法工具箱 · 当前关卡' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '第一次 AI 实验 · 先学知识' })).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: '我的' }))
+    expect(screen.getByText('2,000')).toBeInTheDocument()
+    await user.click(screen.getByText('积分商城'))
+    expect(screen.getByText('绒桃 Momo')).toBeInTheDocument()
+    expect(screen.queryByText('云宝 Nimbo')).not.toBeInTheDocument()
+  })
 })

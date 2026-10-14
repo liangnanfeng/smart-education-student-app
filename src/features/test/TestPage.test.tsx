@@ -127,19 +127,25 @@ describe('TestPage', () => {
     expect(saved.transactions.some((item) => item.eventId === 'test:ael-3')).toBe(false)
   })
 
-  it('renders all nine 5-6 challenges from the shared course catalog', () => {
-    const allAelParts = getPartIdsForBand('grade5-6')
+  it.each([
+    ['grade1', 'grade1-2', 8],
+    ['grade3', 'grade3-4', 6],
+    ['grade6', 'grade5-6', 9],
+  ] as const)('renders the full vertical challenge map for %s', (grade, band, expectedParts) => {
+    const allParts = getPartIdsForBand(band)
     renderMap({
-      grade: 'grade6',
+      grade,
       learningProgress: {
         ...createEmptyLearningProgress(),
-        'grade5-6': { knowledgeCompleted: allAelParts, testsPassed: [] },
+        [band]: { knowledgeCompleted: allParts, testsPassed: [] },
       },
     })
 
     const route = screen.getByRole('region', { name: '可上下滑动的完整闯关地图' })
     expect(route).toHaveAttribute('tabindex', '0')
-    expect(within(route).getAllByRole('button')).toHaveLength(9)
-    expect(within(route).getByRole('button', { name: '我的 AI 小项目 · 可挑战' })).toBeInTheDocument()
+    expect(within(route).getAllByRole('button')).toHaveLength(expectedParts)
+    if (band === 'grade5-6') {
+      expect(within(route).getByRole('button', { name: '我的 AI 小项目 · 可挑战' })).toBeInTheDocument()
+    }
   })
 })

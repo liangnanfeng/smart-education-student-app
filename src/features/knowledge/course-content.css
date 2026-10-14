@@ -1,5 +1,5 @@
 .course-content-page {
-  padding: 0 0 40px;
+  padding: 0 0 calc(var(--bottom-nav-height, 76px) + env(safe-area-inset-bottom) + 24px);
   min-height: 100vh;
   background: var(--surface);
 }

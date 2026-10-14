@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AppStateProvider } from '../../app/AppState'
 import { defaultState } from '../../app/model'
+import { getPointsBalance } from '../../app/points'
 import { loadState, saveState } from '../../app/storage'
 import { MallPage } from './MallPage'
 
@@ -172,6 +173,22 @@ describe('points mall companion catalogue', () => {
     await user.click(screen.getByRole('button', { name: '购买 云朵 Yunduo' }))
 
     expect(screen.getByText('当前积分').parentElement).toHaveTextContent('920')
+  })
+
+  it('keeps the default 2,000-point ledger consistent after a direct purchase', async () => {
+    const user = userEvent.setup()
+    saveState(defaultState)
+    render(<AppStateProvider><MallPage onBack={() => undefined} /></AppStateProvider>)
+
+    expect(screen.getByText('当前积分').parentElement).toHaveTextContent('2,000')
+    await user.click(screen.getByRole('button', { name: '购买 云朵 Yunduo，360 积分' }))
+
+    const saved = loadState()
+    expect(screen.getByText('当前积分').parentElement).toHaveTextContent('1,640')
+    expect(getPointsBalance(saved.transactions)).toBe(1640)
+    expect(saved.transactions.filter((entry) => entry.kind === 'purchase')).toMatchObject([
+      { amount: -360, title: '积分商城购买：云朵 Yunduo' },
+    ])
   })
 
   it('keeps an unaffordable item locked and explains that points are insufficient', async () => {
