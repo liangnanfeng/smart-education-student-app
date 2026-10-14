@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AppStateProvider, useAppState } from './AppState'
 import { createDefaultState } from './model'
+import { getPointsBalance } from './points'
 import { saveState } from './storage'
 
 function CompanionStateHarness() {
@@ -14,7 +15,8 @@ function CompanionStateHarness() {
     .map((transaction) => transaction.eventId)
   return (
     <div>
-      <output aria-label="balance">{context.pointsBalance}</output>
+      <output aria-label="balance">{getPointsBalance(context.state.transactions)}</output>
+      <output aria-label="context has balance alias">{String('pointsBalance' in context)}</output>
       <output aria-label="purchase records">{purchases.length}</output>
       <output aria-label="purchase events">{purchaseEvents.join(',')}</output>
       <output aria-label="equipped appearance">{loadout.equipped.appearance}</output>
@@ -44,12 +46,23 @@ describe('companion loadout actions', () => {
     await user.click(screen.getByRole('button', { name: '购买云朵' }))
     await user.click(screen.getByRole('button', { name: '购买云朵' }))
     expect(screen.getByLabelText('owned appearances')).toHaveTextContent('momo,yunduo')
+    expect(screen.getByLabelText('context has balance alias')).toHaveTextContent('false')
     expect(screen.getByLabelText('equipped appearance')).toHaveTextContent('momo')
     expect(screen.getByLabelText('purchase records')).toHaveTextContent('1')
     expect(screen.getByLabelText('balance')).toHaveTextContent('1640')
 
     await user.click(screen.getByRole('button', { name: '装备云朵' }))
     expect(screen.getByLabelText('equipped appearance')).toHaveTextContent('yunduo')
+  })
+
+  it('renders safely and derives balance after loading hostile current-version transactions', () => {
+    localStorage.setItem('student-app-state', JSON.stringify({
+      ...createDefaultState(),
+      transactions: [null],
+    }))
+
+    expect(() => render(<AppStateProvider><CompanionStateHarness /></AppStateProvider>)).not.toThrow()
+    expect(screen.getByLabelText('balance')).toHaveTextContent('2000')
   })
 
   it('does not mutate ownership, equipment, or ledger for rejected mall actions', async () => {

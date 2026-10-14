@@ -2,6 +2,7 @@ import { ArrowLeft, Check, PackageCheck, ShoppingBag, Sparkles, X } from 'lucide
 import { useState } from 'react'
 import { useAppState } from '../../app/AppState'
 import type { CompanionCategory, CompanionLoadout } from '../../app/model'
+import { getPointsBalance } from '../../app/points'
 import { COMPANION_CATALOG, getCompanionItem, type CompanionCatalogItem } from '../ai_companion/companionCatalog'
 import { PartnerAppearance } from '../ai_companion/PartnerAppearance'
 import './profile.css'
@@ -38,12 +39,12 @@ function PreviewArtwork({ item, loadout }: { item: CompanionCatalogItem; loadout
 }
 
 export function MallPage({ onBack }: { onBack: () => void }) {
-  const { state, pointsBalance, purchaseCompanionItem, equipCompanionItem, unequipCompanionItem } = useAppState()
+  const { state, purchaseCompanionItem, equipCompanionItem, unequipCompanionItem } = useAppState()
   const [category, setCategory] = useState<MallCategory>('appearance')
   const [selectedItem, setSelectedItem] = useState<CompanionCatalogItem | null>(null)
   const [equipPromptItem, setEquipPromptItem] = useState<CompanionCatalogItem | null>(null)
   const [toast, setToast] = useState('')
-  const balance = pointsBalance
+  const balance = getPointsBalance(state.transactions)
   const loadout = state.companion
   const currentAppearance = getCompanionItem(loadout.equipped.appearance)
 

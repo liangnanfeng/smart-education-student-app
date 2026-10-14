@@ -1,10 +1,12 @@
 import { ArrowLeft, ChevronRight, UserRound } from 'lucide-react'
 import { useAppState } from '../../app/AppState'
 import { GRADE_BAND_LABELS, GRADE_LABELS, getGradeBand, type PrimaryGrade } from '../../app/learning'
+import { getPointsBalance } from '../../app/points'
 
 export function ProfileDetailPage({ onBack, onEdit }: { onBack: () => void; onEdit: () => void }) {
-  const { state, pointsBalance } = useAppState()
+  const { state } = useAppState()
   const grade = state.grade as PrimaryGrade
+  const pointsBalance = getPointsBalance(state.transactions)
 
   const infoRows = [
     { label: '年级', value: `${GRADE_LABELS[grade]} · ${GRADE_BAND_LABELS[getGradeBand(grade)]}` },

@@ -69,4 +69,73 @@ describe('primary-only state migration', () => {
     saveState(loaded)
     expect(JSON.parse(localStorage.getItem('student-app-state') ?? '{}')).not.toHaveProperty('unexpected')
   })
+
+  it('normalizes every hostile v2 field independently into a render-safe state', () => {
+    localStorage.setItem('unrelated-preference', 'keep-me')
+    localStorage.setItem('student-app-state', JSON.stringify({
+      stateVersion: 2,
+      grade: 'grade8',
+      isLoggedIn: true,
+      learningProgress: {
+        'grade1-2': { knowledgeCompleted: [null], testsPassed: 'bad' },
+        'grade3-4': null,
+        'grade5-6': { knowledgeCompleted: ['ael-1', 2], testsPassed: ['ael-2', {}] },
+      },
+      transactions: [null],
+      processedRewardIds: [null],
+      aiPosition: { x: 'far', y: [] },
+      companion: { owned: [], equipped: 'bad', version: 'latest' },
+      fontScale: 'huge',
+      nickname: '保留昵称',
+      avatar: 'zero',
+      likes: [null],
+      favorites: {},
+      notifications: 'sometimes',
+      accountId: 123,
+      passwordHint: false,
+      lastPasswordChange: [],
+      twoFactorEnabled: 'yes',
+      guardian: { name: null, relationship: 'friend', phone: 123, authorised: 'yes' },
+      familyName: null,
+      devices: [{ name: '设备', lastActive: null, current: 'yes' }],
+      aiName: {},
+      aiPersonality: 'chaotic',
+      aiSkin: null,
+      voiceEnabled: 'yes',
+      autoListenEnabled: 1,
+      voiceMode: 'loud',
+      saveHistory: 'yes',
+      aiMemoryEnabled: null,
+      historyCount: 'many',
+      confirmDangerous: 1,
+      guardianApprove: 'no',
+      safeMode: 'unsafe',
+      soundEnabled: 'yes',
+      soundVolume: 'max',
+      hapticEnabled: 1,
+      showLearningStats: null,
+      allowFriendFind: 'yes',
+      dataCollection: [],
+      cameraPermission: 'always',
+      micPermission: false,
+      albumPermission: 1,
+      contentLevel: 'adult',
+      personalizedRec: 'yes',
+      storageUsed: 'full',
+      storageTotal: null,
+      autoCleanDays: 'never',
+    }))
+
+    const loaded = loadState()
+
+    expect(loaded).toEqual({
+      ...createDefaultState(),
+      isLoggedIn: true,
+      nickname: '保留昵称',
+    })
+    expect(() => getPointsBalance(loaded.transactions)).not.toThrow()
+    expect(getPointsBalance(loaded.transactions)).toBe(2000)
+    expect(localStorage.getItem('unrelated-preference')).toBe('keep-me')
+    expect(localStorage.getItem('student-app-primary-v2-migrated')).toBeNull()
+  })
 })

@@ -1,11 +1,13 @@
 import { ArrowLeft, Medal, Sparkles, Trophy } from 'lucide-react'
 import { useAppState } from '../../app/AppState'
+import { getPointsBalance } from '../../app/points'
 import { medals } from './medalsData'
 import { MedalIcon } from './MedalIcon'
 import './profile.css'
 
 export function RewardsDetailPage({ onBack }: { onBack: () => void }) {
-  const { pointsBalance } = useAppState()
+  const { state } = useAppState()
+  const pointsBalance = getPointsBalance(state.transactions)
   const earnedCount = medals.filter(m => m.earned).length
 
   return (

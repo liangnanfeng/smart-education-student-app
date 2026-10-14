@@ -3,13 +3,14 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AppStateProvider, useAppState } from './AppState'
 import { getGradeBand, type PrimaryGrade } from './learning'
+import { getPointsBalance } from './points'
 
 function Harness() {
   const app = useAppState()
   const band = getGradeBand(app.state.grade as PrimaryGrade)
   return (
     <>
-      <output aria-label="balance">{app.pointsBalance}</output>
+      <output aria-label="balance">{getPointsBalance(app.state.transactions)}</output>
       <output aria-label="knowledge">{app.state.learningProgress[band].knowledgeCompleted.join(',')}</output>
       <output aria-label="tests">{app.state.learningProgress[band].testsPassed.join(',')}</output>
       <button type="button" onClick={() => app.completeKnowledge('ael-4', '第一次 AI 实验')}>完成知识</button>

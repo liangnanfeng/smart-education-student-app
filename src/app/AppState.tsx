@@ -210,7 +210,6 @@ function reducer(state: AppState, action: Action): AppState {
 
 type AppStateContextValue = {
   state: AppState
-  pointsBalance: number
   setGrade: (grade: PrimaryGrade) => void
   completeKnowledge: (partId: CoursePartId, title: string) => void
   passTest: (partId: CoursePartId, title: string) => void
@@ -270,7 +269,6 @@ export function AppStateProvider({ children }: PropsWithChildren) {
 
   const value = useMemo<AppStateContextValue>(() => ({
     state,
-    pointsBalance: getPointsBalance(state.transactions),
     setGrade: (grade) => dispatch({ type: 'set-grade', grade }),
     completeKnowledge: (partId, title) => dispatch({ type: 'complete-knowledge', partId, title, occurredAt: new Date().toISOString() }),
     passTest: (partId, title) => dispatch({ type: 'pass-test', partId, title, occurredAt: new Date().toISOString() }),
