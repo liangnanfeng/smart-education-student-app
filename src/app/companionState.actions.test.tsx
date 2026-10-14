@@ -55,14 +55,32 @@ describe('companion loadout actions', () => {
     expect(screen.getByLabelText('equipped appearance')).toHaveTextContent('yunduo')
   })
 
-  it('renders safely and derives balance after loading hostile current-version transactions', () => {
+  it('renders safely and derives balance from valid transactions beside corrupt siblings', () => {
     localStorage.setItem('student-app-state', JSON.stringify({
       ...createDefaultState(),
-      transactions: [null],
+      transactions: [
+        {
+          id: 'mixed-starter',
+          eventId: 'mixed:starter',
+          kind: 'starter',
+          title: '保留的初始积分',
+          amount: 1000,
+          occurredAt: '2026-10-14',
+        },
+        null,
+        {
+          id: 'mixed-purchase',
+          eventId: 'purchase:yunduo',
+          kind: 'purchase',
+          title: '保留的购买记录',
+          amount: -360,
+          occurredAt: '2026-10-14',
+        },
+      ],
     }))
 
     expect(() => render(<AppStateProvider><CompanionStateHarness /></AppStateProvider>)).not.toThrow()
-    expect(screen.getByLabelText('balance')).toHaveTextContent('2000')
+    expect(screen.getByLabelText('balance')).toHaveTextContent('640')
   })
 
   it('does not mutate ownership, equipment, or ledger for rejected mall actions', async () => {

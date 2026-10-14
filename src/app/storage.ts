@@ -147,8 +147,8 @@ function positiveInteger(value: unknown, fallback: number): number {
 }
 
 function stringArray(value: unknown, fallback: string[]): string[] {
-  if (!Array.isArray(value) || !value.every((item) => typeof item === 'string')) return [...fallback]
-  return [...value]
+  if (!Array.isArray(value)) return [...fallback]
+  return value.filter((item): item is string => typeof item === 'string')
 }
 
 function normalizeLearningProgress(value: unknown, fallback: AppState['learningProgress']): AppState['learningProgress'] {
@@ -168,15 +168,15 @@ function normalizeLearningProgress(value: unknown, fallback: AppState['learningP
 }
 
 function normalizeCoursePartIds(value: unknown, validIds: Set<CoursePartId>, fallback: CoursePartId[]): CoursePartId[] {
-  if (!Array.isArray(value) || !value.every((id) => typeof id === 'string')) return [...fallback]
-  return value.filter((id): id is CoursePartId => validIds.has(id as CoursePartId))
+  if (!Array.isArray(value)) return [...fallback]
+  return value.filter((id): id is CoursePartId => typeof id === 'string' && validIds.has(id as CoursePartId))
 }
 
 function normalizeTransactions(value: unknown, fallback: PointTransaction[]): PointTransaction[] {
-  if (!Array.isArray(value) || !value.every(isPointTransaction)) {
+  if (!Array.isArray(value)) {
     return fallback.map((transaction) => ({ ...transaction }))
   }
-  return value.map((transaction) => ({
+  return value.filter(isPointTransaction).map((transaction) => ({
     id: transaction.id,
     eventId: transaction.eventId,
     kind: transaction.kind,
@@ -216,10 +216,10 @@ function normalizeGuardian(value: unknown, fallback: GuardianInfo): GuardianInfo
 }
 
 function normalizeDevices(value: unknown, fallback: DeviceInfo[]): DeviceInfo[] {
-  if (!Array.isArray(value) || !value.every(isDeviceInfo)) {
+  if (!Array.isArray(value)) {
     return fallback.map((device) => ({ ...device }))
   }
-  return value.map((device) => ({
+  return value.filter(isDeviceInfo).map((device) => ({
     name: device.name,
     lastActive: device.lastActive,
     current: device.current,
@@ -247,8 +247,8 @@ function normalizePrimaryLoadout(value: unknown, fallback: CompanionLoadout): Co
 
   const owned = Object.fromEntries(COMPANION_CATEGORIES.map((category) => {
     const candidate = storedOwned[category]
-    const source = Array.isArray(candidate) && candidate.every((id) => typeof id === 'string')
-      ? candidate
+    const source = Array.isArray(candidate)
+      ? candidate.filter((id): id is string => typeof id === 'string')
       : fallback.owned[category]
     const valid = source.filter((id) => primaryIds[category].has(id))
     return [category, category === 'appearance' ? ['momo', ...valid.filter((id) => id !== 'momo')] : valid]

@@ -127,15 +127,101 @@ describe('primary-only state migration', () => {
     }))
 
     const loaded = loadState()
+    const fresh = createDefaultState()
 
     expect(loaded).toEqual({
-      ...createDefaultState(),
+      ...fresh,
       isLoggedIn: true,
       nickname: '保留昵称',
+      learningProgress: {
+        ...fresh.learningProgress,
+        'grade5-6': {
+          knowledgeCompleted: ['ael-1'],
+          testsPassed: ['ael-2'],
+        },
+      },
+      transactions: [],
+      processedRewardIds: [],
+      devices: [],
     })
     expect(() => getPointsBalance(loaded.transactions)).not.toThrow()
-    expect(getPointsBalance(loaded.transactions)).toBe(2000)
+    expect(getPointsBalance(loaded.transactions)).toBe(0)
     expect(localStorage.getItem('unrelated-preference')).toBe('keep-me')
     expect(localStorage.getItem('student-app-primary-v2-migrated')).toBeNull()
+  })
+
+  it('keeps valid collection entries when corrupt siblings are present', () => {
+    const fresh = createDefaultState()
+    const starter = {
+      id: 'mixed-starter',
+      eventId: 'mixed:starter',
+      kind: 'starter',
+      title: '保留的初始积分',
+      amount: 1000,
+      occurredAt: '2026-10-14',
+    }
+    const purchase = {
+      id: 'mixed-purchase',
+      eventId: 'purchase:yunduo',
+      kind: 'purchase',
+      title: '保留的购买记录',
+      amount: -360,
+      occurredAt: '2026-10-14',
+    }
+    const currentDevice = { name: '保留设备', lastActive: '刚刚', current: true }
+    localStorage.setItem('student-app-state', JSON.stringify({
+      ...fresh,
+      transactions: [starter, null, { id: 'broken' }, purchase],
+      processedRewardIds: ['mixed:starter', null, 'purchase:yunduo'],
+      likes: ['lesson-kept', null],
+      favorites: ['work-kept', {}, 'work-also-kept'],
+      devices: [currentDevice, null, { name: '损坏设备' }],
+      learningProgress: {
+        ...fresh.learningProgress,
+        'grade5-6': {
+          knowledgeCompleted: ['ael-4', null, 'ael-99'],
+          testsPassed: ['ael-4', false],
+        },
+      },
+      companion: {
+        owned: {
+          appearance: ['momo', 'yunduo', null],
+          outfit: ['cloud-backpack', 42],
+          decoration: [null, 'cloud-flower-lamp'],
+        },
+        equipped: {
+          appearance: 'yunduo',
+          outfit: 'cloud-backpack',
+          decoration: 'cloud-flower-lamp',
+        },
+        version: 1,
+      },
+    }))
+
+    const loaded = loadState()
+
+    expect(loaded.transactions).toEqual([starter, purchase])
+    expect(getPointsBalance(loaded.transactions)).toBe(640)
+    expect(loaded.processedRewardIds).toEqual(['mixed:starter', 'purchase:yunduo'])
+    expect(loaded.likes).toEqual(['lesson-kept'])
+    expect(loaded.favorites).toEqual(['work-kept', 'work-also-kept'])
+    expect(loaded.devices).toEqual([currentDevice])
+    expect(loaded.learningProgress['grade5-6']).toEqual({
+      knowledgeCompleted: ['ael-4'],
+      testsPassed: ['ael-4'],
+    })
+    expect(loaded.companion).toEqual({
+      owned: {
+        appearance: ['momo', 'yunduo'],
+        outfit: ['cloud-backpack'],
+        decoration: ['cloud-flower-lamp'],
+      },
+      equipped: {
+        appearance: 'yunduo',
+        outfit: 'cloud-backpack',
+        decoration: 'cloud-flower-lamp',
+      },
+      version: 1,
+    })
   })
 })
