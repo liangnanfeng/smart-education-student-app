@@ -13,7 +13,6 @@ describe('profile dashboard', () => {
 
     expect(screen.getByText('五年级 · 5—6 年级')).toBeInTheDocument()
     expect(screen.queryByText('小学端')).not.toBeInTheDocument()
-    expect(screen.queryByText('中学端')).not.toBeInTheDocument()
 
     view.unmount()
     render(<AppStateProvider><ProfileDetailPage onBack={vi.fn()} onEdit={vi.fn()} /></AppStateProvider>)

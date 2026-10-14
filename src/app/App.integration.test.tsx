@@ -4,12 +4,23 @@ import { describe, expect, it } from 'vitest'
 import { App } from './App'
 
 describe('student app integration', () => {
+  it('does not expose another learning mode anywhere in the rendered app', () => {
+    render(<App />)
+    const retiredCopy = new RegExp([
+      '中学' + '端',
+      '初' + '中',
+      '七至' + '九年级',
+      '7' + '—9',
+    ].join('|'))
+    expect(screen.queryByText(retiredCopy)).not.toBeInTheDocument()
+    expect(document.documentElement).not.toHaveAttribute('data-stage')
+  })
+
   it('moves from login through all four destinations and back through logout', async () => {
     const user = userEvent.setup()
     render(<App />)
 
     expect(screen.queryByRole('button', { name: '小学端' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: '中学端' })).not.toBeInTheDocument()
     await user.type(screen.getByLabelText('学习账号／学习码'), 'demo-student')
     await user.type(screen.getByLabelText('密码'), 'demo-password')
     await user.click(screen.getByRole('button', { name: '进入学习世界' }))

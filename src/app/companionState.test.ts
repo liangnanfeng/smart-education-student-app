@@ -20,12 +20,12 @@ describe('primary companion loadout defaults and persistence', () => {
       ...persisted,
       companion: {
         owned: {
-          appearance: ['momo', 'nimbo', 'yunduo'],
+          appearance: ['momo', 'retired-pet', 'yunduo'],
           outfit: ['cloud-backpack', 'moon-bell'],
           decoration: ['cloud-flower-lamp', 'sky-cloud-throne'],
         },
         equipped: {
-          appearance: 'nimbo',
+          appearance: 'retired-pet',
           outfit: 'moon-bell',
           decoration: 'sky-cloud-throne',
         },

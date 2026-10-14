@@ -21,8 +21,8 @@ describe('primary-only state migration', () => {
     expect(getPointsBalance(state.transactions)).toBe(2000)
   })
 
-  it('replaces an old stage-based prototype state once without clearing unrelated keys', () => {
-    localStorage.setItem('student-app-state', JSON.stringify({ stage: 'secondary', grade: 'grade8', pointsBalance: 999 }))
+  it('replaces an old prototype state once without clearing unrelated keys', () => {
+    localStorage.setItem('student-app-state', JSON.stringify({ stateVersion: 1, grade: 'grade8' }))
     localStorage.setItem('unrelated-preference', 'keep-me')
 
     const migrated = loadState()
@@ -32,10 +32,6 @@ describe('primary-only state migration', () => {
     expect(localStorage.getItem('unrelated-preference')).toBe('keep-me')
     expect(localStorage.getItem('student-app-primary-v2-migrated')).toBe('1')
     const persisted = JSON.parse(localStorage.getItem('student-app-state') ?? '{}')
-    expect(persisted).not.toHaveProperty('stage')
-    expect(persisted).not.toHaveProperty('pointsBalance')
-    expect(persisted).not.toHaveProperty('aiPositions')
-    expect(persisted).not.toHaveProperty('companions')
     saveState({ ...migrated, nickname: '新名字' })
     expect(loadState().nickname).toBe('新名字')
   })
@@ -57,7 +53,7 @@ describe('primary-only state migration', () => {
       learningProgress: {
         ...state.learningProgress,
         'grade5-6': {
-          knowledgeCompleted: ['ael-1', 'ael-99', 'nimbo-1'],
+          knowledgeCompleted: ['ael-1', 'ael-99', 'retired-1'],
           testsPassed: ['ael-2', 'ael-20'],
         },
       },
@@ -72,47 +68,5 @@ describe('primary-only state migration', () => {
     })
     saveState(loaded)
     expect(JSON.parse(localStorage.getItem('student-app-state') ?? '{}')).not.toHaveProperty('unexpected')
-  })
-
-  it('ignores hostile legacy aliases in a current-version record', () => {
-    const state = createDefaultState()
-    saveState(state)
-    const persisted = JSON.parse(localStorage.getItem('student-app-state') ?? '{}')
-    localStorage.setItem('student-app-state', JSON.stringify({
-      ...persisted,
-      stage: 'secondary',
-      grade: 'grade8',
-      pointsBalance: 999_999,
-      aiPositions: {
-        elementary: { x: -100, y: -100 },
-        secondary: { x: 100, y: 100 },
-      },
-      companions: {
-        elementary: {
-          owned: { appearance: ['nimbo'], outfit: ['moon-bell'], decoration: ['sky-cloud-throne'] },
-          equipped: { appearance: 'nimbo', outfit: 'moon-bell', decoration: 'sky-cloud-throne' },
-          version: 1,
-        },
-        secondary: {
-          owned: { appearance: ['nimbo'], outfit: [], decoration: [] },
-          equipped: { appearance: 'nimbo', outfit: null, decoration: null },
-          version: 1,
-        },
-      },
-    }))
-
-    const loaded = loadState()
-
-    expect(loaded.stage).toBe('elementary')
-    expect(loaded.grade).toBe('grade5')
-    expect(loaded.pointsBalance).toBe(2000)
-    expect(loaded.aiPositions).toEqual({
-      elementary: loaded.aiPosition,
-      secondary: loaded.aiPosition,
-    })
-    expect(loaded.companions).toEqual({
-      elementary: loaded.companion,
-      secondary: loaded.companion,
-    })
   })
 })

@@ -1,7 +1,7 @@
 /* ===== 闯关界面 · 卡通 3D 关卡地图 ===== */
 
-/* 小学端主题变量 */
-:root[data-stage="elementary"] {
+/* 小学主题变量 */
+:root {
   --map-bg-1: #FFF8E8;
   --map-bg-2: #FFEED8;
   --map-bg-3: #FFD8C0;
@@ -40,48 +40,6 @@
   --glow-2: rgba(255, 180, 200, 0.35);
   --unit-title: #E87045;
   --unit-num: #B07840;
-}
-
-/* 中学端主题变量 */
-:root[data-stage="secondary"] {
-  --map-bg-1: #F4F0FB;
-  --map-bg-2: #E4DBF2;
-  --map-bg-3: #D0C0E8;
-  --map-bg-4: #B8A4DC;
-  --path-c1: #B094D0;
-  --path-c2: #8FA8D8;
-  --coin-completed-face: #A88AD0;
-  --coin-completed-light: #D8C4F0;
-  --coin-completed-dark: #6E4FA8;
-  --coin-completed-side: #5A3E88;
-  --coin-completed-bottom: #4A3272;
-  --coin-current-face: #5B8FD8;
-  --coin-current-light: #94BBE8;
-  --coin-current-dark: #3E6BB5;
-  --coin-current-side: #2E5595;
-  --coin-current-bottom: #244580;
-  --coin-locked-face: #C4BED4;
-  --coin-locked-light: #E8E4F0;
-  --coin-locked-dark: #8A849A;
-  --coin-locked-side: #6E687E;
-  --coin-locked-bottom: #554F66;
-  --coin-completed-icon: #2D1E4A;
-  --coin-current-icon: #FFFFFF;
-  --coin-locked-icon: #FFFFFF;
-  --chest-body: #6E5CA0;
-  --chest-lid: #8F7DBF;
-  --chest-band: #D8B842;
-  --trophy-gold: #C0A0F0;
-  --trophy-gold-light: #E8D8FF;
-  --trophy-gold-dark: #7A5CC0;
-  --label-color: #3D3A4A;
-  --label-muted: #8A8699;
-  --chip-bg: rgba(255, 255, 255, 0.65);
-  --chip-border: rgba(176, 148, 208, 0.45);
-  --glow-1: rgba(200, 180, 240, 0.4);
-  --glow-2: rgba(170, 200, 240, 0.3);
-  --unit-title: #6E4FA8;
-  --unit-num: #8F74BE;
 }
 
 /* ===== 页面主体 ===== */
@@ -648,9 +606,8 @@
   }
 }
 
-/* ===== 2026 关卡地图升级：小学岛屿冒险 / 中学科研路线 ===== */
-.level-map--elementary,
-.level-map--secondary {
+/* ===== 2026 关卡地图升级：小学岛屿冒险 ===== */
+.level-map--elementary {
   height: auto;
   min-height: 0;
 }
@@ -888,176 +845,9 @@
 .island-landscape ~ .level-coin,
 .island-landscape ~ .level-label { position: relative; z-index: 3; }
 
-.test-page--secondary {
-  background:
-    radial-gradient(circle at 100% 0%, rgba(86, 129, 220, 0.28), transparent 30%),
-    radial-gradient(circle at 0% 45%, rgba(94, 214, 205, 0.15), transparent 28%),
-    linear-gradient(180deg, #101C37 0%, #162748 45%, #0E1932 100%);
-}
-
-.test-page--secondary .test-unit h2 { color: #E6EEFF; }
-.test-page--secondary .unit-num { color: #7FD8E2; }
-.test-page--secondary .chip {
-  background: rgba(17, 32, 63, 0.68);
-  border-color: rgba(140, 180, 255, 0.22);
-}
-.test-page--secondary .chip-val { color: #E8F0FF; }
-
-.level-map--secondary {
-  position: relative;
-  overflow: hidden;
-  padding: 14px;
-  border: 1px solid rgba(121, 158, 226, 0.22);
-  border-radius: 24px;
-  background:
-    linear-gradient(rgba(147, 177, 238, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(147, 177, 238, 0.05) 1px, transparent 1px),
-    linear-gradient(145deg, rgba(34, 54, 100, 0.9), rgba(13, 28, 57, 0.96));
-  background-size: 18px 18px, 18px 18px, auto;
-  box-shadow: 0 18px 36px rgba(3, 9, 27, 0.32), inset 0 1px 0 rgba(223, 237, 255, 0.09);
-}
-
-.research-brief {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  gap: 11px;
-  align-items: center;
-  padding: 13px;
-  border: 1px solid rgba(139, 188, 255, 0.22);
-  border-radius: 17px;
-  background: rgba(8, 21, 47, 0.54);
-}
-
-.research-brief__signal,
-.research-route__marker {
-  display: grid;
-  place-items: center;
-  flex: 0 0 auto;
-  width: 38px;
-  height: 38px;
-  border-radius: 13px;
-  color: #96F0E9;
-  background: linear-gradient(145deg, rgba(78, 201, 194, 0.22), rgba(100, 128, 255, 0.24));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.16);
-}
-
-.research-brief__copy { min-width: 0; }
-.research-brief__copy > span {
-  color: #88B8F8;
-  font-size: calc(0.67rem * var(--font-scale));
-  font-weight: 800;
-  letter-spacing: 0.08em;
-}
-.research-brief h3 { color: #F2F7FF; }
-.research-brief p { color: #AABBD9; }
-
-.map-action--secondary {
-  color: #081632;
-  background: linear-gradient(135deg, #8DEBE0, #8AB7FF);
-  box-shadow: 0 6px 14px rgba(75, 157, 236, 0.2);
-}
-
-.research-route {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 15px 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.research-route__item,
-.research-route__milestone { position: relative; padding-left: 25px; }
-
-.research-route__item:not(:last-child)::before {
-  content: '';
-  position: absolute;
-  top: 39px;
-  left: 16px;
-  bottom: -15px;
-  width: 1px;
-  background: linear-gradient(#5DDAD4, rgba(111, 151, 221, 0.28));
-}
-
-.research-task {
-  position: relative;
-  z-index: 1;
-  display: grid;
-  grid-template-columns: 36px minmax(0, 1fr) auto;
-  gap: 10px;
-  width: 100%;
-  align-items: center;
-  padding: 10px 12px 10px 10px;
-  text-align: left;
-  color: #EAF2FF;
-  border: 1px solid rgba(133, 168, 229, 0.19);
-  border-radius: 16px;
-  background: rgba(17, 36, 75, 0.72);
-  cursor: pointer;
-  transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
-}
-
-.research-task:not(:disabled):hover { transform: translateX(2px); border-color: rgba(141, 232, 225, 0.66); }
-.research-task:disabled { cursor: default; }
-
-.research-task__number {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  color: #B9C8E6;
-  background: #1E3565;
-  font-size: calc(0.7rem * var(--font-scale));
-  font-weight: 900;
-  font-variant-numeric: tabular-nums;
-}
-
-.research-task__copy { min-width: 0; }
-.research-task__copy strong { display: block; color: inherit; font-size: calc(0.83rem * var(--font-scale)); line-height: 1.3; }
-.research-task__copy small { display: block; margin-top: 2px; color: #9EB0D3; font-size: calc(0.66rem * var(--font-scale)); }
-
-.research-route__item--completed .research-task { background: rgba(21, 64, 81, 0.7); }
-.research-route__item--completed .research-task__number { color: #093131; background: #83DED4; }
-.research-task__done { color: #87E0D7; }
-
-.research-route__item--current .research-task {
-  border-color: rgba(129, 236, 226, 0.72);
-  background: linear-gradient(100deg, rgba(38, 89, 116, 0.92), rgba(37, 65, 126, 0.9));
-  box-shadow: 0 0 0 3px rgba(109, 222, 212, 0.08), 0 10px 22px rgba(4, 13, 35, 0.26);
-}
-.research-route__item--current .research-task__number { color: #102649; background: #A7F0E4; }
-.research-task__go { color: #A8EAF2; animation: researchSignal 1.8s ease-in-out infinite; }
-
-.research-route__item--locked { opacity: 0.62; }
-.research-route__item--locked .research-task__number { color: #8B99B7; background: #263552; }
-
-.research-route__milestone {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-top: 2px;
-  color: #DDEAFF;
-}
-.research-route__milestone strong { display: block; font-size: calc(0.78rem * var(--font-scale)); }
-.research-route__milestone small { display: block; margin-top: 2px; color: #96A9CD; font-size: calc(0.65rem * var(--font-scale)); }
-.research-route__milestone--trophy .research-route__marker { color: #FFE49A; background: linear-gradient(145deg, rgba(239, 186, 75, 0.31), rgba(141, 120, 255, 0.24)); }
-
-@keyframes researchSignal {
-  0%, 100% { transform: translateX(0); opacity: 0.72; }
-  50% { transform: translateX(3px); opacity: 1; }
-}
-
 @media (max-width: 390px) {
   .adventure-brief { grid-template-columns: 1fr; }
   .map-action--elementary { width: 100%; }
-  .research-brief { grid-template-columns: auto minmax(0, 1fr); }
-  .map-action--secondary { grid-column: 1 / -1; width: 100%; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .research-task__go { animation: none; }
 }
 
 /* Persistent primary-school challenge map */

@@ -5,6 +5,5 @@ import { cleanup } from '@testing-library/react'
 afterEach(() => {
   cleanup()
   localStorage.clear()
-  document.documentElement.removeAttribute('data-stage')
   document.documentElement.removeAttribute('data-font-scale')
 })

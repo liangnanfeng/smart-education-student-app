@@ -218,7 +218,7 @@ export function MallPage({ onBack }: { onBack: () => void }) {
             {loadout.equipped[selectedItem.category] === selectedItem.id ? selectedItem.category === 'appearance' ? (
               <span className="mall-dialog-equipped"><Check aria-hidden="true" size={15} />当前形象</span>
             ) : (
-              <button className="mall-dialog-secondary" type="button" aria-label={`卸下 ${selectedItem.name}`} onClick={() => unequipItem(selectedItem)}>
+              <button className="mall-dialog-muted" type="button" aria-label={`卸下 ${selectedItem.name}`} onClick={() => unequipItem(selectedItem)}>
                 卸下 {selectedItem.name}
               </button>
             ) : loadout.owned[selectedItem.category].includes(selectedItem.id) ? (
@@ -241,7 +241,7 @@ export function MallPage({ onBack }: { onBack: () => void }) {
             <h2>现在换上吗？</h2>
             <p>「{equipPromptItem.name}」已经放进你的账号，可随时在积分商城切换。</p>
             <div className="mall-dialog-actions">
-              <button className="mall-dialog-secondary" type="button" onClick={() => setEquipPromptItem(null)}>暂不更换</button>
+              <button className="mall-dialog-muted" type="button" onClick={() => setEquipPromptItem(null)}>暂不更换</button>
               <button className="mall-dialog-primary" type="button" onClick={() => equipItem(equipPromptItem)}>现在换上</button>
             </div>
           </section>

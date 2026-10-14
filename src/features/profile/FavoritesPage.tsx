@@ -5,7 +5,7 @@ import './profile.css'
 type FavFilter = '全部' | '知识卡片' | '作品'
 
 const allFavorites = [
-  { id: 'f1', type: '知识卡片' as const, title: '光合作用与呼吸作用的区别', tag: '初中科学', time: '2 天前', source: 'AI 知识卡' },
+  { id: 'f1', type: '知识卡片' as const, title: '光合作用与呼吸作用的区别', tag: '小学科学', time: '2 天前', source: 'AI 知识卡' },
   { id: 'f2', type: '知识卡片' as const, title: '古诗鉴赏方法与技巧', tag: '语文·古诗词', time: '3 天前', source: '课堂笔记' },
   { id: 'f3', type: '知识卡片' as const, title: '英语时态速查表', tag: '语法', time: '5 天前', source: '学习工具' },
   { id: 'f4', type: '作品' as const, title: '会分类的照相机', tag: 'AI 创意', time: '1 天前', source: '我的作品' },

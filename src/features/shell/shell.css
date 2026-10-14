@@ -4,6 +4,21 @@
   color: var(--ink);
 }
 
+.main-shell--grade1-2 {
+  --learning-copy-size: 1rem;
+  --learning-card-gap: 16px;
+}
+
+.main-shell--grade3-4 {
+  --learning-copy-size: .96rem;
+  --learning-card-gap: 14px;
+}
+
+.main-shell--grade5-6 {
+  --learning-copy-size: .92rem;
+  --learning-card-gap: 12px;
+}
+
 .tab-content {
   min-height: 100vh;
   padding-bottom: calc(96px + env(safe-area-inset-bottom));
@@ -97,17 +112,4 @@
 
 .temporary-page {
   padding: 28px 20px;
-}
-
-/* ===== 中学端梦幻底部导航 ===== */
-:root[data-stage="secondary"] .bottom-nav {
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.75) 100%);
-  box-shadow: 0 -12px 32px rgba(110, 157, 200, 0.1);
-  border-top-color: rgba(255, 255, 255, 0.85);
-}
-
-:root[data-stage="secondary"] .bottom-nav button[aria-current="page"] {
-  background: linear-gradient(145deg, var(--primary-wash), var(--accent-wash));
-  color: var(--primary-deep);
-  box-shadow: 0 6px 16px rgba(110, 157, 200, 0.18);
 }

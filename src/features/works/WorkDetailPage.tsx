@@ -104,7 +104,7 @@ export function WorkDetailPage({ workId, onBack }: { workId: string; onBack: () 
                 </header>
                 <div className="work-detail-content">
                     <p>作品不存在或已被删除</p>
-                    <button className="detail-btn secondary" type="button" onClick={onBack}>
+                    <button className="detail-btn subtle" type="button" onClick={onBack}>
                         返回列表
                     </button>
                 </div>

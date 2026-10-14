@@ -1,5 +1,4 @@
-:root,
-:root[data-stage="elementary"] {
+:root {
   /* 小学端：奶杏蜜桃 · 暖米白 + 蜜桃橘 + 柔粉 + 奶黄 + 淡薄荷（可爱梦幻 · 精灵暖毛绒） */
   --page: #FFFCF7;
   --page-glow-1: #FFD9B8;
@@ -36,45 +35,6 @@
   --radius-lg: 26px;
   --radius-md: 18px;
   --shadow: 0 18px 45px rgba(232, 112, 69, 0.18);
-  --content-gap: 18px;
-}
-
-:root[data-stage="secondary"] {
-  /* 中学端：梦幻马卡龙 · 奶白 + 梦幻天蓝 + 梦境紫 + 糖果粉 */
-  --page: #FDFBF8;
-  --page-glow-1: #C8DEEF;
-  --page-glow-2: #D4C4E8;
-  --page-glow-3: #F5D4DC;
-  --surface: #FFFFFF;
-  --surface-soft: #F6F1EC;
-  --surface-strong: #EDE4D6;
-  --ink: #3D3A4A;
-  --ink-soft: #5F5B70;
-  --muted: #8A8699;
-  --line: #EDE4DA;
-  /* 主色：梦幻天蓝 */
-  --primary: #A8C8E4;
-  --primary-deep: #6E9DC8;
-  --primary-ink: #FFFFFF;
-  --primary-wash: #EAF1F8;
-  /* 辅色：梦境紫 */
-  --accent: #CFBDE8;
-  --accent-deep: #8F74BE;
-  --accent-wash: #EFE7F8;
-  /* 点缀：糖果粉 */
-  --warm-accent: #F5B5C8;
-  --warm-accent-wash: #FCEAF0;
-  /* 星星装饰 */
-  --star-color: #F5C7A5;
-  /* 毛玻璃（带淡彩着色） */
-  --glass-bg: rgba(255, 255, 255, 0.72);
-  --glass-tint: rgba(168, 200, 228, 0.06);
-  --glass-border: rgba(255, 255, 255, 0.9);
-  --glass-ink: #3D3A4A;
-  --glass-muted: #8A8699;
-  --radius-lg: 26px;
-  --radius-md: 18px;
-  --shadow: 0 18px 45px rgba(110, 157, 200, 0.14);
   --content-gap: 18px;
 }
 

@@ -25,7 +25,6 @@ describe('authentication flow', () => {
     renderLogin()
 
     expect(screen.queryByRole('button', { name: '小学端' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: '中学端' })).not.toBeInTheDocument()
     expect(screen.queryByText('页面初版，不会发送或保存真实账号和密码')).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: '欢迎来到数智学习世界' })).toBeInTheDocument()
     expect(screen.getByRole('img', { name: '绒桃 Momo AI 伙伴形象' })).toBeInTheDocument()

@@ -1,12 +1,11 @@
 import { COMPANION_CATALOG } from '../features/ai_companion/companionCatalog'
 import { createEmptyLearningProgress, getPartIdsForBand, PRIMARY_GRADES, type CoursePartId, type PrimaryGrade } from './learning'
-import { APP_STATE_VERSION, createDefaultState, withLegacyConsumerBridge, type AppState, type CompanionCategory, type CompanionLoadout } from './model'
+import { APP_STATE_VERSION, createDefaultState, type AppState, type CompanionCategory, type CompanionLoadout } from './model'
 
 const STORAGE_KEY = 'student-app-state'
 const MIGRATION_KEY = 'student-app-primary-v2-migrated'
 
-type LegacyConsumerKey = 'stage' | 'pointsBalance' | 'aiPositions' | 'companions'
-type PersistedAppState = Omit<AppState, LegacyConsumerKey>
+type PersistedAppState = AppState
 
 const PERSISTED_KEYS: Array<keyof PersistedAppState> = [
   'stateVersion', 'grade', 'isLoggedIn', 'learningProgress', 'transactions', 'processedRewardIds',
@@ -62,7 +61,7 @@ function normalizePrimaryState(parsed: Partial<AppState>, fresh: AppState): AppS
     }
   }
 
-  return withLegacyConsumerBridge({
+  return {
     ...allowed,
     stateVersion: APP_STATE_VERSION,
     grade: primaryGrade,
@@ -72,7 +71,7 @@ function normalizePrimaryState(parsed: Partial<AppState>, fresh: AppState): AppS
       ? allowed.processedRewardIds.filter((id): id is string => typeof id === 'string')
       : fresh.processedRewardIds,
     companion: normalizePrimaryLoadout(allowed.companion, fresh.companion),
-  })
+  }
 }
 
 function filterCoursePartIds(value: unknown, validIds: Set<CoursePartId>): CoursePartId[] {
@@ -108,9 +107,7 @@ function normalizePrimaryLoadout(value: CompanionLoadout | undefined, fallback: 
 }
 
 function toPersistedState(state: AppState): PersistedAppState {
-  const persisted = Object.fromEntries(PERSISTED_KEYS.map((key) => [key, state[key]])) as PersistedAppState
-  persisted.grade = PRIMARY_GRADES.includes(state.grade as PrimaryGrade) ? state.grade : 'grade5'
-  return persisted
+  return Object.fromEntries(PERSISTED_KEYS.map((key) => [key, state[key]])) as PersistedAppState
 }
 
 export function saveState(state: AppState): void {

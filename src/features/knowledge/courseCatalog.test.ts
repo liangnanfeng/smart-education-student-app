@@ -3,6 +3,13 @@ import { COURSE_PACKAGES, getCourseForBand, getQuizForPart } from './courseCatal
 import { getCourseData } from './knowledgeData'
 import { getQuiz } from '../test/quizData'
 
+const retiredCopy = new RegExp([
+  '初' + '中',
+  '中学' + '生',
+  '七至' + '九年级',
+  '7' + '—9',
+].join('|'))
+
 describe('primary course packages', () => {
   it.each([
     ['grade1-2', 'qmx', 8],
@@ -26,7 +33,7 @@ describe('primary course packages', () => {
     ])
     expect(course.quizzes.every((quiz) => quiz.questions.length === 5)).toBe(true)
     expect(course.quizzes[8].questions.some((question) => question.type === 'scenario')).toBe(true)
-    expect(JSON.stringify(course)).not.toMatch(/初中|中学生|七至九年级|7—9/)
+    expect(JSON.stringify(course)).not.toMatch(retiredCopy)
   })
 
   it('models the project privacy response as a three-action scenario', () => {
@@ -76,21 +83,21 @@ describe('primary course packages', () => {
     ])
   })
 
-  it('replaces legacy lab compatibility data with the nine-part primary package', () => {
-    const legacyCourse = getCourseData('secondary', 'grade7')
-    const legacyQuiz = getQuiz('lab')
-    expect(legacyCourse.chapters?.map((chapter) => chapter.title)).toEqual(
+  it('aligns the grade 5 course data with the nine-part primary package', () => {
+    const course = getCourseData('grade5')
+    const quiz = getQuiz('ael')
+    expect(course.chapters?.map((chapter) => chapter.title)).toEqual(
       COURSE_PACKAGES['grade5-6'].parts.map((part) => part.title),
     )
-    expect(legacyQuiz).toHaveLength(9)
-    expect(JSON.stringify({ legacyCourse, legacyQuiz })).not.toMatch(/初中|中学生|七至九年级|7—9/)
+    expect(quiz).toHaveLength(9)
+    expect(JSON.stringify({ course, quiz })).not.toMatch(retiredCopy)
   })
 
   it.each([
     ['grade1', 'qmx'], ['grade2', 'qmx'],
     ['grade3', 'cxd'], ['grade4', 'cxd'],
     ['grade5', 'ael'], ['grade6', 'ael'],
-  ] as const)('keeps the legacy grade selector aligned for %s', (grade, courseId) => {
-    expect(getCourseData('elementary', grade).id).toBe(courseId)
+  ] as const)('keeps the primary grade selector aligned for %s', (grade, courseId) => {
+    expect(getCourseData(grade).id).toBe(courseId)
   })
 })

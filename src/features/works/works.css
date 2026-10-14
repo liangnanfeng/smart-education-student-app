@@ -266,46 +266,13 @@
   color: #fff;
 }
 
-.detail-btn.secondary {
+.detail-btn.subtle {
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--ink);
 }
 
-/* ===== 中学端梦幻装饰 ===== */
-:root[data-stage="secondary"] .work-preview,
-:root[data-stage="secondary"] .work-info-section,
-:root[data-stage="secondary"] .work-stats,
-:root[data-stage="secondary"] .work-meta,
-:root[data-stage="secondary"] .comment-section {
-  background: linear-gradient(160deg, #FFFFFF 0%, var(--glass-bg) 60%, var(--primary-wash) 100%);
-  box-shadow: 0 12px 32px rgba(110, 157, 200, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  border-color: rgba(255, 255, 255, 0.9);
-}
-
-:root[data-stage="secondary"] .work-detail-header .back-button {
-  background: linear-gradient(145deg, #FFFFFF 0%, var(--glass-bg) 100%);
-  border-color: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 6px 16px rgba(110, 157, 200, 0.1);
-}
-
-:root[data-stage="secondary"] .stat-button {
-  background: linear-gradient(145deg, #FFFFFF 0%, var(--glass-bg) 100%);
-  border-color: rgba(255, 255, 255, 0.9);
-}
-
-:root[data-stage="secondary"] .comment-item-inline {
-  background: linear-gradient(145deg, #FFFFFF 0%, var(--glass-bg) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.9);
-}
-
-:root[data-stage="secondary"] .comment-submit-inline {
-  background: linear-gradient(135deg, var(--primary-deep), var(--accent-deep));
-  box-shadow: 0 8px 18px rgba(110, 157, 200, 0.22);
-}
-
-/* ===== 小学端风格微调 ===== */
-:root[data-stage="elementary"] .work-preview {
+.work-preview {
   background: var(--glass-bg);
 }
 

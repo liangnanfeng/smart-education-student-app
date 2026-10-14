@@ -95,7 +95,7 @@ function SecuritySection({ state, setTwoFactor, updatePassword, setNotice }: {
       <section className="choice-card">
         <h2>登录设备</h2>
         <p>以下设备曾使用此账号登录，你可以移除非当前设备。</p>
-        <button type="button" className="wide-secondary" onClick={() => setShowDevices((v) => !v)}>
+        <button type="button" className="wide-muted" onClick={() => setShowDevices((v) => !v)}>
           <Smartphone aria-hidden="true" size={18} />{showDevices ? '收起设备列表' : `查看 ${state.devices.length} 台设备`}
         </button>
         {showDevices && (
@@ -261,7 +261,7 @@ function GuardianSection({ state, setGuardian, setFamilyName, setNotice }: {
             <small>学习报告接收</small>
           </div>
         </div>
-        <button className="wide-secondary" type="button" onClick={() => setEditing(true)}>编辑监护⼈信息</button>
+        <button className="wide-muted" type="button" onClick={() => setEditing(true)}>编辑监护⼈信息</button>
       </section>
     </>
   )
@@ -319,7 +319,7 @@ function CompanionSection({ state, setAiName, setAiPersonality, resetAiPosition,
             <small>{PERSONALITY_OPTIONS.find(([k]) => k === state.aiPersonality)?.[1] ?? '鼓励成长'}</small>
           </div>
           <p>{appearanceName} · 当前服饰与装饰已同步到登录页和悬浮伙伴。</p>
-          <button className="wide-secondary companion-mall-link" type="button" onClick={onOpenMall}>前往积分商城调整伙伴</button>
+          <button className="wide-muted companion-mall-link" type="button" onClick={onOpenMall}>前往积分商城调整伙伴</button>
         </div>
       </section>
 
@@ -347,7 +347,7 @@ function CompanionSection({ state, setAiName, setAiPersonality, resetAiPosition,
       <section className="choice-card">
         <h2>悬浮位置</h2>
         <p>在主页面拖动 AI 入口后，可以在这里恢复默认位置。</p>
-        <button className="wide-secondary" type="button" onClick={() => { resetAiPosition(); setNotice('AI 入口位置已恢复') }}><RotateCcw aria-hidden="true" size={18} />恢复默认位置</button>
+        <button className="wide-muted" type="button" onClick={() => { resetAiPosition(); setNotice('AI 入口位置已恢复') }}><RotateCcw aria-hidden="true" size={18} />恢复默认位置</button>
       </section>
     </>
   )
@@ -443,7 +443,7 @@ function MemorySection({ state, setSaveHistory, setAiMemory, clearHistory, setNo
         <section className="choice-card">
           <h2>清除数据</h2>
           <p>删除所有对话记录和长期记忆，此操作不可恢复。</p>
-          <button className="wide-secondary danger-btn" type="button" onClick={() => setShowClear(true)}><Trash2 aria-hidden="true" size={18} />清除所有记录</button>
+          <button className="wide-muted danger-btn" type="button" onClick={() => setShowClear(true)}><Trash2 aria-hidden="true" size={18} />清除所有记录</button>
         </section>
       )}
 
@@ -594,7 +594,7 @@ function PrivacySection({ state, setShowStats, setFriendFind, setDataCollection,
       <section className="choice-card">
         <h2>数据导出</h2>
         <p>你可以随时导出或删除与你账号相关的数据。</p>
-        <button className="wide-secondary" type="button" onClick={() => setNotice('导出请求已发送（演示）')}><Database aria-hidden="true" size={18} />申请数据导出</button>
+        <button className="wide-muted" type="button" onClick={() => setNotice('导出请求已发送（演示）')}><Database aria-hidden="true" size={18} />申请数据导出</button>
       </section>
     </>
   )
@@ -728,7 +728,7 @@ function StorageSection({ state, setAutoClean, clearCache, setNotice }: {
       <section className="choice-card">
         <h2>立即清理</h2>
         <p>清理缓存文件，不会删除你的学习进度和收藏。</p>
-        <button className="wide-secondary danger-btn" type="button" onClick={() => { clearCache(); setNotice('缓存已清理') }}><Trash2 aria-hidden="true" size={18} />清理缓存（约 120 MB）</button>
+        <button className="wide-muted danger-btn" type="button" onClick={() => { clearCache(); setNotice('缓存已清理') }}><Trash2 aria-hidden="true" size={18} />清理缓存（约 120 MB）</button>
       </section>
     </>
   )
@@ -787,7 +787,7 @@ function AboutSection() {
       <section className="choice-card">
         <h2>用户协议</h2>
         <p>使用本应用即代表同意《用户服务协议》和《隐私政策》。</p>
-        <button className="wide-secondary" type="button">查看完整协议</button>
+        <button className="wide-muted" type="button">查看完整协议</button>
       </section>
 
       <section className="choice-card">

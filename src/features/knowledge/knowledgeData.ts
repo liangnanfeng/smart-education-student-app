@@ -1,5 +1,5 @@
 import { makeCoursePartId } from '../../app/learning'
-import type { CoursePartId } from '../../app/learning'
+import type { CoursePartId, PrimaryGrade } from '../../app/learning'
 import { GRADE56_PARTS } from './content/grade56Content'
 
 // 三年级段课程体系数据
@@ -263,8 +263,7 @@ const grade56Primary: CourseData = {
     ],
 }
 
-export function getCourseData(stage: string, grade: string): CourseData {
-    if (stage === 'secondary') return grade56Primary
+export function getCourseData(grade: PrimaryGrade): CourseData {
     if (['grade1', 'grade2'].includes(grade)) return elementaryLow
     if (['grade3', 'grade4'].includes(grade)) return elementaryHigh
     return grade56Primary

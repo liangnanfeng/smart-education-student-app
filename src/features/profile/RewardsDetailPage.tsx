@@ -5,7 +5,7 @@ import { MedalIcon } from './MedalIcon'
 import './profile.css'
 
 export function RewardsDetailPage({ onBack }: { onBack: () => void }) {
-  const { state } = useAppState()
+  const { pointsBalance } = useAppState()
   const earnedCount = medals.filter(m => m.earned).length
 
   return (
@@ -29,7 +29,7 @@ export function RewardsDetailPage({ onBack }: { onBack: () => void }) {
           <div className="rewards-stat">
             <Sparkles size={24} />
             <div>
-              <strong>{state.pointsBalance.toLocaleString('zh-CN')}</strong>
+              <strong>{pointsBalance.toLocaleString('zh-CN')}</strong>
               <span>当前积分</span>
             </div>
           </div>

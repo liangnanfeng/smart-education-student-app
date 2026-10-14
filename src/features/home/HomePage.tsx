@@ -5,7 +5,7 @@ import { CameraToolSheet } from './CameraToolSheet'
 import { games, homeCopy } from './homeData'
 import './home.css'
 
-const carouselGradientsElementary = [
+const carouselGradients = [
   'linear-gradient(135deg, #FFF5E6 0%, #FFD9B8 30%, #FF9D6E 65%, #E87045 100%)',
   'linear-gradient(135deg, #FFE4EF 0%, #FFB8D4 30%, #FF8AB0 65%, #E85F8A 100%)',
   'linear-gradient(135deg, #FFF8E0 0%, #FFE8A8 30%, #FFC958 65%, #FFA82E 100%)',
@@ -28,7 +28,7 @@ export function HomePage({ onWorkClick, onMoreWorks, onOpenNotifications, onNavi
   const touchStartX = useRef(0)
   const touchEndX = useRef(0)
   const copy = homeCopy
-  const gradients = carouselGradientsElementary
+  const gradients = carouselGradients
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -77,7 +77,7 @@ export function HomePage({ onWorkClick, onMoreWorks, onOpenNotifications, onNavi
 
       <section className="news-carousel-section" aria-label="最新 AI 通识资讯">
         <div
-          className="news-carousel stage-elementary"
+          className="news-carousel"
           style={{ background: currentGradient }}
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}

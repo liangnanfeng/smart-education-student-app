@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useAppState } from '../../app/AppState'
+import { getGradeBand } from '../../app/learning'
 import { AiCompanion } from '../ai_companion/AiCompanion'
 import { HomePage } from '../home/HomePage'
 import { NotificationsPage } from '../home/NotificationsPage'
@@ -54,6 +55,7 @@ type View =
 
 export function MainShell() {
   const { state } = useAppState()
+  const shellClassName = `main-shell main-shell--${getGradeBand(state.grade)}`
   const [activeTab, setActiveTab] = useState<MainTab>('home')
   const [stack, setStack] = useState<View[]>([{ kind: 'tab', id: 0 }])
   const view = stack[stack.length - 1]
@@ -92,7 +94,7 @@ export function MainShell() {
 
   if (view.kind === 'settings') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <SettingsPage onBack={pop} onOpenMall={() => push({ kind: 'mall' })} />
         <AiCompanion />
       </main>
@@ -120,7 +122,7 @@ export function MainShell() {
 
   if (view.kind === 'schedule') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <LearningSchedulePage onBack={pop} />
         <AiCompanion />
         <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
@@ -130,7 +132,7 @@ export function MainShell() {
 
   if (view.kind === 'calendar') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <CalendarPage onBack={pop} />
         <AiCompanion />
         <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
@@ -140,7 +142,7 @@ export function MainShell() {
 
   if (view.kind === 'works-gallery') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <WorksGalleryPage onBack={pop} onWorkClick={(workId) => push({ kind: 'work', workId })} />
         <AiCompanion />
         <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
@@ -150,7 +152,7 @@ export function MainShell() {
 
   if (view.kind === 'work') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <WorkDetailPage workId={view.workId} onBack={pop} />
         <AiCompanion />
         <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
@@ -160,7 +162,7 @@ export function MainShell() {
 
   if (view.kind === 'tools') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <LearningToolsDetailPage onBack={pop} />
         <AiCompanion />
         <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
@@ -170,7 +172,7 @@ export function MainShell() {
 
   if (view.kind === 'medals') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <MedalsPage onBack={pop} />
         <AiCompanion />
         <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
@@ -180,7 +182,7 @@ export function MainShell() {
 
   if (view.kind === 'points') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <PointsPage onBack={pop} />
         <AiCompanion />
         <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
@@ -190,7 +192,7 @@ export function MainShell() {
 
   if (view.kind === 'mall') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <MallPage onBack={pop} />
         <AiCompanion />
         <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
@@ -200,7 +202,7 @@ export function MainShell() {
 
   if (view.kind === 'ranking') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <RankingPage onBack={pop} />
         <AiCompanion />
         <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
@@ -210,7 +212,7 @@ export function MainShell() {
 
   if (view.kind === 'wrong-book') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <WrongBookPage onBack={pop} />
         <AiCompanion />
         <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
@@ -220,7 +222,7 @@ export function MainShell() {
 
   if (view.kind === 'favorites') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <FavoritesPage onBack={pop} />
         <AiCompanion />
         <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
@@ -230,7 +232,7 @@ export function MainShell() {
 
   if (view.kind === 'history') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <HistoryPage onBack={pop} />
         <AiCompanion />
         <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
@@ -240,7 +242,7 @@ export function MainShell() {
 
   if (view.kind === 'ai-center') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <AiCenterPage onBack={pop} />
         <AiCompanion />
         <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
@@ -250,7 +252,7 @@ export function MainShell() {
 
   if (view.kind === 'works-manage') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <WorksManagePage
           onBack={pop}
           onContinueCreate={() => push({ kind: 'continue-create' })}
@@ -264,7 +266,7 @@ export function MainShell() {
 
   if (view.kind === 'continue-create') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <ContinueCreatePage onBack={pop} />
         <AiCompanion />
         <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
@@ -274,7 +276,7 @@ export function MainShell() {
 
   if (view.kind === 'course-content') {
     return (
-      <main className="main-shell">
+      <main className={shellClassName}>
         <CourseContentPage
           courseId={view.courseId}
           chapterNum={view.chapterNum}
@@ -287,7 +289,7 @@ export function MainShell() {
   }
 
   return (
-    <main className="main-shell">
+    <main className={shellClassName}>
       <div className="tab-content">
         {activeTab === 'home' && (
           <HomePage
@@ -324,7 +326,7 @@ export function MainShell() {
           />
         )}
       </div>
-      {!(activeTab === 'test' && state.stage === 'elementary') && <AiCompanion placement="floating" />}
+      {activeTab !== 'test' && <AiCompanion placement="floating" />}
       <BottomNavigation activeTab={activeTab} onSelect={selectTab} />
     </main>
   )

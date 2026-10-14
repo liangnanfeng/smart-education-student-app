@@ -1,5 +1,6 @@
 .knowledge-page {
   padding: 16px 16px 32px;
+  font-size: var(--learning-copy-size, .92rem);
 }
 
 /* ===== 顶部标题 ===== */
@@ -93,7 +94,7 @@
 .day-card {
   background: #fff;
   border-radius: var(--radius-md);
-  margin-top: 12px;
+  margin-top: var(--learning-card-gap, 12px);
   overflow: hidden;
   transition: box-shadow 0.2s;
 }

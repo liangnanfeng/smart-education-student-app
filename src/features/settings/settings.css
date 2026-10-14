@@ -202,7 +202,7 @@
 }
 
 .stacked-choices button,
-.wide-secondary {
+.wide-muted {
     display: flex;
     width: 100%;
     min-height: 46px;
@@ -222,7 +222,7 @@
     background: var(--surface-soft);
 }
 
-.wide-secondary {
+.wide-muted {
     margin-top: 13px;
 }
 

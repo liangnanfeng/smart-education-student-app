@@ -1,34 +1,13 @@
 import type { LearningProgress, PrimaryGrade } from './learning'
 import type { PointTransaction } from './points'
-import { getPointsBalance } from './points'
 
 export const APP_STATE_VERSION = 2 as const
 
-/** @deprecated Temporary consumer bridge; remove with the stage UI in Task 11. */
-export type LearningStage = 'elementary' | 'secondary'
 export type FontScale = 'standard' | 'large' | 'xlarge'
 
 export type AiPosition = {
   x: number
   y: number
-}
-
-/** @deprecated Temporary consumer bridge; persisted state only accepts PrimaryGrade. */
-export type Grade = {
-  elementary: PrimaryGrade
-  secondary: 'grade7' | 'grade8' | 'grade9' | 'grade10' | 'grade11' | 'grade12'
-}
-
-export const ELEMENTARY_GRADE_IDS = ['grade1', 'grade2', 'grade3', 'grade4', 'grade5', 'grade6'] as const
-/** @deprecated Remove with the remaining stage UI in Task 11. */
-export const SECONDARY_GRADE_IDS = ['grade7', 'grade8', 'grade9', 'grade10', 'grade11', 'grade12'] as const
-
-/** @deprecated Primary labels live in learning.ts; retained for existing consumers until Task 11. */
-export const GRADE_LABELS: Record<Grade[LearningStage], string> = {
-  grade1: '一年级', grade2: '二年级', grade3: '三年级',
-  grade4: '四年级', grade5: '五年级', grade6: '六年级',
-  grade7: '初一', grade8: '初二', grade9: '初三',
-  grade10: '高一', grade11: '高二', grade12: '高三',
 }
 
 export type GuardianInfo = {
@@ -58,21 +37,9 @@ export type CompanionLoadout = {
   version: number
 }
 
-type LegacyConsumerBridge = {
-  /** @deprecated Read-only compatibility value. Never persisted. */
-  stage: LearningStage
-  /** @deprecated Derived from transactions. Never persisted. */
-  pointsBalance: number
-  /** @deprecated Mirrors aiPosition. Never persisted. */
-  aiPositions: Record<LearningStage, AiPosition>
-  /** @deprecated Mirrors companion. Never persisted. */
-  companions: Record<LearningStage, CompanionLoadout>
-}
-
 export type AppState = {
   stateVersion: typeof APP_STATE_VERSION
-  /** @deprecated Runtime compatibility is broader until stage consumers are removed in Task 11; storage normalizes to PrimaryGrade. */
-  grade: Grade[LearningStage]
+  grade: PrimaryGrade
   isLoggedIn: boolean
   learningProgress: LearningProgress
   transactions: PointTransaction[]
@@ -118,7 +85,7 @@ export type AppState = {
   storageUsed: number
   storageTotal: number
   autoCleanDays: number
-} & LegacyConsumerBridge
+}
 
 const DEMO_TRANSACTIONS: PointTransaction[] = [
   { id: 'demo-knowledge', eventId: 'demo:knowledge', kind: 'knowledge', title: '已完成 3 个知识部分', amount: 90, occurredAt: '2026-10-12' },
@@ -128,7 +95,7 @@ const DEMO_TRANSACTIONS: PointTransaction[] = [
 ]
 
 export function createDefaultState(): AppState {
-  return withLegacyConsumerBridge({
+  return {
     stateVersion: APP_STATE_VERSION,
     grade: 'grade5',
     isLoggedIn: false,
@@ -195,20 +162,6 @@ export function createDefaultState(): AppState {
     storageUsed: 286,
     storageTotal: 2048,
     autoCleanDays: 30,
-  })
-}
-
-type PrimaryState = Omit<AppState, keyof LegacyConsumerBridge>
-
-export function withLegacyConsumerBridge(state: PrimaryState): AppState {
-  const position = state.aiPosition
-  const companion = state.companion
-  return {
-    ...state,
-    stage: 'elementary',
-    pointsBalance: getPointsBalance(state.transactions),
-    aiPositions: { elementary: position, secondary: position },
-    companions: { elementary: companion, secondary: companion },
   }
 }
 

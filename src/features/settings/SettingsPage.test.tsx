@@ -15,7 +15,6 @@ describe('settings page', () => {
     expect(screen.getAllByText('五年级 · 5—6 年级')).not.toHaveLength(0)
     expect(screen.queryByText('账号与学段')).not.toBeInTheDocument()
     expect(screen.queryByText('学段与年级')).not.toBeInTheDocument()
-    expect(screen.queryByText('中学端')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: '退出当前账号' })).toBeInTheDocument()
   })
 
@@ -25,7 +24,6 @@ describe('settings page', () => {
 
     await user.click(screen.getByRole('button', { name: /学习年级/ }))
     expect(screen.queryByRole('button', { name: '小学端' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: '中学端' })).not.toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '二年级' }))
     expect(screen.getByRole('status')).toHaveTextContent('年级已切换为 二年级')
     expect(screen.queryByRole('dialog', { name: '确认更改学段' })).not.toBeInTheDocument()

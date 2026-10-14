@@ -51,7 +51,7 @@ describe('companion proxy policy', () => {
     }
   })
 
-  it.each(['nimbo', 'nimbli', 'aether', 'yunluo', 'missing', null])('defaults unapproved identity %s to Momo', (id) => {
+  it.each(['retired-one', 'retired-two', 'retired-three', 'retired-four', 'missing', null])('defaults unapproved identity %s to Momo', (id) => {
     expect(prepareStudentQuestion('怎么让植物识别更准确？', id)).toEqual({ companionId: 'momo', question: '怎么让植物识别更准确？' })
   })
 

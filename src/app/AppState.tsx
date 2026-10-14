@@ -7,12 +7,11 @@ import {
   type PropsWithChildren,
 } from 'react'
 import { getGradeBand, getPartIdsForBand, type CoursePartId, type PrimaryGrade } from './learning'
-import { defaultState, type AiPersonality, type AiPosition, type AppState, type CompanionCategory, type ContentLevel, type FontScale, type GuardianInfo, type LearningStage, type PermissionStatus, type SafeMode, type VoiceMode } from './model'
+import { defaultState, type AiPersonality, type AiPosition, type AppState, type CompanionCategory, type ContentLevel, type FontScale, type GuardianInfo, type PermissionStatus, type SafeMode, type VoiceMode } from './model'
 import { applyTransactionOnce, buildProgressRewardTransactions, getPointsBalance } from './points'
 import { loadState, saveState } from './storage'
 
 type Action =
-  | { type: 'set-stage'; stage: LearningStage }
   | { type: 'set-grade'; grade: PrimaryGrade }
   | { type: 'complete-knowledge'; partId: CoursePartId; title: string; occurredAt: string }
   | { type: 'pass-test'; partId: CoursePartId; title: string; occurredAt: string }
@@ -69,29 +68,10 @@ function toggle(items: string[], id: string) {
   return items.includes(id) ? items.filter((item) => item !== id) : [...items, id]
 }
 
-function isPrimaryGrade(grade: AppState['grade']): grade is PrimaryGrade {
-  return grade === 'grade1'
-    || grade === 'grade2'
-    || grade === 'grade3'
-    || grade === 'grade4'
-    || grade === 'grade5'
-    || grade === 'grade6'
-}
-
-function syncLegacyConsumerBridge(state: AppState): AppState {
-  return {
-    ...state,
-    pointsBalance: getPointsBalance(state.transactions),
-    aiPositions: { elementary: state.aiPosition, secondary: state.aiPosition },
-    companions: { elementary: state.companion, secondary: state.companion },
-  }
-}
-
 function updateProgress(
   state: AppState,
   action: Extract<Action, { type: 'complete-knowledge' | 'pass-test' }>,
 ) {
-  if (!isPrimaryGrade(state.grade)) return state
   const band = getGradeBand(state.grade)
   const before = state.learningProgress[band]
   const field = action.type === 'complete-knowledge' ? 'knowledgeCompleted' : 'testsPassed'
@@ -119,7 +99,7 @@ function updateProgress(
           : transaction.title,
     })
   }
-  return syncLegacyConsumerBridge(next)
+  return next
 }
 
 function purchase(
@@ -140,7 +120,7 @@ function purchase(
   const debited = applyTransactionOnce(state, transaction)
   if (debited === state) return state
 
-  return syncLegacyConsumerBridge({
+  return {
     ...debited,
     companion: {
       ...debited.companion,
@@ -149,12 +129,11 @@ function purchase(
         [action.category]: [...debited.companion.owned[action.category], action.id],
       },
     },
-  })
+  }
 }
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
-    case 'set-stage': return { ...state, stage: action.stage }
     case 'set-grade': return { ...state, grade: action.grade }
     case 'complete-knowledge':
     case 'pass-test': return updateProgress(state, action)
@@ -165,11 +144,11 @@ function reducer(state: AppState, action: Action): AppState {
     case 'toggle-like': return { ...state, likes: toggle(state.likes, action.id) }
     case 'toggle-favorite': return { ...state, favorites: toggle(state.favorites, action.id) }
     case 'set-notifications': return { ...state, notifications: action.value }
-    case 'set-ai-position': return syncLegacyConsumerBridge({ ...state, aiPosition: action.position })
-    case 'reset-ai-position': return syncLegacyConsumerBridge({
+    case 'set-ai-position': return { ...state, aiPosition: action.position }
+    case 'reset-ai-position': return {
       ...state,
       aiPosition: defaultState.aiPosition,
-    })
+    }
     case 'set-two-factor': return { ...state, twoFactorEnabled: action.enabled }
     case 'update-password': return { ...state, lastPasswordChange: action.lastChange, passwordHint: '刚刚修改' }
     case 'set-guardian': return { ...state, guardian: action.guardian }
@@ -185,23 +164,23 @@ function reducer(state: AppState, action: Action): AppState {
     case 'equip-companion-item': {
       const loadout = state.companion
       if (!loadout.owned[action.category].includes(action.id)) return state
-      return syncLegacyConsumerBridge({
+      return {
         ...state,
         companion: {
           ...loadout,
           equipped: { ...loadout.equipped, [action.category]: action.id },
         },
-      })
+      }
     }
     case 'unequip-companion-item': {
       const loadout = state.companion
-      return syncLegacyConsumerBridge({
+      return {
         ...state,
         companion: {
           ...loadout,
           equipped: { ...loadout.equipped, [action.category]: null },
         },
-      })
+      }
     }
     case 'set-voice-enabled': return { ...state, voiceEnabled: action.enabled }
     case 'set-auto-listen': return { ...state, autoListenEnabled: action.enabled }
@@ -232,7 +211,6 @@ function reducer(state: AppState, action: Action): AppState {
 type AppStateContextValue = {
   state: AppState
   pointsBalance: number
-  setStage: (stage: LearningStage) => void
   setGrade: (grade: PrimaryGrade) => void
   completeKnowledge: (partId: CoursePartId, title: string) => void
   passTest: (partId: CoursePartId, title: string) => void
@@ -286,7 +264,6 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   const [state, dispatch] = useReducer(reducer, undefined, loadState)
 
   useEffect(() => {
-    document.documentElement.dataset.stage = state.stage
     document.documentElement.dataset.fontScale = state.fontScale
     saveState(state)
   }, [state])
@@ -294,7 +271,6 @@ export function AppStateProvider({ children }: PropsWithChildren) {
   const value = useMemo<AppStateContextValue>(() => ({
     state,
     pointsBalance: getPointsBalance(state.transactions),
-    setStage: (stage) => dispatch({ type: 'set-stage', stage }),
     setGrade: (grade) => dispatch({ type: 'set-grade', grade }),
     completeKnowledge: (partId, title) => dispatch({ type: 'complete-knowledge', partId, title, occurredAt: new Date().toISOString() }),
     passTest: (partId, title) => dispatch({ type: 'pass-test', partId, title, occurredAt: new Date().toISOString() }),

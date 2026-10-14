@@ -1,4 +1,4 @@
-/* ===== 答题弹层 · 双端主题 ===== */
+/* ===== 答题弹层 ===== */
 
 /* 蒙层 */
 .quiz-overlay {
@@ -38,8 +38,7 @@
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-/* ---- 小学端主题 ---- */
-.quiz-stage-elementary {
+.quiz-modal {
   --quiz-bg: #FFF8EC;
   --quiz-header-bg: linear-gradient(135deg, #FFD180 0%, #FFAB66 100%);
   --quiz-accent: #E87045;
@@ -53,23 +52,6 @@
   --quiz-no: #E0506A;
   --quiz-no-soft: #FCDCE2;
   --quiz-opt-picked: #FFF0E0;
-}
-
-/* ---- 中学端主题 ---- */
-.quiz-stage-secondary {
-  --quiz-bg: #F4F2FB;
-  --quiz-header-bg: linear-gradient(135deg, #8F7DBF 0%, #6E5CA0 100%);
-  --quiz-accent: #6E4FA8;
-  --quiz-accent-soft: #E4DBF2;
-  --quiz-text: #2D2438;
-  --quiz-muted: #8A8699;
-  --quiz-card: #FFFFFF;
-  --quiz-border: rgba(110, 79, 168, 0.16);
-  --quiz-ok: #3E8FB5;
-  --quiz-ok-soft: #D4EAF2;
-  --quiz-no: #D05080;
-  --quiz-no-soft: #FADCE6;
-  --quiz-opt-picked: #EEE6F8;
 }
 
 /* 头部 */

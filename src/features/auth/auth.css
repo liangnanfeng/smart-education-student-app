@@ -338,11 +338,6 @@
   border: 0;
 }
 
-:root[data-stage="secondary"] .login-companion__dialog {
-  border-radius: 22px;
-  background: linear-gradient(155deg, color-mix(in srgb, #edf8ff 84%, var(--surface)), color-mix(in srgb, #edeaff 82%, var(--surface)));
-}
-
 .auth-heading {
   margin: 16px 8px 20px;
   text-align: center;
@@ -706,11 +701,6 @@
 .primary-button:disabled {
   opacity: .45;
   box-shadow: none;
-}
-
-:root[data-stage="secondary"] .primary-button {
-  background: linear-gradient(135deg, var(--primary-deep) 0%, var(--accent-deep) 55%, var(--warm-accent) 100%);
-  box-shadow: 0 12px 28px rgba(110, 157, 200, 0.28);
 }
 
 .prototype-note {

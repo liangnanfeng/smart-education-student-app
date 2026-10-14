@@ -3,7 +3,7 @@ import { useAppState } from '../../app/AppState'
 import { GRADE_BAND_LABELS, GRADE_LABELS, getGradeBand, type PrimaryGrade } from '../../app/learning'
 
 export function ProfileDetailPage({ onBack, onEdit }: { onBack: () => void; onEdit: () => void }) {
-  const { state } = useAppState()
+  const { state, pointsBalance } = useAppState()
   const grade = state.grade as PrimaryGrade
 
   const infoRows = [
@@ -11,7 +11,7 @@ export function ProfileDetailPage({ onBack, onEdit }: { onBack: () => void; onEd
     { label: '学习天数', value: '45 天' },
     { label: '完成作品', value: '8 个' },
     { label: '获得勋章', value: '8 枚' },
-    { label: '当前积分', value: state.pointsBalance.toLocaleString('zh-CN') },
+    { label: '当前积分', value: pointsBalance.toLocaleString('zh-CN') },
   ]
 
   return (
