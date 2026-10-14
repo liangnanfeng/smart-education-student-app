@@ -88,7 +88,7 @@ function normalizePrimaryLoadout(value: CompanionLoadout | undefined, fallback: 
   const primaryIds = Object.fromEntries(COMPANION_CATEGORIES.map((category) => [
     category,
     new Set(COMPANION_CATALOG
-      .filter((item) => item.stage === 'elementary' && item.category === category)
+      .filter((item) => item.category === category)
       .map((item) => item.id)),
   ])) as Record<CompanionCategory, Set<string>>
 

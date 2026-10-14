@@ -28,11 +28,8 @@ export function LoginPage({ onNavigate }: LoginPageProps) {
     }
 
     sessionStorage.setItem(LOGIN_COMPANION_HANDOFF_KEY, JSON.stringify({
-      version: 1,
-      stage: 'elementary',
+      version: 2,
       appearanceId: loadout.equipped.appearance,
-      outfitId: loadout.equipped.outfit,
-      decorationId: loadout.equipped.decoration,
       rect: {
         left: rect.left,
         top: rect.top,

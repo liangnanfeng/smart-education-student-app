@@ -64,10 +64,10 @@ describe('authentication flow', () => {
     await user.type(screen.getByLabelText('密码'), 'secret-pass')
     await user.click(screen.getByRole('button', { name: '进入学习世界' }))
 
-    expect(JSON.parse(sessionStorage.getItem('student-app-login-companion-bounds') ?? '{}')).toMatchObject({
-      stage: 'elementary',
+    expect(JSON.parse(sessionStorage.getItem('student-app-login-companion-bounds') ?? '{}')).toEqual({
+      version: 2,
       appearanceId: 'momo',
-      rect: { left: 40, top: 72, width: 180, height: 180 },
+      rect: { left: 40, top: 72, right: 220, bottom: 252, width: 180, height: 180 },
     })
     boundsSpy.mockRestore()
   })

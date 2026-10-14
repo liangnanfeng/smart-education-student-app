@@ -24,6 +24,7 @@ describe('login companion', () => {
 
   afterEach(() => {
     vi.useRealTimers()
+    vi.unstubAllGlobals()
   })
 
   it('shows the equipped primary companion', () => {
@@ -31,6 +32,39 @@ describe('login companion', () => {
 
     expect(screen.getByRole('img', { name: '绒桃 Momo AI 伙伴形象' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '和绒桃 Momo互动' })).toBeInTheDocument()
+  })
+
+  it('answers login voice input through the stage-free proxy and respects muted speech', async () => {
+    vi.useFakeTimers()
+    vi.stubGlobal('PointerEvent', MouseEvent)
+    const recognition = {
+      lang: '', continuous: false, interimResults: false, maxAlternatives: 0,
+      onresult: null as ((event: unknown) => void) | null,
+      onerror: null, onend: null as (() => void) | null,
+      start: vi.fn(), stop: vi.fn(), abort: vi.fn(),
+    }
+    vi.stubGlobal('SpeechRecognition', function () { return recognition })
+    const speak = vi.fn()
+    vi.stubGlobal('speechSynthesis', { cancel: vi.fn(), speak })
+    vi.stubGlobal('SpeechSynthesisUtterance', function () {})
+    const requests: unknown[] = []
+    vi.stubGlobal('fetch', async (_url: string, options: RequestInit) => {
+      requests.push(JSON.parse(options.body as string))
+      return new Response(JSON.stringify({ reply: '水滴聚在一起，就变成了雨。' }))
+    })
+    saveState({ ...defaultState, voiceEnabled: false })
+    render(<AppStateProvider><LoginCompanion onBoundsChange={() => undefined} /></AppStateProvider>)
+    const button = screen.getByRole('button', { name: '和绒桃 Momo互动' })
+    fireEvent.pointerDown(button, { button: 0 })
+    act(() => vi.advanceTimersByTime(600))
+    fireEvent.pointerUp(button)
+    await act(async () => {
+      recognition.onresult?.({ results: [{ isFinal: true, 0: { transcript: '为什么会下雨？' } }] })
+      recognition.onend?.()
+    })
+    expect(requests).toEqual([{ companionId: 'momo', question: '为什么会下雨？' }])
+    expect(screen.getByRole('status')).toHaveTextContent('水滴聚在一起，就变成了雨。')
+    expect(speak).not.toHaveBeenCalled()
   })
 
   it('places the companion inside a compact circular login frame', () => {

@@ -19,7 +19,7 @@ const layeredLoadout: CompanionLoadout = {
 
 describe('PartnerAppearance', () => {
   it('renders the equipped appearance and optional layers in one safe frame', () => {
-    render(<PartnerAppearance stage="elementary" loadout={layeredLoadout} size="login" />)
+    render(<PartnerAppearance loadout={layeredLoadout} size="login" />)
 
     expect(screen.getByRole('img', { name: '绒桃 Momo AI 伙伴形象' })).toBeInTheDocument()
     expect(screen.getByTestId('companion-outfit')).toHaveAttribute('src', '/mall/elementary/cloud-backpack.png')
@@ -27,19 +27,19 @@ describe('PartnerAppearance', () => {
     expect(screen.getByTestId('partner-appearance')).toHaveAttribute('data-size', 'login')
   })
 
-  it('uses the stage default when the saved appearance no longer exists', () => {
+  it('uses Momo when the saved appearance no longer exists', () => {
     const invalidLoadout: CompanionLoadout = {
       ...layeredLoadout,
       equipped: { appearance: 'missing-pet', outfit: null, decoration: null },
     }
 
-    render(<PartnerAppearance stage="secondary" loadout={invalidLoadout} size="floating" />)
+    render(<PartnerAppearance loadout={invalidLoadout} size="floating" />)
 
-    expect(screen.getByRole('img', { name: '云宝 Nimbo AI 伙伴形象' })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: '绒桃 Momo AI 伙伴形象' })).toBeInTheDocument()
   })
 
   it('switches the 3D sprite sheet to its running motion without dropping equipped layers', () => {
-    render(<PartnerAppearance stage="elementary" loadout={layeredLoadout} size="floating" motion="run" />)
+    render(<PartnerAppearance loadout={layeredLoadout} size="floating" motion="run" />)
 
     expect(screen.getByTestId('partner-appearance')).toHaveAttribute('data-motion', 'run')
     expect(screen.getByRole('img', { name: '绒桃 Momo AI 伙伴形象' })).toHaveClass('partner-appearance__sprite--run')

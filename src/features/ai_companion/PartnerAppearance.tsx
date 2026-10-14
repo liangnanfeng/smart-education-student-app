@@ -1,29 +1,27 @@
-import type { CompanionLoadout, LearningStage } from '../../app/model'
-import { DEFAULT_COMPANION_IDS, getCompanionItem } from './companionCatalog'
+import type { CompanionLoadout } from '../../app/model'
+import { DEFAULT_COMPANION_ID, getCompanionItem } from './companionCatalog'
 import './ai-companion.css'
 
 type PartnerAppearanceProps = {
-  stage: LearningStage
   loadout: CompanionLoadout
   size: 'login' | 'preview' | 'floating'
   motion?: 'idle' | 'run'
   interactive?: boolean
-  className?: string
 }
 
-export function PartnerAppearance({ stage, loadout, size, motion = 'idle', interactive = false, className = '' }: PartnerAppearanceProps) {
+export function PartnerAppearance({ loadout, size, motion = 'idle', interactive = false }: PartnerAppearanceProps) {
   const selectedAppearance = getCompanionItem(loadout.equipped.appearance)
-  const appearance = selectedAppearance?.stage === stage && selectedAppearance.category === 'appearance'
+  const appearance = selectedAppearance?.category === 'appearance'
     ? selectedAppearance
-    : getCompanionItem(DEFAULT_COMPANION_IDS[stage])!
+    : getCompanionItem(DEFAULT_COMPANION_ID)!
   const selectedOutfit = getCompanionItem(loadout.equipped.outfit)
   const selectedDecoration = getCompanionItem(loadout.equipped.decoration)
-  const outfit = selectedOutfit?.stage === stage && selectedOutfit.category === 'outfit' ? selectedOutfit : undefined
-  const decoration = selectedDecoration?.stage === stage && selectedDecoration.category === 'decoration' ? selectedDecoration : undefined
+  const outfit = selectedOutfit?.category === 'outfit' ? selectedOutfit : undefined
+  const decoration = selectedDecoration?.category === 'decoration' ? selectedDecoration : undefined
 
   return (
     <span
-      className={`partner-appearance partner-appearance--${size} ${interactive ? 'partner-appearance--interactive' : ''} ${className}`.trim()}
+      className={`partner-appearance partner-appearance--${size} ${interactive ? 'partner-appearance--interactive' : ''}`.trim()}
       data-testid="partner-appearance"
       data-size={size}
       data-companion-id={appearance.id}

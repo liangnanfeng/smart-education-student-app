@@ -12,14 +12,11 @@ type LoginCompanionProps = {
 
 export const LOGIN_COMPANION_HANDOFF_KEY = 'student-app-login-companion-bounds'
 
-const WELCOME_COPY = {
-  elementary: '嗨！今天想先去哪里冒险？',
-  secondary: '你好，要从一个问题开始探索吗？',
-} as const
+const WELCOME_COPY = '嗨！今天想先去哪里冒险？'
 
 export function LoginCompanion({ onBoundsChange }: LoginCompanionProps) {
   const { state } = useAppState()
-  const loadout = state.companions[state.stage]
+  const loadout = state.companion
   const appearance = getCompanionItem(loadout.equipped.appearance)
   const buttonRef = useRef<HTMLButtonElement | null>(null)
   const longPressTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null)
@@ -36,7 +33,7 @@ export function LoginCompanion({ onBoundsChange }: LoginCompanionProps) {
     measure()
     window.addEventListener('resize', measure)
     return () => window.removeEventListener('resize', measure)
-  }, [measure, state.stage, loadout.equipped.appearance, loadout.equipped.outfit, loadout.equipped.decoration])
+  }, [measure, loadout.equipped.appearance, loadout.equipped.outfit, loadout.equipped.decoration])
 
   useEffect(() => () => {
     voiceCaptureRef.current?.cancel()
@@ -51,7 +48,6 @@ export function LoginCompanion({ onBoundsChange }: LoginCompanionProps) {
     setMessage('我想一想，马上回答你。')
     try {
       const reply = await requestCompanionReply({
-        stage: state.stage,
         companionId: loadout.equipped.appearance ?? 'unknown',
         question,
       })
@@ -60,7 +56,7 @@ export function LoginCompanion({ onBoundsChange }: LoginCompanionProps) {
     } catch {
       setMessage('伙伴暂时没听清，我们换个简单的问题试试。')
     }
-  }, [loadout.equipped.appearance, state.stage, state.voiceEnabled])
+  }, [loadout.equipped.appearance, state.voiceEnabled])
 
   const startVoiceQuestion = useCallback(() => {
     voiceCaptureRef.current?.cancel()
@@ -117,7 +113,7 @@ export function LoginCompanion({ onBoundsChange }: LoginCompanionProps) {
       longPressTriggeredRef.current = false
       return
     }
-    setMessage(WELCOME_COPY[state.stage])
+    setMessage(WELCOME_COPY)
     setIsInteracting(true)
     window.setTimeout(() => setIsInteracting(false), 420)
   }
@@ -137,7 +133,7 @@ export function LoginCompanion({ onBoundsChange }: LoginCompanionProps) {
         onContextMenu={(event) => event.preventDefault()}
       >
         <span className="login-companion__frame" data-testid="login-companion-frame">
-          <PartnerAppearance stage={state.stage} loadout={loadout} size="login" />
+          <PartnerAppearance loadout={loadout} size="login" />
         </span>
       </button>
       <p className="login-companion__hint"><MessageCircle aria-hidden="true" size={13} />轻点打招呼 · 长按直接说话</p>

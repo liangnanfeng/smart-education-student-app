@@ -3,6 +3,7 @@ import { useAppState } from '../../app/AppState'
 import { AiPanel } from './AiPanel'
 import { startSpeechCapture, speakCompanionReply, type SpeechCapture } from './browserSpeech'
 import { requestCompanionReply } from './companionChat'
+import { getCompanionItem } from './companionCatalog'
 import { LOGIN_COMPANION_HANDOFF_KEY } from './LoginCompanion'
 import { PartnerAppearance } from './PartnerAppearance'
 import './ai-companion.css'
@@ -42,11 +43,8 @@ type HandoffRect = {
 }
 
 type HandoffRecord = {
-  version: 1
-  stage: 'elementary' | 'secondary'
+  version: 2
   appearanceId: string
-  outfitId: string | null
-  decorationId: string | null
   rect: HandoffRect
 }
 
@@ -67,8 +65,8 @@ function readHandoffRecord(): HandoffRecord | null {
   const raw = sessionStorage.getItem(LOGIN_COMPANION_HANDOFF_KEY)
   if (!raw) return null
   try {
-    const value = JSON.parse(raw) as Partial<HandoffRecord>
-    if (value.version !== 1 || (value.stage !== 'elementary' && value.stage !== 'secondary') || !value.appearanceId || !hasValidRect(value.rect)) {
+    const value = JSON.parse(raw) as Partial<HandoffRecord> | null
+    if (!value || value.version !== 2 || typeof value.appearanceId !== 'string' || getCompanionItem(value.appearanceId)?.category !== 'appearance' || !hasValidRect(value.rect)) {
       return null
     }
     return value as HandoffRecord
@@ -117,7 +115,7 @@ function keepPositionInsideFrame(position: { x: number; y: number }, bounds: App
 export function AiCompanion({ placement = 'floating', mapTarget }: AiCompanionProps) {
   const { state, setAiPosition } = useAppState()
   const [open, setOpen] = useState(false)
-  const [dragPosition, setDragPosition] = useState(state.aiPositions[state.stage])
+  const [dragPosition, setDragPosition] = useState(state.aiPosition)
   const [handoff, setHandoff] = useState<ActiveHandoff | null>(null)
   const [handoffStatus, setHandoffStatus] = useState<'running' | 'complete'>('complete')
   const [voiceMessage, setVoiceMessage] = useState('')
@@ -134,7 +132,7 @@ export function AiCompanion({ placement = 'floating', mapTarget }: AiCompanionPr
   const pendingPositionRef = useRef(dragPosition)
   const movedRef = useRef(false)
   const longPressedRef = useRef(false)
-  const loadout = state.companions[state.stage]
+  const loadout = state.companion
 
   const measureAppFrame = useCallback(() => {
     setAppFrameBounds(getAppFrameBounds())
@@ -166,7 +164,7 @@ export function AiCompanion({ placement = 'floating', mapTarget }: AiCompanionPr
     }
 
     const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
-    if (reducedMotion || record.stage !== state.stage) {
+    if (reducedMotion || record.appearanceId !== loadout.equipped.appearance) {
       handoffStartedRef.current = true
       sessionStorage.removeItem(LOGIN_COMPANION_HANDOFF_KEY)
       return
@@ -198,10 +196,7 @@ export function AiCompanion({ placement = 'floating', mapTarget }: AiCompanionPr
       sessionStorage.removeItem(LOGIN_COMPANION_HANDOFF_KEY)
     }, HANDOFF_DURATION_MS)
 
-    return () => {
-      if (handoffTimerRef.current) window.clearTimeout(handoffTimerRef.current)
-    }
-  }, [appFrameBounds, placement, state.stage])
+  }, [appFrameBounds, placement, loadout.equipped.appearance])
 
   useEffect(() => {
     const previousId = previousMapTargetRef.current
@@ -218,6 +213,7 @@ export function AiCompanion({ placement = 'floating', mapTarget }: AiCompanionPr
 
   useEffect(() => () => {
     voiceCaptureRef.current?.cancel()
+    if (handoffTimerRef.current) window.clearTimeout(handoffTimerRef.current)
     if (routeTimerRef.current) window.clearTimeout(routeTimerRef.current)
   }, [])
 
@@ -230,7 +226,6 @@ export function AiCompanion({ placement = 'floating', mapTarget }: AiCompanionPr
     setVoiceMessage('我想一想，马上回答你。')
     try {
       const reply = await requestCompanionReply({
-        stage: state.stage,
         companionId: loadout.equipped.appearance ?? 'unknown',
         question,
       })
@@ -239,7 +234,7 @@ export function AiCompanion({ placement = 'floating', mapTarget }: AiCompanionPr
     } catch {
       setVoiceMessage('伙伴暂时没听清，我们换个简单的问题试试。')
     }
-  }, [loadout.equipped.appearance, state.stage, state.voiceEnabled])
+  }, [loadout.equipped.appearance, state.voiceEnabled])
 
   const startVoiceQuestion = useCallback(() => {
     voiceCaptureRef.current?.cancel()
@@ -361,7 +356,7 @@ export function AiCompanion({ placement = 'floating', mapTarget }: AiCompanionPr
         onContextMenu={(event) => event.preventDefault()}
         onClick={click}
       >
-        <PartnerAppearance stage={state.stage} loadout={loadout} size="floating" motion={routeMoving ? 'run' : 'idle'} interactive />
+        <PartnerAppearance loadout={loadout} size="floating" motion={routeMoving ? 'run' : 'idle'} interactive />
         {voiceMessage && <span className="ai-companion__bubble" role="status">{voiceMessage}</span>}
       </button>
 
@@ -374,7 +369,7 @@ export function AiCompanion({ placement = 'floating', mapTarget }: AiCompanionPr
           style={handoffStyle}
           aria-hidden="true"
         >
-          <PartnerAppearance stage={state.stage} loadout={loadout} size="floating" />
+          <PartnerAppearance loadout={loadout} size="floating" />
         </div>
       )}
 

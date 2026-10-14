@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { AppStateProvider } from '../../app/AppState'
 import { defaultState } from '../../app/model'
-import { saveState } from '../../app/storage'
+import { loadState, saveState } from '../../app/storage'
 import { AiCompanion } from './AiCompanion'
 import { classifyDemoCommand } from './safety'
 
@@ -34,9 +34,83 @@ afterEach(() => {
   Object.defineProperty(window, 'matchMedia', { configurable: true, writable: true, value: savedMatchMedia })
   Object.defineProperty(window, 'innerHeight', { configurable: true, writable: true, value: savedInnerHeight })
   vi.restoreAllMocks()
+  vi.unstubAllGlobals()
 })
 
 describe('temporary AI companion', () => {
+  it.each(['null', '{bad', JSON.stringify({ version: 1 }), JSON.stringify({ version: 2, appearanceId: 'momo', rect: { width: -1 } })])('discards invalid handoff records without hiding the control', (record) => {
+    sessionStorage.setItem('student-app-login-companion-bounds', record)
+    render(<AppStateProvider><AiCompanion /></AppStateProvider>)
+    expect(screen.getByRole('button', { name: 'AI伙伴' })).toBeVisible()
+    expect(screen.queryByTestId('companion-handoff')).not.toBeInTheDocument()
+    expect(sessionStorage.getItem('student-app-login-companion-bounds')).toBeNull()
+  })
+
+  it('clamps a drag to the frame, snaps to its edge and remembers the position on remount', () => {
+    vi.stubGlobal('PointerEvent', MouseEvent)
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({ left: 200, top: 0, right: 660, bottom: 700, width: 460, height: 700 } as DOMRect)
+    const tree = <div className="app-frame"><AppStateProvider><AiCompanion /></AppStateProvider></div>
+    const view = render(tree)
+    const control = screen.getByRole('button', { name: 'AI伙伴' })
+    fireEvent.pointerDown(control, { clientX: 600, clientY: 500 })
+    fireEvent.pointerMove(control, { clientX: -100, clientY: 2000 })
+    fireEvent.pointerUp(control, { clientX: -100, clientY: 2000 })
+    fireEvent.click(control)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(control).toHaveStyle({ left: '247px', top: '574px' })
+    expect(loadState().aiPosition.x).toBeCloseTo(47 / 460)
+    expect(loadState().aiPosition.y).toBeCloseTo(574 / 700)
+    view.unmount()
+    render(tree)
+    expect(screen.getByRole('button', { name: 'AI伙伴' })).toHaveStyle({ left: '247px', top: '574px' })
+  })
+
+  it('follows test-map targets with a temporary running motion without changing drag memory', () => {
+    vi.useFakeTimers()
+    const view = render(<AppStateProvider><AiCompanion placement="test-map" mapTarget={{ id: 'a', x: 30, y: 40 }} /></AppStateProvider>)
+    expect(screen.getByRole('button', { name: 'AI伙伴' })).toHaveStyle({ left: '30%', bottom: '40%' })
+    view.rerender(<AppStateProvider><AiCompanion placement="test-map" mapTarget={{ id: 'b', x: 65, y: 70 }} /></AppStateProvider>)
+    expect(screen.getByRole('button', { name: 'AI伙伴' })).toHaveStyle({ left: '65%', bottom: '70%' })
+    expect(screen.getByTestId('partner-appearance')).toHaveAttribute('data-motion', 'run')
+    act(() => vi.advanceTimersByTime(820))
+    expect(screen.getByTestId('partner-appearance')).toHaveAttribute('data-motion', 'idle')
+    expect(loadState().aiPosition).toEqual({ x: .88, y: .84 })
+  })
+
+  it('displays and speaks the proxy reply after long-press speech input using the equipped identity', async () => {
+    vi.useFakeTimers()
+    vi.stubGlobal('PointerEvent', MouseEvent)
+    const recognition = {
+      lang: '', continuous: false, interimResults: false, maxAlternatives: 0,
+      onresult: null as ((event: unknown) => void) | null,
+      onerror: null, onend: null as (() => void) | null,
+      start: vi.fn(), stop: vi.fn(), abort: vi.fn(),
+    }
+    vi.stubGlobal('SpeechRecognition', function () { return recognition })
+    const spoken: string[] = []
+    vi.stubGlobal('SpeechSynthesisUtterance', function (this: { text: string }, text: string) { this.text = text })
+    vi.stubGlobal('speechSynthesis', { cancel: vi.fn(), speak: (utterance: { text: string }) => spoken.push(utterance.text) })
+    const requests: unknown[] = []
+    vi.stubGlobal('fetch', async (_url: string, options: RequestInit) => {
+      requests.push(JSON.parse(options.body as string))
+      return new Response(JSON.stringify({ reply: '可以多拍几张清晰的叶子照片。' }))
+    })
+    saveState({ ...defaultState, voiceEnabled: true, companion: { ...defaultState.companion, owned: { ...defaultState.companion.owned, appearance: ['momo', 'yunduo'] }, equipped: { ...defaultState.companion.equipped, appearance: 'yunduo' } } })
+    render(<AppStateProvider><AiCompanion /></AppStateProvider>)
+    const control = screen.getByRole('button', { name: 'AI伙伴' })
+    fireEvent.pointerDown(control)
+    act(() => vi.advanceTimersByTime(600))
+    fireEvent.pointerUp(control)
+    await act(async () => {
+      recognition.onresult?.({ results: [{ isFinal: true, 0: { transcript: '怎么让植物识别更准确？' } }] })
+      recognition.onend?.()
+    })
+    expect(requests).toEqual([{ companionId: 'yunduo', question: '怎么让植物识别更准确？' }])
+    expect(screen.getByRole('status')).toHaveTextContent('可以多拍几张清晰的叶子照片。')
+    expect(spoken).toEqual(['可以多拍几张清晰的叶子照片。'])
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
   it('starts in the lower-right safe zone above the bottom navigation', () => {
     render(<AppStateProvider><AiCompanion /></AppStateProvider>)
 
@@ -112,11 +186,8 @@ describe('temporary AI companion', () => {
       return { left: 0, top: 0, right: 0, bottom: 0, width: 0, height: 0 } as DOMRect
     })
     sessionStorage.setItem('student-app-login-companion-bounds', JSON.stringify({
-      version: 1,
-      stage: 'elementary',
+      version: 2,
       appearanceId: 'momo',
-      outfitId: null,
-      decorationId: null,
       rect: { left: 40, top: 80, right: 220, bottom: 260, width: 180, height: 180 },
     }))
 
@@ -134,6 +205,7 @@ describe('temporary AI companion', () => {
       '--handoff-y': '365px',
     })
     expect(handoff.style.getPropertyValue('--handoff-scale')).toBe('')
+    fireEvent.resize(window)
     act(() => vi.advanceTimersByTime(800))
     expect(screen.getByTestId('companion-handoff')).toHaveAttribute('data-handoff-status', 'complete')
     expect(sessionStorage.getItem('student-app-login-companion-bounds')).toBeNull()
@@ -146,11 +218,8 @@ describe('temporary AI companion', () => {
       value: vi.fn().mockReturnValue({ matches: true }),
     })
     sessionStorage.setItem('student-app-login-companion-bounds', JSON.stringify({
-      version: 1,
-      stage: 'elementary',
+      version: 2,
       appearanceId: 'momo',
-      outfitId: null,
-      decorationId: null,
       rect: { left: 40, top: 80, right: 220, bottom: 260, width: 180, height: 180 },
     }))
 

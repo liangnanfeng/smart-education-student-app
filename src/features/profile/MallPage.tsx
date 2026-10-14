@@ -1,4 +1,4 @@
-import { ArrowLeft, Check, Gem, PackageCheck, Palette, ShoppingBag, Shirt, Sparkles, X } from 'lucide-react'
+import { ArrowLeft, Check, PackageCheck, ShoppingBag, Sparkles, X } from 'lucide-react'
 import { useState } from 'react'
 import { useAppState } from '../../app/AppState'
 import type { CompanionCategory, CompanionLoadout } from '../../app/model'
@@ -7,7 +7,6 @@ import { PartnerAppearance } from '../ai_companion/PartnerAppearance'
 import './profile.css'
 
 const CATEGORIES = [
-  { id: 'all', label: '全部' },
   { id: 'appearance', label: '形象' },
   { id: 'outfit', label: '服饰' },
   { id: 'decoration', label: '装饰' },
@@ -26,7 +25,6 @@ function PreviewArtwork({ item, loadout }: { item: CompanionCatalogItem; loadout
   if (item.category === 'appearance') {
     return (
       <PartnerAppearance
-        stage={item.stage}
         loadout={{
           ...loadout,
           equipped: { ...loadout.equipped, appearance: item.id },
@@ -40,23 +38,19 @@ function PreviewArtwork({ item, loadout }: { item: CompanionCatalogItem; loadout
 }
 
 export function MallPage({ onBack }: { onBack: () => void }) {
-  const { state, purchaseCompanionItem, equipCompanionItem, unequipCompanionItem } = useAppState()
-  const [category, setCategory] = useState<MallCategory>('all')
+  const { state, pointsBalance, purchaseCompanionItem, equipCompanionItem, unequipCompanionItem } = useAppState()
+  const [category, setCategory] = useState<MallCategory>('appearance')
   const [selectedItem, setSelectedItem] = useState<CompanionCatalogItem | null>(null)
   const [equipPromptItem, setEquipPromptItem] = useState<CompanionCatalogItem | null>(null)
   const [toast, setToast] = useState('')
-  const balance = state.pointsBalance
-  const loadout = state.companions[state.stage]
+  const balance = pointsBalance
+  const loadout = state.companion
   const currentAppearance = getCompanionItem(loadout.equipped.appearance)
 
-  const stageItems = COMPANION_CATALOG.filter((item) => item.stage === state.stage)
-  const ownedItems = stageItems.filter((item) => loadout.owned[item.category].includes(item.id))
-  const visibleItems = category === 'all'
-    ? stageItems
-    : category === 'my'
-      ? ownedItems
-      : stageItems.filter((item) => item.category === category)
-  const showingComingSoon = category !== 'all' && category !== 'my' && visibleItems.length === 0
+  const ownedItems = COMPANION_CATALOG.filter((item) => loadout.owned[item.category].includes(item.id))
+  const visibleItems = category === 'my'
+    ? ownedItems
+    : COMPANION_CATALOG.filter((item) => item.category === category)
 
   const showToast = (message: string) => {
     setToast(message)
@@ -73,7 +67,7 @@ export function MallPage({ onBack }: { onBack: () => void }) {
       return
     }
 
-    purchaseCompanionItem(item.category, item.id, item.price)
+    purchaseCompanionItem(item.category, item.id, item.price, item.name)
     setSelectedItem(null)
     setEquipPromptItem(item)
   }
@@ -147,7 +141,7 @@ export function MallPage({ onBack }: { onBack: () => void }) {
   }
 
   return (
-    <div className="rewards-page mall-page" data-stage={state.stage}>
+    <div className="rewards-page mall-page">
       <header className="profile-page-header">
         <button className="profile-back" type="button" onClick={onBack} aria-label="返回">
           <ArrowLeft size={20} />
@@ -162,7 +156,7 @@ export function MallPage({ onBack }: { onBack: () => void }) {
       </div>
 
       <section className="mall-current-companion" aria-label="当前 AI 伙伴搭配">
-        <PartnerAppearance stage={state.stage} loadout={loadout} size="floating" />
+        <PartnerAppearance loadout={loadout} size="floating" />
         <span>
           <small>正在陪你学习</small>
           <strong>当前伙伴：{currentAppearance?.name}</strong>
@@ -207,18 +201,7 @@ export function MallPage({ onBack }: { onBack: () => void }) {
             )
           })}
         </section>
-      ) : !showingComingSoon && <div className="mall-grid">{visibleItems.map((item) => renderItemCard(item))}</div>}
-
-      {showingComingSoon && <section className="mall-coming-soon" aria-label={`${CATEGORIES.find((item) => item.id === category)?.label}即将开放`}>
-        {category === 'outfit' ? <Shirt aria-hidden="true" size={28} /> : <Palette aria-hidden="true" size={28} />}
-        <strong>{CATEGORIES.find((item) => item.id === category)?.label}正在准备中</strong>
-        <p>先把喜欢的 AI 伙伴带回学习世界，更多搭配很快和你见面。</p>
-      </section>}
-
-      {category === 'all' && <section className="mall-future-row" aria-label="更多商城内容正在准备中">
-        <div><Shirt aria-hidden="true" size={17} /><span><strong>服饰</strong><small>为伙伴准备新搭配</small></span></div>
-        <div><Gem aria-hidden="true" size={17} /><span><strong>装饰</strong><small>为学习空间添一点光</small></span></div>
-      </section>}
+      ) : <div className="mall-grid">{visibleItems.map((item) => renderItemCard(item))}</div>}
 
       {selectedItem && (
         <div className="mall-dialog-backdrop">

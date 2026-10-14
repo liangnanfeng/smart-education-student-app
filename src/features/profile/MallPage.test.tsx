@@ -3,7 +3,7 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { AppStateProvider } from '../../app/AppState'
 import { defaultState } from '../../app/model'
-import { saveState } from '../../app/storage'
+import { loadState, saveState } from '../../app/storage'
 import { MallPage } from './MallPage'
 
 function renderMall(balance = 1280) {
@@ -50,6 +50,8 @@ describe('points mall companion catalogue', () => {
   it('shows only the four elementary companion pets in the image catalogue', () => {
     renderMall()
 
+    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual(['形象', '服饰', '装饰', '我的'])
+
     for (const name of ['绒桃 Momo', '云朵 Yunduo', '云绽 Cloudbloom', '云贝儿 Cloudbelle']) {
       expect(screen.getByText(name)).toBeInTheDocument()
     }
@@ -88,11 +90,14 @@ describe('points mall companion catalogue', () => {
     expect(screen.getByRole('button', { name: '购买 云朵 Yunduo' })).toBeInTheDocument()
   })
 
-  it('offers a clear purchase button on every unowned product card', () => {
+  it('offers a clear purchase button on every unowned product card', async () => {
+    const user = userEvent.setup()
     renderMall()
 
     expect(screen.getByRole('button', { name: '购买 云朵 Yunduo，360 积分' })).toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: '服饰' }))
     expect(screen.getByRole('button', { name: '购买 云朵小背包，160 积分' })).toBeInTheDocument()
+    await user.click(screen.getByRole('tab', { name: '装饰' }))
     expect(screen.getByRole('button', { name: '购买 云光花灯，180 积分' })).toBeInTheDocument()
   })
 
@@ -132,6 +137,31 @@ describe('points mall companion catalogue', () => {
     await user.click(screen.getByRole('button', { name: '现在换上' }))
 
     expect(screen.getByText('当前伙伴：云朵 Yunduo')).toBeInTheDocument()
+  })
+
+  it('preserves purchased and equipped primary items and ledger debits after reloading', async () => {
+    const user = userEvent.setup()
+    const view = renderMall()
+    for (const [category, name, price] of [
+      ['形象', '云朵 Yunduo', 360],
+      ['服饰', '云朵小背包', 160],
+      ['装饰', '云光花灯', 180],
+    ] as const) {
+      await user.click(screen.getByRole('tab', { name: category }))
+      await user.click(screen.getByRole('button', { name: `购买 ${name}，${price} 积分` }))
+      await user.click(screen.getByRole('button', { name: '现在换上' }))
+    }
+    view.unmount()
+    expect(loadState().companion).toMatchObject({
+      owned: { appearance: ['momo', 'yunduo'], outfit: ['cloud-backpack'], decoration: ['cloud-flower-lamp'] },
+      equipped: { appearance: 'yunduo', outfit: 'cloud-backpack', decoration: 'cloud-flower-lamp' },
+    })
+    render(<AppStateProvider><MallPage onBack={() => undefined} /></AppStateProvider>)
+    expect(screen.getByText('当前伙伴：云朵 Yunduo')).toBeInTheDocument()
+    expect(screen.getByTestId('companion-outfit')).toBeInTheDocument()
+    expect(screen.getByTestId('companion-decoration')).toBeInTheDocument()
+    expect(screen.getByText('当前积分').parentElement).toHaveTextContent('580')
+    expect(loadState().transactions.filter((entry) => entry.kind === 'purchase')).toHaveLength(3)
   })
 
   it('deducts the item price from the account balance after purchase', async () => {

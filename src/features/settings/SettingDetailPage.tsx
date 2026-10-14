@@ -311,7 +311,7 @@ function CompanionSection({ state, setAiName, setAiPersonality, resetAiPosition,
   return (
     <>
       <section className="detail-card companion-settings-summary">
-        <PartnerAppearance stage="elementary" loadout={loadout} size="preview" />
+        <PartnerAppearance loadout={loadout} size="preview" />
         <div className="companion-settings-copy">
           <span className="companion-settings-eyebrow">当前伙伴</span>
           <div>

@@ -53,7 +53,7 @@ function readJson(request) {
 }
 
 async function createReply(body) {
-  const question = prepareStudentQuestion(body?.stage, body?.question, body?.companionId)
+  const question = prepareStudentQuestion(body?.question, body?.companionId)
   if (question.directReply) return question.directReply
   if (!process.env.DEEPSEEK_API_KEY) throw new Error('missing_api_key')
   const upstream = await fetch('https://api.deepseek.com/chat/completions', {
