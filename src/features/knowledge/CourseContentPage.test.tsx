@@ -1,6 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AppStateProvider, useAppState } from '../../app/AppState'
 import { CourseContentPage } from './CourseContentPage'
 
@@ -19,6 +19,8 @@ function ProgressObserver() {
 }
 
 describe('CourseContentPage', () => {
+  afterEach(() => vi.useRealTimers())
+
   it('embeds the 4-6 grade Bilibili lesson video inside the reading page', () => {
     render(
       <AppStateProvider>
@@ -71,6 +73,40 @@ describe('CourseContentPage', () => {
     expect(screen.getByRole('link', { name: '在原平台打开视频 1-1《AI 在身边：无处不在的智能应用》' })).toBeInTheDocument()
   })
 
+  it('keeps a helpful cover, then falls back when the player never becomes ready', () => {
+    vi.useFakeTimers()
+    render(
+      <AppStateProvider>
+        <CourseContentPage courseId="cxd" chapterNum={1} onBack={() => undefined} />
+      </AppStateProvider>,
+    )
+
+    const videoCard = screen.getByRole('region', { name: '视频 1-1《AI 在身边：无处不在的智能应用》' })
+    expect(within(videoCard).getByText('视频正在准备中')).toBeInTheDocument()
+    expect(within(videoCard).getByText(/打不开也没关系/)).toBeInTheDocument()
+    expect(within(videoCard).getByRole('link', { name: /在原平台打开/ })).toBeInTheDocument()
+
+    act(() => vi.advanceTimersByTime(8_000))
+
+    expect(within(videoCard).getByRole('status')).toHaveTextContent('视频暂时无法在页内播放')
+    expect(within(videoCard).getByText(/原平台/)).toBeInTheDocument()
+  })
+
+  it('reveals the inline player after its document loads', () => {
+    render(
+      <AppStateProvider>
+        <CourseContentPage courseId="cxd" chapterNum={1} onBack={() => undefined} />
+      </AppStateProvider>,
+    )
+
+    const player = screen.getByTitle('视频 1-1《AI 在身边：无处不在的智能应用》')
+    const videoCard = screen.getByRole('region', { name: '视频 1-1《AI 在身边：无处不在的智能应用》' })
+    expect(player).toHaveAttribute('data-player-state', 'loading')
+    fireEvent.load(player)
+    expect(player).toHaveAttribute('data-player-state', 'ready')
+    expect(within(videoCard).queryByText('视频正在准备中')).not.toBeInTheDocument()
+  })
+
   it('uses the illustrated page with dialogue for the primary comic', () => {
     render(
       <AppStateProvider>
@@ -97,7 +133,7 @@ describe('CourseContentPage', () => {
     expect(comicPage).toHaveStyle({ aspectRatio: '16 / 9', objectFit: 'contain' })
   })
 
-  it('renders the grade 5-6 primary chapter structure without the legacy lab HTML', () => {
+  it('renders the grade 5-6 primary chapter structure without the retired HTML surface', () => {
     render(
       <AppStateProvider>
         <CourseContentPage courseId="ael" chapterNum={1} onBack={() => undefined} />

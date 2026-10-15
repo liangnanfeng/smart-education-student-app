@@ -14,6 +14,13 @@ export type CoursePart = {
   experiment: string
   safety: string
   challenge: string
+  keyConcepts: KeyConcept[]
+}
+
+export type KeyConcept = {
+  term: string
+  explanation: string
+  analogy: string
 }
 
 export type QuizQuestion = {
@@ -48,6 +55,7 @@ const qmxParts: CoursePart[] = (elementaryLow.days ?? []).map((day, index) => ({
   experiment: day.activities[0]?.title ?? '',
   safety: elementaryLow.safetyTips[index % elementaryLow.safetyTips.length]?.text ?? '',
   challenge: day.unlockText,
+  keyConcepts: [],
 }))
 
 const cxdParts: CoursePart[] = (elementaryHigh.chapters ?? []).map((chapter) => ({
@@ -59,6 +67,7 @@ const cxdParts: CoursePart[] = (elementaryHigh.chapters ?? []).map((chapter) => 
   experiment: chapter.tryIt,
   safety: elementaryHigh.safetyTips[(chapter.num - 1) % elementaryHigh.safetyTips.length]?.text ?? '',
   challenge: chapter.tryIt,
+  keyConcepts: [],
 }))
 
 const qmxMedals: CourseMedal[] = elementaryLow.gems.map((gem, index) => ({

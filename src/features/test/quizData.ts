@@ -182,7 +182,7 @@ export const quizCxd: QuizData = withPartIds('cxd', [
 ])
 
 /* ========== 5~6年级：AI 探索实验室 · 9 个探究部分 ========== */
-export const quizLab: QuizData = GRADE56_QUIZZES.map((chapter) => ({
+export const quizAel: QuizData = GRADE56_QUIZZES.map((chapter) => ({
   partId: chapter.partId,
   title: chapter.title,
   pill: '课程徽章',
@@ -195,10 +195,10 @@ export const quizLab: QuizData = GRADE56_QUIZZES.map((chapter) => ({
 }))
 
 /* 根据课程 ID 取对应练习题 */
-export function getQuiz(courseId: 'qmx' | 'cxd' | 'ael' | 'lab'): QuizData {
+export function getQuiz(courseId: CourseId): QuizData {
   if (courseId === 'qmx') return quizQmx
   if (courseId === 'cxd') return quizCxd
-  return quizLab
+  return quizAel
 }
 
 function withPartIds(courseId: CourseId, chapters: Omit<QuizChapter, 'partId'>[]): QuizData {

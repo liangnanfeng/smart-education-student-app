@@ -51,3 +51,22 @@ export function deriveCourseMedals(
     }
   })
 }
+
+export function getMedalSummary(course: CoursePackage, progress: BandProgress) {
+  const courseMedals = deriveCourseMedals(course, progress)
+  const courseEarnedCount = courseMedals.filter((medal) => medal.earned).length
+  const growthEarnedCount = growthMedals.filter((medal) => medal.earned).length
+  const finaleEarned = course.parts.every((part) => (
+    progress.knowledgeCompleted.includes(part.id)
+    && progress.testsPassed.includes(part.id)
+  ))
+
+  return {
+    courseMedals,
+    courseEarnedCount,
+    growthEarnedCount,
+    finaleEarned,
+    earnedCount: courseEarnedCount + growthEarnedCount + (finaleEarned ? 1 : 0),
+    totalCount: courseMedals.length + growthMedals.length + 1,
+  }
+}

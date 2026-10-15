@@ -36,6 +36,32 @@ describe('primary course packages', () => {
     expect(JSON.stringify(course)).not.toMatch(retiredCopy)
   })
 
+  it('introduces every approved grade 5-6 term once with an explanation and analogy', () => {
+    const requiredTerms = [
+      '数据', '算法', '模型', '算力', '标注', '训练', '准确率',
+      '生成式 AI', '原型', '深度伪造', '信息茧房', '版权',
+    ]
+    const parts = COURSE_PACKAGES['grade5-6'].parts
+    const introductions = parts.flatMap((part) => (
+      part.keyConcepts.map((concept) => ({ ...concept, partNumber: part.number }))
+    ))
+
+    expect(introductions.map((concept) => concept.term)).toEqual(requiredTerms)
+    expect(introductions.every((concept) => (
+      concept.explanation.trim().length > 0
+      && concept.analogy.trim().length > 0
+      && concept.explanation !== concept.analogy
+    ))).toBe(true)
+
+    for (const concept of introductions) {
+      const firstMention = parts.find((part) => (
+        [part.title, part.summary, part.concept, part.experiment, part.safety, part.challenge]
+          .some((text) => text.includes(concept.term))
+      ))
+      expect(firstMention?.number, `${concept.term} should be explained at first use`).toBe(concept.partNumber)
+    }
+  })
+
   it('models the project privacy response as a three-action scenario', () => {
     const privacyQuestion = COURSE_PACKAGES['grade5-6'].quizzes[8].questions.find(
       (question) => question.id === 'ael-9-q4',

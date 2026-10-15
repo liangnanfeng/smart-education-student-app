@@ -45,6 +45,6 @@ describe('profile rewards', () => {
     expect(screen.getByText('累计获得').parentElement).toHaveTextContent('+2,000')
     expect(screen.getByText('累计消耗').parentElement).toHaveTextContent('-0')
     expect(screen.getByText('成长体验账号启航积分')).toBeInTheDocument()
-    expect(screen.queryByText('星空精灵')).not.toBeInTheDocument()
+    expect(screen.queryByText(/星空精灵/)).not.toBeInTheDocument()
   })
 })

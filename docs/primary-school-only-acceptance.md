@@ -55,3 +55,7 @@ Values are rounded CSS pixels from the final content boundary to the fixed navig
 Non-failing diagnostics: jsdom reports unimplemented `window.scrollTo`; Vite reports ignored `inlineDynamicImports`, IIFE `import.meta` replacement and bundle size above 500kB. Real browser scrolling was inspected independently. Native speech/microphone, physical safe-area devices and successful Bilibili watch-page service were not manually certified in this task; existing automated speech, safety, drag, guardian and handoff coverage remains in the passing suite.
 
 Local screenshots are retained under `.superpowers/sdd/2026-10-12-primary-school-only-redesign/task-12-evidence/` as uncommitted scratch evidence. Examples include `320-login.png`, `430-login.png`, `{320,430}-qmx-day{1..8}.png`, `{320,430}-cxd-playback.png`, `{320,430}-grade{1,3,5}-map-{0,0.5,1}.png`, `{320,430}-wardrobe.png` and `{320,430}-ledger.png`.
+
+## 2026-10-15 targeted video fallback recheck
+
+Rechecked grade 3 chapter 1 in the running app at an explicit **320 × 800** browser viewport after adding the bounded loading and failure states. Both Bilibili embeds rejected inline loading in this session, so no decoded playback frame was certified in this recheck. Each card left the loading state, displayed the readable `视频暂时无法在页内播放` fallback, and retained its `前往 B 站观看` action without horizontal clipping. The successful iframe-load transition and the eight-second silent-failure timeout are covered by focused automated tests; actual third-party playback remains provider-dependent.

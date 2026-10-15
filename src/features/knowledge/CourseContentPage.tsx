@@ -137,17 +137,21 @@ function LessonVideoCard({
   bvid: string
   notes: string[]
 }) {
-  const [embedFailed, setEmbedFailed] = useState(false)
+  const [playerState, setPlayerState] = useState<'loading' | 'ready' | 'failed'>('loading')
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const playerUrl = `https://player.bilibili.com/player.html?bvid=${bvid}&page=1&high_quality=1&danmaku=0&autoplay=0`
 
   useEffect(() => {
+    if (playerState !== 'loading') return
     const iframe = iframeRef.current
-    if (!iframe) return
-    const showFallback = () => setEmbedFailed(true)
-    iframe.addEventListener('error', showFallback)
-    return () => iframe.removeEventListener('error', showFallback)
-  }, [embedFailed])
+    const showFallback = () => setPlayerState('failed')
+    iframe?.addEventListener('error', showFallback)
+    const timeoutId = window.setTimeout(() => setPlayerState('failed'), 8_000)
+    return () => {
+      iframe?.removeEventListener('error', showFallback)
+      window.clearTimeout(timeoutId)
+    }
+  }, [playerState])
 
   return (
     <section className="lesson-video-card" aria-label={title}>
@@ -159,23 +163,33 @@ function LessonVideoCard({
         </div>
       </div>
       <div className="lesson-video-card__player">
-        {embedFailed ? (
-          <div className="lesson-video-card__fallback" role="status">
-            <PlayCircle size={34} aria-hidden="true" />
-            <strong>视频暂时无法在页内播放</strong>
-            <span>可以使用下方按钮前往原平台观看。</span>
-          </div>
-        ) : (
+        {playerState !== 'failed' && (
           <iframe
             ref={iframeRef}
+            className={playerState === 'ready' ? 'is-ready' : 'is-loading'}
             src={playerUrl}
             title={title}
             loading="lazy"
             allow="autoplay; fullscreen; picture-in-picture"
             allowFullScreen
-            onError={() => setEmbedFailed(true)}
+            data-player-state={playerState}
+            onLoad={() => setPlayerState('ready')}
+            onError={() => setPlayerState('failed')}
           />
         )}
+        {playerState === 'failed' ? (
+          <div className="lesson-video-card__fallback" role="status">
+            <PlayCircle size={34} aria-hidden="true" />
+            <strong>视频暂时无法在页内播放</strong>
+            <span>别着急，可以使用下方按钮前往原平台观看。</span>
+          </div>
+        ) : playerState === 'loading' ? (
+          <div className="lesson-video-card__fallback lesson-video-card__fallback--loading">
+            <PlayCircle size={34} aria-hidden="true" />
+            <strong>视频正在准备中</strong>
+            <span>如果一直打不开也没关系，可以前往原平台观看。</span>
+          </div>
+        ) : null}
       </div>
       <a
         className="lesson-video-card__link"
@@ -313,6 +327,22 @@ function Grade56Content({ part }: { part: CoursePart }) {
 
   return (
     <article className="grade56-content">
+      {part.keyConcepts.length > 0 && (
+        <section className="grade56-section grade56-section--concepts" aria-labelledby={`concepts-${part.id}`}>
+          <span className="grade56-section__icon" aria-hidden="true">🗂️</span>
+          <div>
+            <h2 id={`concepts-${part.id}`}>新词小卡</h2>
+            <dl className="grade56-concepts">
+              {part.keyConcepts.map((concept) => (
+                <div key={concept.term}>
+                  <dt>{concept.term}</dt>
+                  <dd>{concept.explanation}<span>打个比方：{concept.analogy}</span></dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        </section>
+      )}
       {sections.map((section) => (
         <section key={section.title} className="grade56-section">
           <span className="grade56-section__icon" aria-hidden="true">{section.icon}</span>

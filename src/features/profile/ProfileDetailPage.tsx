@@ -2,17 +2,24 @@ import { ArrowLeft, ChevronRight, UserRound } from 'lucide-react'
 import { useAppState } from '../../app/AppState'
 import { GRADE_BAND_LABELS, GRADE_LABELS, getGradeBand, type PrimaryGrade } from '../../app/learning'
 import { getPointsBalance } from '../../app/points'
+import { getCourseForBand } from '../knowledge/courseCatalog'
+import { getMedalSummary } from './medalsData'
 
 export function ProfileDetailPage({ onBack, onEdit }: { onBack: () => void; onEdit: () => void }) {
   const { state } = useAppState()
   const grade = state.grade as PrimaryGrade
+  const band = getGradeBand(grade)
   const pointsBalance = getPointsBalance(state.transactions)
+  const { earnedCount: earnedMedalCount } = getMedalSummary(
+    getCourseForBand(band),
+    state.learningProgress[band],
+  )
 
   const infoRows = [
-    { label: '年级', value: `${GRADE_LABELS[grade]} · ${GRADE_BAND_LABELS[getGradeBand(grade)]}` },
+    { label: '年级', value: `${GRADE_LABELS[grade]} · ${GRADE_BAND_LABELS[band]}` },
     { label: '学习天数', value: '45 天' },
     { label: '完成作品', value: '8 个' },
-    { label: '获得勋章', value: '8 枚' },
+    { label: '获得勋章', value: `${earnedMedalCount} 枚` },
     { label: '当前积分', value: pointsBalance.toLocaleString('zh-CN') },
   ]
 

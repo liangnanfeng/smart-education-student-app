@@ -81,4 +81,21 @@ describe('profile dashboard', () => {
 
     expect(screen.getByText('我的勋章').closest('button')).toHaveTextContent('7 枚')
   })
+
+  it('updates the profile-detail medal count when course and finale progress changes', () => {
+    const state = createDefaultState()
+    const allPartIds = [
+      'ael-1', 'ael-2', 'ael-3', 'ael-4', 'ael-5',
+      'ael-6', 'ael-7', 'ael-8', 'ael-9',
+    ] as const
+    state.learningProgress['grade5-6'] = {
+      knowledgeCompleted: [...allPartIds],
+      testsPassed: [...allPartIds],
+    }
+    localStorage.setItem('student-app-state', JSON.stringify(state))
+
+    render(<AppStateProvider><ProfileDetailPage onBack={vi.fn()} onEdit={vi.fn()} /></AppStateProvider>)
+
+    expect(screen.getByText('获得勋章').parentElement).toHaveTextContent('16 枚')
+  })
 })

@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useAppState } from '../../app/AppState'
 import { getGradeBand, type PrimaryGrade } from '../../app/learning'
 import { getCourseForBand } from '../knowledge/courseCatalog'
-import { deriveCourseMedals, growthMedals } from './medalsData'
+import { getMedalSummary, growthMedals } from './medalsData'
 import { MedalIcon } from './MedalIcon'
 import './profile.css'
 
@@ -15,15 +15,13 @@ export function MedalsPage({ onBack }: { onBack: () => void }) {
   const band = getGradeBand(state.grade as PrimaryGrade)
   const course = getCourseForBand(band)
   const progress = state.learningProgress[band]
-  const courseMedals = deriveCourseMedals(course, progress)
-  const finaleEarned = course.parts.every((part) => (
-    progress.knowledgeCompleted.includes(part.id)
-    && progress.testsPassed.includes(part.id)
-  ))
-  const courseEarnedCount = courseMedals.filter((medal) => medal.earned).length
-  const growthEarnedCount = growthMedals.filter((medal) => medal.earned).length
-  const earnedCount = courseEarnedCount + growthEarnedCount + (finaleEarned ? 1 : 0)
-  const totalCount = courseMedals.length + growthMedals.length + 1
+  const {
+    courseMedals,
+    courseEarnedCount,
+    finaleEarned,
+    earnedCount,
+    totalCount,
+  } = getMedalSummary(course, progress)
   const matchesFilter = (earned: boolean) => (
     filter === '全部' || (filter === '已获得' ? earned : !earned)
   )

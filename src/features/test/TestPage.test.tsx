@@ -101,7 +101,12 @@ describe('TestPage', () => {
 
     const saved = JSON.parse(localStorage.getItem('student-app-state') ?? '{}') as AppState
     expect(saved.learningProgress['grade5-6'].testsPassed).toEqual(['ael-1', 'ael-2', 'ael-3'])
-    expect(saved.transactions.filter((item) => item.eventId === 'test:ael-3')).toHaveLength(1)
+    expect(saved.transactions.filter((item) => item.eventId === 'test:ael-3')).toEqual([
+      expect.objectContaining({ amount: 50 }),
+    ])
+    expect(saved.transactions.filter((item) => item.eventId === 'medal:ael-3')).toEqual([
+      expect.objectContaining({ amount: 20 }),
+    ])
     expect(getPointsBalance(saved.transactions)).toBe(balanceBefore + 70)
   })
 
@@ -109,6 +114,8 @@ describe('TestPage', () => {
     const user = userEvent.setup()
     const onReviewKnowledge = vi.fn()
     renderMap({ grade: 'grade5' }, onReviewKnowledge)
+    const balanceBefore = getPointsBalance(defaultState.transactions)
+    const transactionCountBefore = defaultState.transactions.length
 
     await user.click(screen.getByRole('button', { name: '算法工具箱 · 当前关卡' }))
     await user.click(screen.getByRole('button', { name: '开始答题' }))
@@ -124,7 +131,10 @@ describe('TestPage', () => {
     expect(screen.queryByRole('dialog', { name: '算法工具箱答题' })).not.toBeInTheDocument()
     const saved = JSON.parse(localStorage.getItem('student-app-state') ?? '{}') as AppState
     expect(saved.learningProgress['grade5-6'].testsPassed).toEqual(['ael-1', 'ael-2'])
+    expect(getPointsBalance(saved.transactions)).toBe(balanceBefore)
+    expect(saved.transactions).toHaveLength(transactionCountBefore)
     expect(saved.transactions.some((item) => item.eventId === 'test:ael-3')).toBe(false)
+    expect(saved.transactions.some((item) => item.eventId === 'medal:ael-3')).toBe(false)
   })
 
   it.each([

@@ -56,7 +56,7 @@ describe('points mall companion catalogue', () => {
     for (const name of ['绒桃 Momo', '云朵 Yunduo', '云绽 Cloudbloom', '云贝儿 Cloudbelle']) {
       expect(screen.getByText(name)).toBeInTheDocument()
     }
-    expect(screen.queryByText('星空精灵')).not.toBeInTheDocument()
+    expect(screen.queryByText(/星空精灵/)).not.toBeInTheDocument()
     expect(screen.queryByText('云宝 Nimbo')).not.toBeInTheDocument()
   })
 

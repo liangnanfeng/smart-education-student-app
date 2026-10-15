@@ -3,7 +3,7 @@ import { useAppState } from '../../app/AppState'
 import { getGradeBand, type PrimaryGrade } from '../../app/learning'
 import { getPointsSummary } from '../../app/points'
 import { getCourseForBand } from '../knowledge/courseCatalog'
-import { deriveCourseMedals, growthMedals } from './medalsData'
+import { getMedalSummary } from './medalsData'
 
 export function RewardsSection({ onOpenMedals, onOpenPoints, onOpenMall, onOpenRanking }: {
   onOpenMedals?: () => void
@@ -13,13 +13,10 @@ export function RewardsSection({ onOpenMedals, onOpenPoints, onOpenMall, onOpenR
 }) {
   const { state } = useAppState()
   const band = getGradeBand(state.grade as PrimaryGrade)
-  const courseMedals = deriveCourseMedals(
+  const { earnedCount: earnedMedalCount } = getMedalSummary(
     getCourseForBand(band),
     state.learningProgress[band],
   )
-  const earnedGrowthMedals = growthMedals.filter((medal) => medal.earned)
-  const earnedMedalCount = courseMedals.filter((medal) => medal.earned).length
-    + earnedGrowthMedals.length
   const pointsSummary = getPointsSummary(state.transactions)
 
   return (
