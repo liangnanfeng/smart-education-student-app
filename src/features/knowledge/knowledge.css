@@ -1,0 +1,585 @@
+.knowledge-page {
+  min-width: 0;
+  max-width: 100%;
+  padding: 16px 16px calc(var(--bottom-nav-height, 76px) + env(safe-area-inset-bottom) + 24px);
+  font-size: var(--learning-copy-size, .92rem);
+}
+
+/* ===== 顶部标题 ===== */
+.knowledge-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 4px 16px;
+}
+
+.knowledge-header>div {
+  flex: 1;
+}
+
+.knowledge-grade {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 2px;
+}
+
+.knowledge-header h1 {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.knowledge-subtitle {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin: 4px 0 0;
+}
+
+.knowledge-motto {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary-deep);
+  background: var(--primary-wash);
+  padding: 6px 12px;
+  border-radius: 12px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ===== 紫色计划卡 ===== */
+.knowledge-plan-card {
+  background: linear-gradient(180deg, var(--accent) 0%, var(--accent-deep) 100%);
+  border-radius: var(--radius-lg);
+  padding: 18px 14px 18px;
+  box-shadow: 0 14px 30px rgba(143, 116, 190, 0.25);
+}
+
+.plan-card-head {
+  display: flex;
+  align-items: center;
+  padding: 2px 6px 12px;
+}
+
+.plan-card-head h2 {
+  color: #fff;
+  font-size: 19px;
+  font-weight: 800;
+  margin: 0;
+}
+
+.plan-pill {
+  margin-left: auto;
+  background: rgba(255, 255, 255, 0.22);
+  border-radius: 20px;
+  padding: 7px 12px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.plan-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #FFE27A, #F7B500);
+  flex-shrink: 0;
+}
+
+/* ===== 天/章卡片 ===== */
+.day-card {
+  min-width: 0;
+  background: #fff;
+  border-radius: var(--radius-md);
+  margin-top: var(--learning-card-gap, 12px);
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+}
+
+.course-card {
+  min-width: 0;
+}
+
+.day-card.expanded {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+.day-title-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.day-label {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.day-island {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.day-steps {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  background: var(--surface-strong);
+  border-radius: 8px;
+  padding: 3px 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.day-badge {
+  font-size: 10.5px;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 3px 9px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.day-badge.done {
+  background: #E6F9EC;
+  color: #2E9E5B;
+}
+
+.day-badge.completed {
+  background: #E6F9EC;
+  color: #2E9E5B;
+}
+
+.day-badge.current {
+  background: #FFF1D8;
+  color: #B66C09;
+}
+
+.day-badge.available {
+  background: var(--surface-strong);
+  color: var(--muted);
+}
+
+.day-card.current {
+  outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  outline-offset: -2px;
+}
+
+.day-badge.locked {
+  background: var(--surface-strong);
+  color: var(--muted);
+}
+
+.day-title-row>svg {
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* ===== 展开内容 ===== */
+.day-body {
+  padding: 0 16px 14px;
+}
+
+.day-tag-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.subject-tag {
+  background: var(--surface-strong);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 8px;
+  padding: 3px 9px;
+}
+
+.subject-topic {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.chapter-summary {
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  margin: 0 0 10px;
+  padding: 10px 12px;
+  background: var(--surface-soft);
+  border-radius: 12px;
+}
+
+/* ===== 活动行 ===== */
+.activity-list {
+  border-top: 1px solid var(--line);
+}
+
+.activity-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.activity-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  background: var(--surface-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.knowledge-page[data-band='grade5-6'] .activity-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  font-size: 17px;
+}
+
+.knowledge-page[data-band='grade5-6'] .activity-title,
+.knowledge-page[data-band='grade5-6'] .day-island {
+  font-weight: 800;
+}
+
+.activity-text {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 360px) {
+  .knowledge-header {
+    flex-wrap: wrap;
+  }
+
+  .knowledge-header > div {
+    flex-basis: 100%;
+  }
+
+  .knowledge-motto {
+    white-space: normal;
+  }
+
+  .day-title-row {
+    flex-wrap: wrap;
+  }
+
+  .day-island {
+    flex-basis: calc(100% - 68px);
+    white-space: normal;
+  }
+
+  .day-title-row > svg {
+    margin-left: auto;
+  }
+}
+
+.activity-title-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.activity-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.activity-chip {
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 2px 7px;
+  flex-shrink: 0;
+}
+
+.activity-chip.story {
+  background: #E9F1FF;
+  color: #3F74E8;
+}
+
+.activity-chip.knowledge {
+  background: #F1EBFF;
+  color: #7B61F8;
+}
+
+.activity-chip.gem {
+  background: #FFF1DA;
+  color: #E08A00;
+}
+
+.activity-chip.experiment {
+  background: #E6F9EC;
+  color: #2E9E5B;
+}
+
+.activity-chip.try-it {
+  background: #FFF0E6;
+  color: #E8873A;
+}
+
+.activity-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 2px 0 0;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.activity-state {
+  flex-shrink: 0;
+  width: 28px;
+  display: flex;
+  justify-content: center;
+}
+
+.check-circle {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #DFF6E8;
+  color: #2FC56B;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lock-icon {
+  color: var(--muted);
+  opacity: 0.5;
+}
+
+/* ===== 阅读课程按钮 ===== */
+.read-content-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 11px;
+  margin-top: 10px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-deep));
+  border: none;
+  border-radius: 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.read-content-btn:active {
+  transform: scale(0.98);
+}
+
+.read-content-btn svg {
+  color: #fff;
+}
+
+/* ===== 解锁提示 / 试一试 ===== */
+.day-unlock {
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--muted);
+  padding: 10px 0 2px;
+}
+
+.try-it-box {
+  margin-top: 10px;
+  background: var(--warm-accent-wash);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.try-it-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent-deep);
+  letter-spacing: 1px;
+}
+
+.try-it-box p {
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+
+/* ===== 宝库展开 ===== */
+.treasure-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px;
+  margin-top: 16px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--primary-deep);
+  cursor: pointer;
+}
+
+.treasure-toggle>span {
+  flex: 1;
+  text-align: center;
+}
+
+.treasure-toggle>svg {
+  color: var(--muted);
+}
+
+.treasure-section {
+  margin-top: 12px;
+}
+
+/* ===== 宝石网格 ===== */
+.gem-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.gem-card {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 12px 13px 10px;
+  border: 1px solid var(--line);
+}
+
+.gem-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gem-icon {
+  font-size: 19px;
+}
+
+.gem-name {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--ink);
+}
+
+.gem-source {
+  font-size: 11.5px;
+  color: var(--primary-deep);
+  font-weight: 600;
+  margin: 4px 0 0;
+}
+
+.gem-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 3px 0 0;
+  line-height: 1.42;
+}
+
+/* ===== 安全提示 ===== */
+.safety-tips {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: 14px 16px 12px;
+  margin-top: 12px;
+  border: 1px solid var(--line);
+}
+
+.safety-tips h3 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0 0 8px;
+}
+
+.safety-item {
+  display: flex;
+  gap: 10px;
+  padding: 8px 0;
+  border-top: 1px solid var(--line);
+}
+
+.safety-item:first-of-type {
+  border-top: none;
+}
+
+.safety-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.safety-item strong {
+  font-size: 13.5px;
+  color: var(--ink);
+  display: block;
+}
+
+.safety-item p {
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin: 2px 0 0;
+  line-height: 1.5;
+}
+
+/* ===== 成就横幅 ===== */
+.achievement-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(90deg, var(--accent-deep), var(--primary-deep));
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  margin-top: 12px;
+}
+
+.achievement-icon {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.achievement-text {
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.45;
+}

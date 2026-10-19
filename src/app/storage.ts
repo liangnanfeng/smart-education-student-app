@@ -1,0 +1,310 @@
+import { COMPANION_CATALOG } from '../features/ai_companion/companionCatalog'
+import { createEmptyLearningProgress, getPartIdsForBand, PRIMARY_GRADES, type CoursePartId } from './learning'
+import { APP_STATE_VERSION, createDefaultState, type AppState, type CompanionCategory, type CompanionLoadout, type DeviceInfo, type GuardianInfo, type WrongQuestion } from './model'
+import type { PointTransaction, RewardKind } from './points'
+
+const STORAGE_KEY = 'student-app-state'
+const MIGRATION_KEY = 'student-app-primary-v2-migrated'
+
+type PersistedAppState = AppState
+
+const PERSISTED_KEYS: Array<keyof PersistedAppState> = [
+  'stateVersion', 'grade', 'isLoggedIn', 'learningProgress', 'transactions', 'processedRewardIds',
+  'wrongQuestions',
+  'aiPosition', 'companion', 'fontScale', 'nickname', 'avatar', 'likes', 'favorites', 'notifications',
+  'accountId', 'passwordHint', 'lastPasswordChange', 'twoFactorEnabled', 'guardian', 'familyName',
+  'devices', 'aiName', 'aiPersonality', 'aiSkin', 'voiceEnabled', 'autoListenEnabled', 'voiceMode',
+  'saveHistory', 'aiMemoryEnabled', 'historyCount', 'confirmDangerous', 'guardianApprove', 'safeMode',
+  'soundEnabled', 'soundVolume', 'hapticEnabled', 'showLearningStats', 'allowFriendFind', 'dataCollection',
+  'cameraPermission', 'micPermission', 'albumPermission', 'contentLevel', 'personalizedRec', 'storageUsed',
+  'storageTotal', 'autoCleanDays',
+]
+
+export function loadState(): AppState {
+  const fresh = createDefaultState()
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return fresh
+
+    const parsed = JSON.parse(raw) as unknown
+    if (!isRecord(parsed) || parsed.stateVersion !== APP_STATE_VERSION) {
+      return migrateToPrimaryState(fresh)
+    }
+
+    return normalizePrimaryState(parsed, fresh)
+  } catch {
+    return migrateToPrimaryState(fresh)
+  }
+}
+
+function migrateToPrimaryState(fresh: AppState) {
+  localStorage.removeItem(STORAGE_KEY)
+  localStorage.setItem(MIGRATION_KEY, '1')
+  saveState(fresh)
+  return fresh
+}
+
+function normalizePrimaryState(parsed: Record<string, unknown>, fresh: AppState): AppState {
+  return {
+    stateVersion: APP_STATE_VERSION,
+    grade: oneOf(parsed.grade, PRIMARY_GRADES, fresh.grade),
+    isLoggedIn: booleanValue(parsed.isLoggedIn, fresh.isLoggedIn),
+    learningProgress: normalizeLearningProgress(parsed.learningProgress, fresh.learningProgress),
+    transactions: normalizeTransactions(parsed.transactions, fresh.transactions),
+    processedRewardIds: stringArray(parsed.processedRewardIds, fresh.processedRewardIds),
+    wrongQuestions: normalizeWrongQuestions(parsed.wrongQuestions, fresh.wrongQuestions),
+    aiPosition: normalizeAiPosition(parsed.aiPosition, fresh.aiPosition),
+    companion: normalizePrimaryLoadout(parsed.companion, fresh.companion),
+    fontScale: oneOf(parsed.fontScale, FONT_SCALES, fresh.fontScale),
+    nickname: stringValue(parsed.nickname, fresh.nickname),
+    avatar: nonNegativeInteger(parsed.avatar, fresh.avatar),
+    likes: stringArray(parsed.likes, fresh.likes),
+    favorites: stringArray(parsed.favorites, fresh.favorites),
+    notifications: oneOf(parsed.notifications, NOTIFICATION_OPTIONS, fresh.notifications),
+    accountId: stringValue(parsed.accountId, fresh.accountId),
+    passwordHint: stringValue(parsed.passwordHint, fresh.passwordHint),
+    lastPasswordChange: stringValue(parsed.lastPasswordChange, fresh.lastPasswordChange),
+    twoFactorEnabled: booleanValue(parsed.twoFactorEnabled, fresh.twoFactorEnabled),
+    guardian: normalizeGuardian(parsed.guardian, fresh.guardian),
+    familyName: stringValue(parsed.familyName, fresh.familyName),
+    devices: normalizeDevices(parsed.devices, fresh.devices),
+    aiName: stringValue(parsed.aiName, fresh.aiName),
+    aiPersonality: oneOf(parsed.aiPersonality, AI_PERSONALITIES, fresh.aiPersonality),
+    aiSkin: nonNegativeInteger(parsed.aiSkin, fresh.aiSkin),
+    voiceEnabled: booleanValue(parsed.voiceEnabled, fresh.voiceEnabled),
+    autoListenEnabled: booleanValue(parsed.autoListenEnabled, fresh.autoListenEnabled),
+    voiceMode: oneOf(parsed.voiceMode, VOICE_MODES, fresh.voiceMode),
+    saveHistory: booleanValue(parsed.saveHistory, fresh.saveHistory),
+    aiMemoryEnabled: booleanValue(parsed.aiMemoryEnabled, fresh.aiMemoryEnabled),
+    historyCount: nonNegativeInteger(parsed.historyCount, fresh.historyCount),
+    confirmDangerous: booleanValue(parsed.confirmDangerous, fresh.confirmDangerous),
+    guardianApprove: booleanValue(parsed.guardianApprove, fresh.guardianApprove),
+    safeMode: oneOf(parsed.safeMode, SAFE_MODES, fresh.safeMode),
+    soundEnabled: booleanValue(parsed.soundEnabled, fresh.soundEnabled),
+    soundVolume: boundedNumber(parsed.soundVolume, fresh.soundVolume, 0, 100),
+    hapticEnabled: booleanValue(parsed.hapticEnabled, fresh.hapticEnabled),
+    showLearningStats: booleanValue(parsed.showLearningStats, fresh.showLearningStats),
+    allowFriendFind: booleanValue(parsed.allowFriendFind, fresh.allowFriendFind),
+    dataCollection: booleanValue(parsed.dataCollection, fresh.dataCollection),
+    cameraPermission: oneOf(parsed.cameraPermission, PERMISSION_STATUSES, fresh.cameraPermission),
+    micPermission: oneOf(parsed.micPermission, PERMISSION_STATUSES, fresh.micPermission),
+    albumPermission: oneOf(parsed.albumPermission, PERMISSION_STATUSES, fresh.albumPermission),
+    contentLevel: oneOf(parsed.contentLevel, CONTENT_LEVELS, fresh.contentLevel),
+    personalizedRec: booleanValue(parsed.personalizedRec, fresh.personalizedRec),
+    storageUsed: nonNegativeNumber(parsed.storageUsed, fresh.storageUsed),
+    storageTotal: positiveNumber(parsed.storageTotal, fresh.storageTotal),
+    autoCleanDays: positiveInteger(parsed.autoCleanDays, fresh.autoCleanDays),
+  }
+}
+
+const FONT_SCALES = ['standard', 'large', 'xlarge'] as const
+const NOTIFICATION_OPTIONS = ['important', 'all', 'off'] as const
+const GUARDIAN_RELATIONSHIPS = ['father', 'mother', 'grandparent', 'other'] as const
+const AI_PERSONALITIES = ['gentle', 'playful', 'serious', 'encouraging'] as const
+const VOICE_MODES = ['warm', 'bright', 'calm'] as const
+const SAFE_MODES = ['strict', 'standard', 'relaxed'] as const
+const PERMISSION_STATUSES = ['granted', 'denied', 'prompt'] as const
+const CONTENT_LEVELS = ['general', 'teen', 'child'] as const
+const REWARD_KINDS: RewardKind[] = ['knowledge', 'test', 'medal', 'band', 'starter', 'purchase']
+const COMPANION_CATEGORIES: CompanionCategory[] = ['appearance', 'outfit', 'decoration']
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function oneOf<T extends string>(value: unknown, allowed: readonly T[], fallback: T): T {
+  return typeof value === 'string' && allowed.includes(value as T) ? value as T : fallback
+}
+
+function stringValue(value: unknown, fallback: string): string {
+  return typeof value === 'string' ? value : fallback
+}
+
+function booleanValue(value: unknown, fallback: boolean): boolean {
+  return typeof value === 'boolean' ? value : fallback
+}
+
+function finiteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value)
+}
+
+function boundedNumber(value: unknown, fallback: number, min: number, max: number): number {
+  return finiteNumber(value) && value >= min && value <= max ? value : fallback
+}
+
+function nonNegativeNumber(value: unknown, fallback: number): number {
+  return finiteNumber(value) && value >= 0 ? value : fallback
+}
+
+function positiveNumber(value: unknown, fallback: number): number {
+  return finiteNumber(value) && value > 0 ? value : fallback
+}
+
+function nonNegativeInteger(value: unknown, fallback: number): number {
+  return Number.isInteger(value) && (value as number) >= 0 ? value as number : fallback
+}
+
+function positiveInteger(value: unknown, fallback: number): number {
+  return Number.isInteger(value) && (value as number) > 0 ? value as number : fallback
+}
+
+function stringArray(value: unknown, fallback: string[]): string[] {
+  if (!Array.isArray(value)) return [...fallback]
+  return value.filter((item): item is string => typeof item === 'string')
+}
+
+function normalizeLearningProgress(value: unknown, fallback: AppState['learningProgress']): AppState['learningProgress'] {
+  const progress = createEmptyLearningProgress()
+  const storedProgress = isRecord(value) ? value : {}
+
+  for (const band of ['grade1-2', 'grade3-4', 'grade5-6'] as const) {
+    const validIds = new Set(getPartIdsForBand(band))
+    const storedBand = isRecord(storedProgress[band]) ? storedProgress[band] : {}
+    progress[band] = {
+      knowledgeCompleted: normalizeCoursePartIds(storedBand.knowledgeCompleted, validIds, fallback[band].knowledgeCompleted),
+      testsPassed: normalizeCoursePartIds(storedBand.testsPassed, validIds, fallback[band].testsPassed),
+    }
+  }
+
+  return progress
+}
+
+function normalizeCoursePartIds(value: unknown, validIds: Set<CoursePartId>, fallback: CoursePartId[]): CoursePartId[] {
+  if (!Array.isArray(value)) return [...fallback]
+  return value.filter((id): id is CoursePartId => typeof id === 'string' && validIds.has(id as CoursePartId))
+}
+
+function normalizeTransactions(value: unknown, fallback: PointTransaction[]): PointTransaction[] {
+  if (!Array.isArray(value)) {
+    return fallback.map((transaction) => ({ ...transaction }))
+  }
+  return value.filter(isPointTransaction).map((transaction) => ({
+    id: transaction.id,
+    eventId: transaction.eventId,
+    kind: transaction.kind,
+    title: transaction.title,
+    amount: transaction.amount,
+    occurredAt: transaction.occurredAt,
+  }))
+}
+
+function isPointTransaction(value: unknown): value is PointTransaction {
+  return isRecord(value)
+    && typeof value.id === 'string'
+    && typeof value.eventId === 'string'
+    && typeof value.title === 'string'
+    && typeof value.occurredAt === 'string'
+    && finiteNumber(value.amount)
+    && typeof value.kind === 'string'
+    && REWARD_KINDS.includes(value.kind as RewardKind)
+}
+
+function isWrongQuestion(value: unknown): value is WrongQuestion {
+  return isRecord(value)
+    && typeof value.id === 'string'
+    && typeof value.partId === 'string'
+    && typeof value.partTitle === 'string'
+    && typeof value.topic === 'string'
+    && typeof value.prompt === 'string'
+    && Array.isArray(value.options) && value.options.every((o) => typeof o === 'string')
+    && Number.isInteger(value.answerIndex)
+    && Number.isInteger(value.pickedIndex)
+    && typeof value.explanation === 'string'
+    && typeof value.occurredAt === 'string'
+    && typeof value.reviewed === 'boolean'
+}
+
+function normalizeWrongQuestions(value: unknown, fallback: WrongQuestion[]): WrongQuestion[] {
+  if (!Array.isArray(value)) return fallback.map((q) => ({ ...q }))
+  return value.filter(isWrongQuestion).map((q) => ({
+    id: q.id,
+    partId: q.partId as CoursePartId,
+    partTitle: q.partTitle,
+    topic: q.topic,
+    prompt: q.prompt,
+    options: [...q.options],
+    answerIndex: q.answerIndex,
+    pickedIndex: q.pickedIndex,
+    explanation: q.explanation,
+    occurredAt: q.occurredAt,
+    reviewed: q.reviewed,
+  }))
+}
+
+function normalizeAiPosition(value: unknown, fallback: AppState['aiPosition']): AppState['aiPosition'] {
+  const stored = isRecord(value) ? value : {}
+  return {
+    x: boundedNumber(stored.x, fallback.x, 0, 1),
+    y: boundedNumber(stored.y, fallback.y, 0, 1),
+  }
+}
+
+function normalizeGuardian(value: unknown, fallback: GuardianInfo): GuardianInfo {
+  const stored = isRecord(value) ? value : {}
+  return {
+    name: stringValue(stored.name, fallback.name),
+    relationship: oneOf(stored.relationship, GUARDIAN_RELATIONSHIPS, fallback.relationship),
+    phone: stringValue(stored.phone, fallback.phone),
+    authorised: booleanValue(stored.authorised, fallback.authorised),
+  }
+}
+
+function normalizeDevices(value: unknown, fallback: DeviceInfo[]): DeviceInfo[] {
+  if (!Array.isArray(value)) {
+    return fallback.map((device) => ({ ...device }))
+  }
+  return value.filter(isDeviceInfo).map((device) => ({
+    name: device.name,
+    lastActive: device.lastActive,
+    current: device.current,
+  }))
+}
+
+function isDeviceInfo(value: unknown): value is DeviceInfo {
+  return isRecord(value)
+    && typeof value.name === 'string'
+    && typeof value.lastActive === 'string'
+    && typeof value.current === 'boolean'
+}
+
+function normalizePrimaryLoadout(value: unknown, fallback: CompanionLoadout): CompanionLoadout {
+  const stored = isRecord(value) ? value : {}
+  const storedOwned = isRecord(stored.owned) ? stored.owned : {}
+  const storedEquipped = isRecord(stored.equipped) ? stored.equipped : {}
+
+  const primaryIds = Object.fromEntries(COMPANION_CATEGORIES.map((category) => [
+    category,
+    new Set(COMPANION_CATALOG
+      .filter((item) => item.category === category)
+      .map((item) => item.id)),
+  ])) as Record<CompanionCategory, Set<string>>
+
+  const owned = Object.fromEntries(COMPANION_CATEGORIES.map((category) => {
+    const candidate = storedOwned[category]
+    const source = Array.isArray(candidate)
+      ? candidate.filter((id): id is string => typeof id === 'string')
+      : fallback.owned[category]
+    const valid = source.filter((id) => primaryIds[category].has(id))
+    return [category, category === 'appearance' ? ['momo', ...valid.filter((id) => id !== 'momo')] : valid]
+  })) as CompanionLoadout['owned']
+
+  const equipped = Object.fromEntries(COMPANION_CATEGORIES.map((category) => {
+    const candidate = storedEquipped[category]
+    if ((typeof candidate === 'string' || candidate === null) && candidate !== null && owned[category].includes(candidate)) {
+      return [category, candidate]
+    }
+    const fallbackId = fallback.equipped[category]
+    if (fallbackId && owned[category].includes(fallbackId)) return [category, fallbackId]
+    return [category, category === 'appearance' ? 'momo' : null]
+  })) as CompanionLoadout['equipped']
+
+  return { owned, equipped, version: 1 }
+}
+
+function toPersistedState(state: AppState): PersistedAppState {
+  return Object.fromEntries(PERSISTED_KEYS.map((key) => [key, state[key]])) as PersistedAppState
+}
+
+export function saveState(state: AppState): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(toPersistedState(state)))
+}

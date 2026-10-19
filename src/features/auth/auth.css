@@ -1,0 +1,807 @@
+.auth-page {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  padding: max(18px, env(safe-area-inset-top)) 18px 30px;
+  background: var(--page);
+  color: var(--ink);
+}
+
+.auth-ambient {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--surface-strong);
+  filter: blur(1px);
+  opacity: .55;
+  pointer-events: none;
+}
+
+.auth-ambient-one {
+  width: 180px;
+  height: 180px;
+  top: -95px;
+  right: -70px;
+}
+
+.auth-ambient-two {
+  width: 120px;
+  height: 120px;
+  bottom: 8%;
+  left: -70px;
+  opacity: .35;
+}
+
+.auth-shell {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 420px);
+  margin: 0 auto;
+}
+
+.auth-brand-block {
+  display: grid;
+  gap: 2px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 82%, transparent);
+}
+
+.auth-brand-block strong {
+  color: var(--ink);
+  font-size: .95rem;
+}
+
+.auth-brand-eyebrow {
+  color: var(--primary-deep);
+  font-size: .76rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+}
+
+.login-companion {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  min-height: 156px;
+  margin: 4px 0 0;
+}
+
+.login-companion__target {
+  display: grid;
+  place-items: center;
+  width: 136px;
+  height: 136px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.login-companion__frame {
+  position: relative;
+  display: grid;
+  width: 128px;
+  height: 128px;
+  place-items: end center;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--primary) 22%, #fff);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 30%, color-mix(in srgb, #fff 90%, transparent) 0 37%, transparent 68%),
+    linear-gradient(160deg, color-mix(in srgb, var(--surface-strong) 46%, #fff) 0%, color-mix(in srgb, var(--primary) 14%, #fff) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, .8),
+    inset 0 -15px 20px color-mix(in srgb, var(--primary) 10%, transparent),
+    0 10px 22px color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+.login-companion__frame::after {
+  position: absolute;
+  right: 15%;
+  bottom: 7%;
+  left: 15%;
+  height: 13px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--primary-deep) 20%, transparent);
+  content: '';
+  filter: blur(5px);
+}
+
+.login-companion__target .partner-appearance {
+  position: relative;
+  z-index: 1;
+  width: 102px;
+  margin-bottom: 4px;
+  transform-origin: center bottom;
+  transition: transform .24s ease, filter .24s ease;
+  filter: drop-shadow(0 8px 10px color-mix(in srgb, var(--primary) 20%, transparent));
+}
+
+.login-companion__target .partner-appearance__safe-frame {
+  animation: login-companion-breathe 3.4s ease-in-out infinite;
+}
+
+.login-companion__target:hover .partner-appearance,
+.login-companion__target:focus-visible .partner-appearance,
+.login-companion__target.is-interacting .partner-appearance {
+  transform: translateY(-4px) scale(1.025);
+  filter: drop-shadow(0 17px 18px color-mix(in srgb, var(--primary) 30%, transparent));
+}
+
+.login-companion__target.is-interacting .partner-appearance__safe-frame {
+  animation: login-companion-greeting .48s cubic-bezier(.2, .8, .2, 1);
+}
+
+@keyframes login-companion-breathe {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-3px) rotate(-1deg); }
+}
+
+@keyframes login-companion-greeting {
+  0%, 100% { transform: translateY(0) scale(1); }
+  48% { transform: translateY(-7px) scale(1.035); }
+}
+
+.login-companion__target:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary) 42%, transparent);
+  outline-offset: -4px;
+  border-radius: 50%;
+}
+
+.login-companion__hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin: -2px 0 0;
+  color: var(--muted);
+  font-size: calc(.63rem * var(--font-scale));
+  font-weight: 700;
+}
+
+.login-companion__bubble {
+  position: absolute;
+  z-index: 3;
+  top: -2px;
+  right: calc(50% - 132px);
+  max-width: 156px;
+  margin: 0;
+  padding: 9px 12px;
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--glass-border));
+  border-radius: 15px 15px 5px 15px;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  color: var(--ink);
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--ink) 10%, transparent);
+  font-size: calc(.67rem * var(--font-scale));
+  line-height: 1.5;
+  animation: login-companion-bubble-in .24s ease both;
+}
+
+@keyframes login-companion-bubble-in {
+  from { opacity: 0; transform: translateY(5px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.auth-shell--with-companion .auth-heading {
+  margin-top: 8px;
+}
+
+.login-companion__dialog-backdrop {
+  position: fixed;
+  z-index: 1500;
+  inset: 0;
+  display: grid;
+  place-items: end center;
+  padding: 20px;
+  background: rgba(29, 35, 58, .46);
+  backdrop-filter: blur(7px);
+}
+
+.login-companion__dialog {
+  position: relative;
+  width: min(100%, 400px);
+  padding: 20px;
+  border: 1px solid color-mix(in srgb, var(--primary) 22%, rgba(255, 255, 255, .75));
+  border-radius: 28px;
+  background: color-mix(in srgb, var(--surface) 96%, #fff);
+  box-shadow: 0 24px 60px rgba(20, 29, 53, .28);
+}
+
+.login-companion__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.login-companion__dialog-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 36px;
+}
+
+.login-companion__dialog-title .partner-appearance {
+  width: 58px;
+}
+
+.login-companion__dialog-title small,
+.login-companion__dialog-title strong {
+  display: block;
+}
+
+.login-companion__dialog-title small {
+  color: var(--muted);
+  font-size: calc(.62rem * var(--font-scale));
+}
+
+.login-companion__dialog-title strong {
+  margin-top: 2px;
+  font-size: calc(.9rem * var(--font-scale));
+}
+
+.login-companion__privacy {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 12px 0;
+  padding: 9px 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+  color: var(--muted);
+  font-size: calc(.63rem * var(--font-scale));
+  line-height: 1.5;
+}
+
+.login-companion__privacy svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--primary-deep);
+}
+
+.login-companion__message {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  min-height: 58px;
+  padding: 12px 14px;
+  border-radius: 16px 16px 16px 5px;
+  background: color-mix(in srgb, var(--primary) 10%, var(--surface));
+  color: var(--ink);
+  font-size: calc(.72rem * var(--font-scale));
+  line-height: 1.65;
+}
+
+.login-companion__voice-area {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.login-companion__voice-status,
+.login-companion__voice-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: calc(.68rem * var(--font-scale));
+  line-height: 1.45;
+  text-align: center;
+}
+
+.login-companion__voice-button {
+  display: grid;
+  grid-auto-flow: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 154px;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--primary-deep), var(--accent-deep));
+  color: #fff;
+  font: inherit;
+  font-size: calc(.76rem * var(--font-scale));
+  font-weight: 800;
+  touch-action: none;
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--primary) 26%, transparent);
+}
+
+.login-companion__voice-button.is-listening {
+  transform: scale(1.03);
+  box-shadow: 0 0 0 7px color-mix(in srgb, var(--primary) 15%, transparent), 0 8px 20px color-mix(in srgb, var(--primary) 32%, transparent);
+}
+
+.login-companion__visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.auth-heading {
+  margin: 16px 8px 20px;
+  text-align: center;
+}
+
+.brand-kicker {
+  margin: 0 0 8px;
+  color: var(--primary-deep);
+  font-size: calc(.78rem * var(--font-scale));
+  font-weight: 850;
+  letter-spacing: .12em;
+}
+
+.auth-heading h1 {
+  margin: 0;
+  font-size: calc(1.82rem * var(--font-scale));
+  line-height: 1.16;
+  letter-spacing: -.04em;
+}
+
+.auth-heading>p:last-child {
+  margin: 9px auto 0;
+  max-width: 296px;
+  color: var(--muted);
+  font-size: calc(.95rem * var(--font-scale));
+  line-height: 1.7;
+}
+
+.auth-card {
+  padding: 22px;
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.auth-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 10%, transparent), color-mix(in srgb, var(--accent) 10%, transparent) 60%, transparent);
+  pointer-events: none;
+}
+
+.auth-card>* {
+  position: relative;
+  z-index: 1;
+}
+
+.field-wrap+.field-wrap {
+  margin-top: 16px;
+}
+
+.field-wrap label,
+.auth-form-grid>label {
+  display: grid;
+  gap: 7px;
+  color: var(--ink);
+  font-size: calc(.83rem * var(--font-scale));
+  font-weight: 750;
+}
+
+.input-with-icon {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 10px;
+  min-height: 50px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.input-with-icon input {
+  width: 100%;
+  min-width: 0;
+  padding: 12px 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+}
+
+.auth-form-grid {
+  display: grid;
+  gap: 15px;
+}
+
+.auth-form-grid input,
+.auth-form-grid select {
+  min-height: 48px;
+  width: 100%;
+  padding: 0 13px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.auth-form-grid .input-with-icon input {
+  min-height: auto;
+  border: 0;
+  padding-left: 0;
+}
+
+.birth-date-field {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.birth-date-field legend {
+  padding: 0;
+  color: var(--ink);
+  font-size: calc(.83rem * var(--font-scale));
+  font-weight: 750;
+}
+
+.birth-date-input-row {
+  display: grid;
+  grid-template-columns: 1.36fr .96fr .96fr auto;
+  align-items: stretch;
+  min-height: 52px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--line));
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 92%, var(--primary) 3%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .55);
+}
+
+.birth-date-segment {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  min-width: 0;
+  align-items: center;
+  padding: 0 9px 0 13px;
+  border-right: 1px solid color-mix(in srgb, var(--primary) 15%, var(--line));
+}
+
+.birth-date-segment input {
+  min-width: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--ink);
+  font-size: calc(.96rem * var(--font-scale));
+  font-weight: 750;
+  text-align: center;
+}
+
+.birth-date-segment input::placeholder {
+  color: color-mix(in srgb, var(--muted) 78%, transparent);
+  font-size: calc(.8rem * var(--font-scale));
+  font-weight: 650;
+}
+
+.birth-date-segment input:placeholder-shown + span {
+  display: none;
+}
+
+.birth-date-segment > span:last-child {
+  color: var(--muted);
+  font-size: calc(.72rem * var(--font-scale));
+  font-weight: 750;
+  pointer-events: none;
+}
+
+.birth-date-calendar-button {
+  display: grid;
+  width: 48px;
+  min-height: 50px;
+  place-items: center;
+  border: 0;
+  border-radius: 0;
+  background: color-mix(in srgb, var(--primary) 11%, var(--surface));
+  color: var(--primary);
+  cursor: pointer;
+}
+
+.birth-date-calendar-button:hover,
+.birth-date-calendar-button:focus-visible {
+  background: color-mix(in srgb, var(--primary) 20%, var(--surface));
+  outline: 0;
+}
+
+.birth-date-field small {
+  color: var(--muted);
+  font-size: calc(.75rem * var(--font-scale));
+}
+
+.birth-calendar {
+  display: grid;
+  gap: 12px;
+  margin-top: 2px;
+  padding: 15px;
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--line));
+  border-radius: 18px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--surface) 97%, white), color-mix(in srgb, var(--primary) 7%, var(--surface)));
+  box-shadow: 0 10px 24px color-mix(in srgb, var(--ink) 9%, transparent), inset 0 1px 0 rgba(255, 255, 255, .7);
+}
+
+.birth-calendar-inline {
+  position: relative;
+  z-index: 0;
+}
+
+.birth-calendar-head,
+.birth-calendar-controls,
+.calendar-month-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.birth-calendar-head > div {
+  display: grid;
+  gap: 2px;
+}
+
+.birth-calendar-head span {
+  color: var(--muted);
+  font-size: calc(.72rem * var(--font-scale));
+}
+
+.birth-calendar-head strong {
+  color: var(--ink);
+  font-size: calc(.98rem * var(--font-scale));
+}
+
+.calendar-close,
+.calendar-month-switch button {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--primary) 13%, var(--line));
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface) 88%, var(--primary) 6%);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.calendar-close { font-size: 1.35rem; line-height: 1; }
+
+.calendar-month-switch {
+  justify-content: flex-end;
+}
+
+.calendar-month-switch span { min-width: 42px; text-align: center; color: var(--primary-deep); font-weight: 800; }
+
+.calendar-month-switch button:disabled { opacity: .35; cursor: not-allowed; }
+
+.birth-calendar-controls select {
+  min-height: 34px;
+  width: auto;
+  padding: 0 24px 0 10px;
+  border-radius: 10px;
+  font-size: calc(.8rem * var(--font-scale));
+}
+
+.calendar-weekdays,
+.calendar-days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  text-align: center;
+}
+
+.calendar-weekdays span {
+  padding-block: 3px;
+  color: var(--muted);
+  font-size: calc(.72rem * var(--font-scale));
+  font-weight: 750;
+}
+
+.calendar-days button {
+  aspect-ratio: 1;
+  min-height: 32px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font-weight: 650;
+}
+
+.calendar-days button:hover:not(:disabled) { background: color-mix(in srgb, var(--primary) 12%, transparent); }
+
+.calendar-days button.selected {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 5px 12px color-mix(in srgb, var(--primary) 35%, transparent);
+}
+
+.calendar-days button:disabled { color: color-mix(in srgb, var(--muted) 38%, transparent); cursor: not-allowed; }
+
+.calendar-today {
+  justify-self: end;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid color-mix(in srgb, var(--primary) 16%, var(--line));
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--primary) 7%, var(--surface));
+  color: var(--primary);
+  cursor: pointer;
+  font-size: calc(.78rem * var(--font-scale));
+  font-weight: 750;
+}
+
+@media (max-width: 360px) {
+  .birth-date-calendar-button { width: 45px; }
+  .birth-date-segment { padding-inline: 8px; }
+  .birth-calendar { padding: 13px; }
+}
+
+.code-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.code-row button {
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.primary-button {
+  display: inline-flex;
+  width: 100%;
+  min-height: 50px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  margin-top: 20px;
+  border: 0;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--primary-deep), var(--accent-deep));
+  color: var(--primary-ink);
+  font-weight: 850;
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--primary) 32%, transparent);
+}
+
+.primary-button:disabled {
+  opacity: .45;
+  box-shadow: none;
+}
+
+.prototype-note {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: calc(.7rem * var(--font-scale));
+  line-height: 1.55;
+  text-align: center;
+}
+
+.form-alert {
+  margin: 12px 0 0;
+  color: #a43b35;
+  font-size: calc(.78rem * var(--font-scale));
+}
+
+.form-alert.calm {
+  color: var(--muted);
+}
+
+.auth-side-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 16px;
+}
+
+.auth-side-actions button,
+.text-back {
+  min-height: 44px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.text-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  margin-top: 6px;
+}
+
+.consent-copy {
+  display: grid;
+  gap: 16px;
+}
+
+.consent-copy h2 {
+  margin: 0 0 5px;
+  font-size: calc(.95rem * var(--font-scale));
+}
+
+.consent-copy p {
+  margin: 0;
+  color: var(--muted);
+  font-size: calc(.8rem * var(--font-scale));
+  line-height: 1.65;
+}
+
+.consent-check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 9px;
+  align-items: start;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  color: var(--ink);
+  font-size: calc(.8rem * var(--font-scale));
+  line-height: 1.55;
+}
+
+.consent-check input {
+  width: 19px;
+  height: 19px;
+}
+
+@media (max-width: 350px) {
+  .auth-page {
+    padding-inline: 12px;
+  }
+
+  .auth-card {
+    padding: 18px;
+  }
+
+  .auth-side-actions {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login-companion__target .partner-appearance__safe-frame,
+  .login-companion__target.is-interacting .partner-appearance__safe-frame {
+    animation: none;
+  }
+
+  .login-companion__voice-button.is-listening {
+    transform: none;
+  }
+}
