@@ -297,6 +297,7 @@ export function MainShell() {
             onMoreWorks={() => push({ kind: 'works-gallery' })}
             onOpenNotifications={() => push({ kind: 'notifications' })}
             onNavigateToKnowledge={() => selectTab('knowledge')}
+            onOpenContent={(courseId, chapterNum) => push({ kind: 'course-content', courseId, chapterNum })}
           />
         )}
         {activeTab === 'knowledge' && (

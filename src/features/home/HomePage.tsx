@@ -1,5 +1,6 @@
 import { ArrowRight, Camera, ChevronRight, Clock3, Search, Sparkles } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { HomeSearch } from './HomeSearch'
 import { AchievementShowcase } from './AchievementShowcase'
 import { CameraToolSheet } from './CameraToolSheet'
 import { games, homeCopy } from './homeData'
@@ -21,7 +22,7 @@ const carouselDecorations = [
   { size: 50, icon: Sparkles },
 ]
 
-export function HomePage({ onWorkClick, onMoreWorks, onOpenNotifications, onNavigateToKnowledge }: { onWorkClick?: (workId: string) => void; onMoreWorks?: () => void; onOpenNotifications?: () => void; onNavigateToKnowledge?: () => void }) {
+export function HomePage({ onWorkClick, onMoreWorks, onOpenNotifications, onNavigateToKnowledge, onOpenContent }: { onOpenContent?: (courseId: string, chapterNum: number) => void; onWorkClick?: (workId: string) => void; onMoreWorks?: () => void; onOpenNotifications?: () => void; onNavigateToKnowledge?: () => void }) {
   const [cameraOpen, setCameraOpen] = useState(false)
   const [notice, setNotice] = useState('')
   const [currentNewsIndex, setCurrentNewsIndex] = useState(0)
@@ -71,8 +72,7 @@ export function HomePage({ onWorkClick, onMoreWorks, onOpenNotifications, onNavi
 
       <div className="search-shell">
         <button type="button" aria-label="拍照与扫码" onClick={() => setCameraOpen(true)}><Camera aria-hidden="true" size={20} /></button>
-        <Search aria-hidden="true" size={19} />
-        <input type="search" aria-label="搜索知识、游戏或作品" placeholder="搜索你想探索的内容" />
+        <HomeSearch onOpenContent={onOpenContent} onWorkClick={onWorkClick} />
       </div>
 
       <section className="news-carousel-section" aria-label="最新 AI 通识资讯">

@@ -26,7 +26,7 @@ describe('home page', () => {
 
     await user.click(screen.getByRole('button', { name: '拍照与扫码' }))
     expect(screen.getByRole('heading', { name: '拍照与识别工具' })).toBeInTheDocument()
-    expect(screen.getByText('页面初版暂未接入相机与识别服务')).toBeInTheDocument()
+    expect(screen.getByText('拍照、上传或输入文字，查看结果与判断依据')).toBeInTheDocument()
     await user.click(screen.getByRole('button', { name: '关闭工具面板' }))
 
     await user.click(screen.getByRole('button', { name: '每周' }))
