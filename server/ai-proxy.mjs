@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { buildDeepSeekPayload, prepareStudentQuestion, prepareStudentReply } from './companionPolicy.mjs'
+import { recognize } from './recognition.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PORT = Number(process.env.COMPANION_PROXY_PORT ?? 8787)
@@ -27,14 +28,14 @@ function sendJson(response, status, body) {
   response.end(JSON.stringify(body))
 }
 
-function readJson(request) {
+function readJson(request, limit = MAX_BODY_BYTES) {
   return new Promise((resolve, reject) => {
     let size = 0
     let raw = ''
     request.setEncoding('utf8')
     request.on('data', (chunk) => {
       size += Buffer.byteLength(chunk)
-      if (size > MAX_BODY_BYTES) {
+      if (size > limit) {
         reject(new Error('body_too_large'))
         request.destroy()
         return
@@ -72,6 +73,17 @@ async function createReply(body) {
 }
 
 const server = createServer(async (request, response) => {
+  if (request.method === 'POST' && request.url?.split('?')[0] === '/api/companion/recognize') {
+    try {
+      const body = await readJson(request, 7 * 1024 * 1024)
+      sendJson(response, 200, { result: await recognize(body) })
+    } catch (error) {
+      const code = error instanceof Error ? error.message : 'provider_error'
+      const known = ['invalid_input', 'invalid_json', 'body_too_large', 'vision_not_configured', 'text_not_configured', 'invalid_result', 'result_too_long', 'provider_error']
+      sendJson(response, code.includes('not_configured') ? 503 : code.startsWith('invalid_') ? 400 : 502, { error: known.includes(code) ? code : 'provider_error' })
+    }
+    return
+  }
   if (request.method !== 'POST' || request.url?.split('?')[0] !== '/api/companion/reply') {
     sendJson(response, 404, { error: 'not_found' })
     return
