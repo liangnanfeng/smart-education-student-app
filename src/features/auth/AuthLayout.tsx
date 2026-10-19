@@ -6,22 +6,30 @@ type AuthLayoutProps = PropsWithChildren<{
   subtitle: string
   backAction?: ReactNode
   companion?: ReactNode
+  showBrand?: boolean
 }>
 
-export function AuthLayout({ title, subtitle, backAction, companion, children }: AuthLayoutProps) {
+export function AuthLayout({ title, subtitle, backAction, companion, showBrand = true, children }: AuthLayoutProps) {
   return (
     <main className="auth-page">
       <div className="auth-ambient auth-ambient-one" />
       <div className="auth-ambient auth-ambient-two" />
       <section className={`auth-shell ${companion ? 'auth-shell--with-companion' : ''}`}>
-        <div className="auth-brand-block" aria-label="数智学习小学成长空间">
-          <span className="auth-brand-eyebrow">小学一至六年级</span>
-          <strong>每一次好奇，都能长成新本领</strong>
-        </div>
+        {showBrand && (
+          <div className="auth-brand-block" aria-label="智芽学习成长空间">
+            <span className="auth-brand-mark">
+              <img src="/brand/zhinya-mark.png" alt="智芽品牌标志" />
+            </span>
+            <span className="auth-brand-copy">
+              <strong>智芽</strong>
+              <span>小学生的 AI 学习成长伙伴</span>
+            </span>
+          </div>
+        )}
         {backAction}
         {companion}
         <header className="auth-heading">
-          <p className="brand-kicker">智趣数智学堂</p>
+          <p className="brand-kicker">从好奇出发，学会思考与创造</p>
           <h1>{title}</h1>
           <p>{subtitle}</p>
         </header>

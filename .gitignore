@@ -20,3 +20,6 @@ Thumbs.db
 
 # Isolated feature worktrees
 .worktrees/
+
+# Local agent planning and run artifacts
+.superpowers/

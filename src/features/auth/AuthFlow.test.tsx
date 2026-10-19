@@ -30,6 +30,18 @@ describe('authentication flow', () => {
     expect(screen.getByRole('img', { name: '绒桃 Momo AI 伙伴形象' })).toBeInTheDocument()
   })
 
+  it('introduces the learning world with the 智芽 brand promise', () => {
+    renderLogin()
+
+    expect(screen.getByRole('img', { name: '智芽品牌标志' })).toBeInTheDocument()
+    expect(screen.getByText('智芽')).toBeInTheDocument()
+    expect(screen.getByText('小学生的 AI 学习成长伙伴')).toBeInTheDocument()
+    expect(screen.getByText('从好奇出发，学会思考与创造')).toBeInTheDocument()
+    expect(screen.queryByText('让好奇发芽，让本领长大。')).not.toBeInTheDocument()
+    expect(screen.queryByText('智芽 · AI 学习成长伙伴')).not.toBeInTheDocument()
+    expect(screen.queryByText('小学一至六年级')).not.toBeInTheDocument()
+  })
+
   it('requires both account and password without persisting credentials', async () => {
     const user = userEvent.setup()
     renderLogin()

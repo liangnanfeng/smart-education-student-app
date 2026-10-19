@@ -1,6 +1,6 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AppStateProvider } from '../../app/AppState'
 import { RegisterPage } from './RegisterPage'
 
@@ -16,11 +16,21 @@ function renderRegisterPage() {
 }
 
 describe('registration birth date', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('offers only grades one through six during registration', () => {
     renderRegisterPage()
 
     const options = within(screen.getByLabelText('选择年级')).getAllByRole('option').map((option) => option.textContent)
     expect(options).toEqual(['请选择年级', '一年级', '二年级', '三年级', '四年级', '五年级', '六年级'])
+  })
+
+  it('keeps the login-only brand block out of the registration page', () => {
+    renderRegisterPage()
+
+    expect(screen.queryByLabelText('智芽学习成长空间')).not.toBeInTheDocument()
   })
 
   it('groups the year, month, and day fields into one readable date card', () => {
@@ -29,10 +39,30 @@ describe('registration birth date', () => {
     expect(screen.getByRole('group', { name: '出生日期输入' })).toBeInTheDocument()
   })
 
+  it('starts the birth date fields at the registration date instead of the minimum year', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2026-10-15T08:00:00'))
+
+    renderRegisterPage()
+
+    expect(screen.getByLabelText('出生年')).toHaveValue(2026)
+    expect(screen.getByLabelText('出生月')).toHaveValue(10)
+    expect(screen.getByLabelText('出生日')).toHaveValue(15)
+  })
+
+  it('does not show the removed learning-content explanation', () => {
+    renderRegisterPage()
+
+    expect(screen.queryByText('用于匹配适合你的学习内容')).not.toBeInTheDocument()
+  })
+
   it('uses a manually entered birth date for the existing guardian check', async () => {
     const user = userEvent.setup()
     const { onGuardianRequired } = renderRegisterPage()
 
+    await user.clear(screen.getByLabelText('出生年'))
+    await user.clear(screen.getByLabelText('出生月'))
+    await user.clear(screen.getByLabelText('出生日'))
     await user.type(screen.getByLabelText('出生年'), '2015')
     await user.type(screen.getByLabelText('出生月'), '8')
     await user.type(screen.getByLabelText('出生日'), '25')
@@ -70,5 +100,15 @@ describe('registration birth date', () => {
     await user.click(screen.getByRole('button', { name: '打开日期选择器' }))
 
     expect(screen.getByRole('dialog', { name: '选择出生日期' })).toHaveClass('birth-calendar-inline')
+  })
+
+  it('opens the year selector at the registration year instead of the earliest year', async () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(new Date('2027-04-15T08:00:00'))
+    renderRegisterPage()
+
+    fireEvent.click(screen.getByRole('button', { name: '打开日期选择器' }))
+
+    expect(screen.getByLabelText('选择年份')).toHaveValue('2027')
   })
 })

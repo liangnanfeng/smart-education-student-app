@@ -12,14 +12,15 @@ type RegisterPageProps = {
 
 export function RegisterPage({ onBack, onGuardianRequired }: RegisterPageProps) {
   const { setGrade } = useAppState()
-  const today = new Date()
+  const [registrationDate] = useState(() => new Date())
+  const registrationYear = registrationDate.getFullYear()
   const [grade, setLocalGrade] = useState<PrimaryGrade | ''>('')
-  const [birthYear, setBirthYear] = useState('')
-  const [birthMonth, setBirthMonth] = useState('')
-  const [birthDay, setBirthDay] = useState('')
+  const [birthYear, setBirthYear] = useState(() => String(registrationYear))
+  const [birthMonth, setBirthMonth] = useState(() => String(registrationDate.getMonth() + 1))
+  const [birthDay, setBirthDay] = useState(() => String(registrationDate.getDate()))
   const [calendarOpen, setCalendarOpen] = useState(false)
-  const [calendarYear, setCalendarYear] = useState(today.getFullYear())
-  const [calendarMonth, setCalendarMonth] = useState(today.getMonth())
+  const [calendarYear, setCalendarYear] = useState(registrationYear)
+  const [calendarMonth, setCalendarMonth] = useState(registrationDate.getMonth())
   const [message, setMessage] = useState('')
   const [countdown, setCountdown] = useState(0)
 
@@ -27,23 +28,26 @@ export function RegisterPage({ onBack, onGuardianRequired }: RegisterPageProps) 
   const selectedDate = birthDate ? new Date(`${birthDate}T00:00:00`) : null
   const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate()
   const firstWeekday = new Date(calendarYear, calendarMonth, 1).getDay()
-  const yearOptions = Array.from({ length: 101 }, (_, index) => today.getFullYear() - index)
+  const yearOptions = Array.from(
+    { length: registrationYear - 1900 + 1 },
+    (_, index) => 1900 + index,
+  )
 
   function openCalendar() {
     if (selectedDate) {
       setCalendarYear(selectedDate.getFullYear())
       setCalendarMonth(selectedDate.getMonth())
     } else {
-      setCalendarYear(today.getFullYear())
-      setCalendarMonth(today.getMonth())
+      setCalendarYear(registrationYear)
+      setCalendarMonth(registrationDate.getMonth())
     }
     setCalendarOpen(true)
   }
 
   function moveMonth(direction: -1 | 1) {
     const next = new Date(calendarYear, calendarMonth + direction, 1)
-    const isAfterCurrentMonth = next.getFullYear() > today.getFullYear()
-      || (next.getFullYear() === today.getFullYear() && next.getMonth() > today.getMonth())
+    const isAfterCurrentMonth = next.getFullYear() > registrationYear
+      || (next.getFullYear() === registrationYear && next.getMonth() > registrationDate.getMonth())
     if (!isAfterCurrentMonth) {
       setCalendarYear(next.getFullYear())
       setCalendarMonth(next.getMonth())
@@ -81,32 +85,33 @@ export function RegisterPage({ onBack, onGuardianRequired }: RegisterPageProps) 
   }
 
   return (
-    <AuthLayout title="创建学习账号" subtitle="选择你的年级，为你准备合适的学习体验" backAction={<button className="text-back" type="button" onClick={onBack}><ArrowLeft aria-hidden="true" size={18} />返回登录</button>}>
+    <AuthLayout title="创建学习账号" subtitle="选择你的年级，为你准备合适的学习体验" showBrand={false} backAction={<button className="text-back" type="button" onClick={onBack}><ArrowLeft aria-hidden="true" size={18} />返回登录</button>}>
       <form className="auth-card auth-form-grid" onSubmit={submit}>
         <label>选择年级<select required aria-label="选择年级" value={grade} onChange={(event) => setLocalGrade(event.target.value as PrimaryGrade)}><option value="">请选择年级</option>{PRIMARY_GRADES.map((id) => <option key={id} value={id}>{GRADE_LABELS[id]}</option>)}</select></label>
-        <fieldset className="birth-date-field">
-          <legend>出生日期</legend>
+        <div className="birth-date-field">
+          <div className="birth-date-title">出生日期</div>
           <div className="birth-date-input-row" role="group" aria-label="出生日期输入">
             <label className="birth-date-segment">
               <span className="sr-only">出生年</span>
-              <input aria-label="出生年" type="number" inputMode="numeric" min="1900" max={today.getFullYear()} placeholder="年份" value={birthYear} onChange={(event) => setBirthYear(event.target.value)} required />
-              <span aria-hidden="true">年</span>
+              <input aria-label="出生年" type="number" inputMode="numeric" min="1900" max={registrationYear} value={birthYear} onChange={(event) => setBirthYear(event.target.value)} required />
+              <span className="birth-date-segment-label" aria-hidden="true">年</span>
             </label>
             <label className="birth-date-segment">
               <span className="sr-only">出生月</span>
-              <input aria-label="出生月" type="number" inputMode="numeric" min="1" max="12" placeholder="月份" value={birthMonth} onChange={(event) => setBirthMonth(event.target.value)} required />
-              <span aria-hidden="true">月</span>
+              <input aria-label="出生月" type="number" inputMode="numeric" min="1" max="12" value={birthMonth} onChange={(event) => setBirthMonth(event.target.value)} required />
+              <span className="birth-date-segment-label" aria-hidden="true">月</span>
             </label>
             <label className="birth-date-segment">
               <span className="sr-only">出生日</span>
-              <input aria-label="出生日" type="number" inputMode="numeric" min="1" max="31" placeholder="日期" value={birthDay} onChange={(event) => setBirthDay(event.target.value)} required />
-              <span aria-hidden="true">日</span>
+              <input aria-label="出生日" type="number" inputMode="numeric" min="1" max="31" value={birthDay} onChange={(event) => setBirthDay(event.target.value)} required />
+              <span className="birth-date-segment-label" aria-hidden="true">日</span>
             </label>
             <button className="birth-date-calendar-button" type="button" aria-label="打开日期选择器" aria-expanded={calendarOpen} onClick={openCalendar}>
               <CalendarDays aria-hidden="true" size={20} />
+              <span aria-hidden="true">日历</span>
             </button>
           </div>
-          <small>可直接填数字，或点右侧日历选择</small>
+          <p className="birth-date-help">可手动输入，也可打开日历选择</p>
 
           {calendarOpen && (
             <section className="birth-calendar birth-calendar-inline" role="dialog" aria-label="选择出生日期">
@@ -124,7 +129,7 @@ export function RegisterPage({ onBack, onGuardianRequired }: RegisterPageProps) 
                 <div className="calendar-month-switch">
                   <button type="button" aria-label="上一个月" onClick={() => moveMonth(-1)}><ChevronLeft aria-hidden="true" size={18} /></button>
                   <span>{calendarMonth + 1} 月</span>
-                  <button type="button" aria-label="下一个月" onClick={() => moveMonth(1)} disabled={calendarYear === today.getFullYear() && calendarMonth === today.getMonth()}><ChevronRight aria-hidden="true" size={18} /></button>
+                  <button type="button" aria-label="下一个月" onClick={() => moveMonth(1)} disabled={calendarYear === registrationYear && calendarMonth === registrationDate.getMonth()}><ChevronRight aria-hidden="true" size={18} /></button>
                 </div>
               </div>
               <div className="calendar-weekdays" aria-hidden="true">{['日', '一', '二', '三', '四', '五', '六'].map((weekday) => <span key={weekday}>{weekday}</span>)}</div>
@@ -133,17 +138,17 @@ export function RegisterPage({ onBack, onGuardianRequired }: RegisterPageProps) 
                 {Array.from({ length: daysInMonth }, (_, index) => {
                   const day = index + 1
                   const date = new Date(calendarYear, calendarMonth, day)
-                  const isFuture = date > new Date(today.getFullYear(), today.getMonth(), today.getDate())
+                  const isFuture = date > new Date(registrationYear, registrationDate.getMonth(), registrationDate.getDate())
                   const isSelected = selectedDate?.getFullYear() === calendarYear && selectedDate.getMonth() === calendarMonth && selectedDate.getDate() === day
                   return (
                     <button key={day} type="button" aria-label={`${calendarYear}年${calendarMonth + 1}月${day}日`} aria-pressed={isSelected} className={isSelected ? 'selected' : ''} disabled={isFuture} onClick={() => pickDate(day)}>{day}</button>
                   )
                 })}
               </div>
-              <button type="button" className="calendar-today" onClick={() => { setCalendarYear(today.getFullYear()); setCalendarMonth(today.getMonth()) }}>回到本月</button>
+              <button type="button" className="calendar-today" onClick={() => { setCalendarYear(registrationYear); setCalendarMonth(registrationDate.getMonth()) }}>回到今天</button>
             </section>
           )}
-        </fieldset>
+        </div>
         <label>学习账号／学习码<input required /></label>
         <label>手机号／邮箱<div className="input-with-icon"><Mail aria-hidden="true" size={18} /><input type="text" required /></div></label>
         <label>验证码<div className="code-row"><input required /><button type="button" onClick={requestCode}>{countdown ? `${countdown} 秒` : '获取验证码'}</button></div></label>
